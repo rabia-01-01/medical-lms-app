@@ -1,0 +1,4 @@
+# OpenAPI specification linked from /api/api.yaml
+# See c:\Users\ASUS\Downloads\Medical_LMS\api\api.yaml for the primary specification.
+$ref: '../api/api.yaml'
+
