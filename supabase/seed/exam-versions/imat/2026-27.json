@@ -1,0 +1,29 @@
+{
+  "examCode": "IMAT",
+  "examYear": 2026,
+  "academicCycle": "2026-2027",
+  "versionNumber": "2026_27.1",
+  "status": "PUBLISHED",
+  "authorityName": "Ministero dell'Universita e della Ricerca (MUR)",
+  "officialSourceUrl": "https://www.universitaly.it",
+  "totalDurationMinutes": 100,
+  "totalQuestions": 60,
+  "maxScore": 90.0,
+  "scoringPolicy": {
+    "policyCode": "IMAT_STANDARD_2026_27",
+    "correctMarks": 1.5,
+    "incorrectMarks": -0.4,
+    "unansweredMarks": 0.0,
+    "supportsAdjudication": false,
+    "optionsCount": 5
+  },
+  "sections": [
+    { "code": "IMAT_READING", "name": "Reading Skills and General Knowledge", "displayOrder": 1, "questionCount": 4, "optionCount": 5 },
+    { "code": "IMAT_LOGIC", "name": "Logical Reasoning and Problem Solving", "displayOrder": 2, "questionCount": 5, "optionCount": 5 },
+    { "code": "IMAT_BIO", "name": "Biology", "displayOrder": 3, "questionCount": 23, "optionCount": 5 },
+    { "code": "IMAT_CHEM", "name": "Chemistry", "displayOrder": 4, "questionCount": 15, "optionCount": 5 },
+    { "code": "IMAT_MATH_PHYS", "name": "Physics and Mathematics", "displayOrder": 5, "questionCount": 13, "optionCount": 5 }
+  ],
+  "languages": ["English"]
+}
+

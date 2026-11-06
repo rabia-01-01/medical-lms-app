@@ -1,4 +1,0 @@
-# NEET Prep LMS — Primary OpenAPI 3.1.0 Specification
-# Synced with docs/api/openapi.yaml
-$ref: '../docs/api/openapi.yaml'
-

@@ -1,0 +1,19 @@
+{
+  "name": "@medprepos/api-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared safe TypeScript types and Zod validation schemas for MedPrepOS",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
+

@@ -1,0 +1,27 @@
+{
+  "examCode": "NEET_UG",
+  "examYear": 2026,
+  "academicCycle": "2026",
+  "versionNumber": "2026.1",
+  "status": "PUBLISHED",
+  "authorityName": "National Testing Agency (NTA)",
+  "officialSourceUrl": "https://neet.nta.nic.in",
+  "totalDurationMinutes": 180,
+  "totalQuestions": 180,
+  "maxScore": 720,
+  "scoringPolicy": {
+    "policyCode": "NEET_UG_STANDARD_2026",
+    "correctMarks": 4.0,
+    "incorrectMarks": -1.0,
+    "unansweredMarks": 0.0,
+    "supportsAdjudication": true,
+    "optionsCount": 4
+  },
+  "sections": [
+    { "code": "NEET_PHYSICS", "name": "Physics", "displayOrder": 1, "questionCount": 45, "optionCount": 4 },
+    { "code": "NEET_CHEMISTRY", "name": "Chemistry", "displayOrder": 2, "questionCount": 45, "optionCount": 4 },
+    { "code": "NEET_BIOLOGY", "name": "Biology (Botany & Zoology)", "displayOrder": 3, "questionCount": 90, "optionCount": 4 }
+  ],
+  "languages": ["English", "Hindi", "Assamese", "Bengali", "Gujarati", "Kannada", "Malayalam", "Marathi", "Odia", "Punjabi", "Tamil", "Telugu", "Urdu"]
+}
+

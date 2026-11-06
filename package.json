@@ -1,0 +1,35 @@
+{
+  "name": "medprep-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MedPrep — Scalable NEET-UG & IMAT Learning & Assessment Platform",
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@medprep/web",
+    "dev:api": "turbo run dev --filter=@medprep/api",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:exam-conformance": "turbo run test --filter=@medprep/exam-engine",
+    "test:security": "vitest run tests/security",
+    "clean": "turbo run clean && rimraf node_modules",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration up",
+    "db:types": "supabase gen types typescript --local > packages/database/src/types.ts"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.3",
+    "typescript": "^5.5.4",
+    "prettier": "^3.3.3",
+    "vitest": "^2.1.1",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

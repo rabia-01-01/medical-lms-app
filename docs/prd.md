@@ -1,998 +1,673 @@
-# NEET Prep LMS — Product Requirements Document (PRD)
+# Product Requirements Document (PRD) — MedPrep
+## Specialized Dual-Track Learning, Practice & Authoritative Assessment Platform for NEET-UG and IMAT
 
-**Document Version:** 1.0.0  
-**Document Status:** Approved for Engineering Implementation  
-**Date:** November 2026  
-**Authors:** Senior Product Management, Educational Technology Solutions Architecture & Backend Engineering  
-**Primary Sources of Truth:** `project_overview.md` (v2.0), `db.sql` (PostgreSQL 15+ Schema), `api_design.md` (REST API Contract v1.0.0), `docs/api/openapi.yaml` (OpenAPI 3.1.0 Spec)  
-**Target Product Scope:** Single-Institute NEET-UG Medical Entrance Coaching & Assessment Platform  
-
----
-
-## Table of Contents
-
-1. [Product Overview](#1-product-overview)
-2. [Product Vision and Objectives](#2-product-vision-and-objectives)
-3. [Problem Statement](#3-problem-statement)
-4. [Target Audience and User Personas](#4-target-audience-and-user-personas)
-5. [User Roles and Permissions](#5-user-roles-and-permissions)
-6. [Business Requirements](#6-business-requirements)
-7. [Functional Requirements (FR-001 to FR-075)](#7-functional-requirements)
-8. [Detailed Feature Specifications](#8-detailed-feature-specifications)
-9. [User Stories with Acceptance Criteria](#9-user-stories-with-acceptance-criteria)
-10. [End-to-End User Workflows](#10-end-to-end-user-workflows)
-11. [Use Cases and Acceptance Criteria](#11-use-cases-and-acceptance-criteria)
-12. [Non-Functional Requirements (NFR-001 to NFR-030)](#12-non-functional-requirements)
-13. [Authentication and Authorization Requirements](#13-authentication-and-authorization-requirements)
-14. [Database and Data Management Requirements](#14-database-and-data-management-requirements)
-15. [API and Integration Requirements](#15-api-and-integration-requirements)
-16. [AI Feature Requirements](#16-ai-feature-requirements)
-17. [Security and Privacy Requirements](#17-security-and-privacy-requirements)
-18. [Performance and Scalability Requirements](#18-performance-and-scalability-requirements)
-19. [UI/UX Requirements](#19-uiux-requirements)
-20. [Analytics and Reporting Requirements](#20-analytics-and-reporting-requirements)
-21. [Error Handling and Failure Scenarios](#21-error-handling-and-failure-scenarios)
-22. [MVP Scope and Future Enhancements](#22-mvp-scope-and-future-enhancements)
-23. [Dependencies and Technical Constraints](#23-dependencies-and-technical-constraints)
-24. [Risks and Mitigation Strategies](#24-risks-and-mitigation-strategies)
-25. [Assumptions and Open Questions](#25-assumptions-and-open-questions)
-26. [Product Release and Implementation Roadmap](#26-product-release-and-implementation-roadmap)
-27. [Success Metrics and Key Performance Indicators](#27-success-metrics-and-key-performance-indicators)
-28. [Final Product Acceptance Checklist](#28-final-product-acceptance-checklist)
+| Document Attribute | Specification Value |
+|---|---|
+| **Document Version** | 1.0 (Comprehensive Baseline) |
+| **Source Specifications** | `project_overview.md` (v3.0), `db.sql` (PostgreSQL DDL), `api_design.md` (v1.0) |
+| **Product Scope** | NEET-UG and IMAT examinations exclusively (Strictly no UCAT/MCAT) |
+| **Verified Exam Baselines** | NEET-UG 2026 (NTA/NMC) & IMAT 2026/27 (MUR Ministerial Decree No. 1005) |
+| **Target Architecture** | TypeScript Monorepo, React + Vite, Node.js/Express Modular Monolith, Supabase/PostgreSQL with RLS |
+| **Document Status** | Approved Product & Architectural Blueprint |
 
 ---
 
-# 1. Product Overview
+# 1. Executive Summary, Product Vision & Objectives
 
-The **NEET Prep Learning Management System (LMS)** is an enterprise-grade, web-based, role-governed educational and assessment management platform purpose-built for a premier single medical coaching institute preparing aspirants for the National Eligibility cum Entrance Test for Undergraduates (**NEET-UG**).
+## 1.1 Product Vision & Core Positioning
+**MedPrep** is an exam-specific preparation, practice, and assessment platform engineered exclusively for **NEET-UG** and **IMAT** aspirants. It replaces fragmented study materials, unreliable online quizzes, and generic LMS architectures with a dual-track platform maintaining two distinct academic and assessment engines under one application shell.
 
-The platform bridges academic curriculum planning, cohort administration, high-stakes assessment delivery, learning material distribution, and performance analytics into a unified, secure system. It replaces fragmented workflows previously distributed across static spreadsheets, Telegram/WhatsApp groups, unsecured Google Drive folders, and third-party testing utilities.
+The platform answers six practical questions for aspirants:
+1. What should I study for my selected examination and examination year?
+2. Which verified resources and practice questions belong to each syllabus topic?
+3. Am I practising with the authoritative number of options, timing, and marking rules?
+4. Which subjects, sections, and topics require targeted revision?
+5. How has my performance evolved across comparable, versioned mock tests?
+6. What specific topic or skill should I revise next, backed by objective performance data?
 
-```mermaid
-graph TD
-    A["NEET Prep LMS (Core Platform)"] --> B["Academic Management"]
-    A --> C["Assessment Engine"]
-    A --> D["Governance & Security"]
-    A --> E["AI-Assisted Operations"]
-    
-    B --> B1["3-Tier Curriculum: Subjects, Chapters, Topics"]
-    B --> B2["Chapter Study Hubs: Notes, DPPs, PYQs, Videos"]
-    B --> B3["Batch Cohort Management: Dec vs May/June"]
-    
-    C --> C1["NEET-UG 2026 Test Blueprints: 720 Marks, 200 Mins"]
-    C --> C2["Section A/B Choice Rule Capping"]
-    C --> C3["Server-Authoritative Real-Time Scoring"]
-    
-    D --> D1["Supabase JWT Bearer Auth & Role Assignments"]
-    D --> D2["PostgreSQL Row-Level Security (RLS)"]
-    D --> D3["15-Min Signed URLs & Dynamic Watermarking"]
-    
-    E --> E1["Groq Cascading Multi-Model MCQ Generator"]
-    E --> E2["Faculty 1-Click Approval Pipeline"]
-    E --> E3["Academic Policy Chatbot Assistant"]
+## 1.2 Problem Statement
+Aspirants facing NEET-UG (India) and IMAT (Italy/International) encounter critical preparation failures:
+- **Taxonomic & Rule Confusion:** Commercial platforms treat competitive exams as generic multiple-choice quizzes, applying a universal `+4/-1` scoring rule or mixing 4-option and 5-option questions.
+- **Syllabus Drift:** Outdated or unversioned syllabi are presented without alignment to official regulatory bulletins (e.g. NTA Information Bulletin vs MUR Ministerial Decrees).
+- **Untrusted Assessment Engines:** Client-side scoring, exposed answer keys in browser memory, unhandled network drops during tests, and lack of reproducible adjudication for dropped or disputed questions.
+- **Unregulated AI Ingestion:** Direct exposure of raw LLM outputs to learners without academic verification, hallucinations in scientific stems, and position bias (such as defaulting Option A as correct).
+- **Dual-Track Data Contamination:** Aspirants preparing for both NEET-UG and IMAT suffer from combined scores, misleading percentile comparisons, and unified analytics across fundamentally incompatible exam scales (720 raw marks vs 90 raw marks).
+
+## 1.3 High-Level Business & Operational Objectives
+1. **Academic Conformance:** 100% adherence to verified annual blueprints for NEET-UG and IMAT.
+2. **Server-Authoritative Assessment Integrity:** Zero answer keys delivered to the client prior to release; 100% server-authoritative deadline calculation, autosave synchronization, and scoring.
+3. **Dual-Track Isolation:** Absolute separation of curriculum hierarchies, question banks, scoring policies, attempts, and analytics for NEET-UG and IMAT.
+4. **Governed AI Workflow:** 100% of AI-generated questions saved strictly as `DRAFT` requiring qualified faculty review before publication.
+5. **Multi-Tenant Security:** Total isolation of institutional data, private resources, and student records reinforced by PostgreSQL Row Level Security (RLS).
+
+## 1.4 Product Boundaries & Explicit Anti-Goals
+| In Scope | Explicitly Out of Scope (Anti-Goals) |
+|---|---|
+| Dual-track NEET-UG and IMAT workflows | Generic LMS for UCAT, MCAT, USMLE, or JEE |
+| Exam-year-versioned practice and mock assessments | Official NTA or MUR examination administration |
+| Server-authoritative scoring & adjudication | Guaranteed official ranks, percentiles, or university admission |
+| Evidence-based revision recommendations | Opaque AI predictions of admission chances |
+| AI-assisted draft question generation with faculty review | Automatic, unreviewed publishing of AI-generated content |
+| Signed URL access control & watermark deterrence | "Bank-grade DRM", screenshot-proof, or OS-level screen capture blocking |
+| Server-authoritative timed testing | Calculating final test scores in the React browser |
+
+---
+
+# 2. Target Users, Personas & Role Matrix
+
+## 2.1 User Personas
+### 1. The Aspirant (Primary Persona)
+- **Independent Aspirant:** Self-directed student preparing for NEET-UG, IMAT, or both. Needs personalized track selection, verified syllabus tracking, topic practice drills, timed full-length mocks, and transparent error analytics.
+- **Institute-Enrolled Aspirant:** Student enrolled in a coaching academy batch. Accesses batch-assigned resources, schedules institutional mock tests, participates in batch analytics, and receives tutor announcements.
+
+### 2. Faculty / Academic Tutor (Supporting Persona)
+- Subject matter experts (Biology, Chemistry, Physics, Mathematics, Logical Reasoning, Reading Skills).
+- Needs tools to author questions, review AI-generated question drafts, create assessment blueprints, schedule tests for assigned batches, and analyze cohort weakness radars.
+
+### 3. Coaching Institute Administrator (Tenant Persona)
+- Manages institutional tenancy, faculty assignments, student batch enrollments, academic years, course mappings, resource governance, and cohort audit logs.
+
+### 4. Platform Administrator & Academic Reviewer (Governance Persona)
+- Global operations: verifies annual NTA bulletins and MUR decrees, publishes immutable exam versions, oversees platform-wide audit trails, and monitors infrastructure health.
+
+## 2.2 Role-Based Access Control (RBAC) & Permission Matrix
+System roles are strictly decoupled from user-editable metadata and enforced via database tables `platform_roles` and `institution_memberships`.
+
+| Role Code | Tenancy Scope | Description | Primary Permissions |
+|---|---|---|---|
+| `PLATFORM_ADMIN` | Global | Platform Owner / Ops | Manage all institutions, blueprints, global configs, system audit logs |
+| `ACADEMIC_REVIEWER` | Global / Institute | Chief Academic Reviewer | Verify exam versions, publish syllabus trees, approve question adjudications |
+| `INSTITUTE_ADMIN` | Tenant | Coaching Institute Head | Manage batches, enroll students, assign faculty, view institute reports |
+| `FACULTY` | Tenant / Batch | Teacher / Question Setter | Upload resources, author/edit questions, review AI drafts, create tests |
+| `STUDENT` | User / Batch | Learner / Aspirant | Browse entitled syllabus, access resources, attempt tests, view own results |
+
+---
+
+# 3. Dual-Track Examination Specifications (Verified 2026 Baselines)
+
+```
+                                  MedPrep Core Engine
+                                          │
+                 ┌────────────────────────┴────────────────────────┐
+                 ▼                                                 ▼
+        NEET-UG 2026 Track                                 IMAT 2026/27 Track
+   (NTA Bulletin / NMC Syllabus)                      (MUR Ministerial Decree No. 1005)
+  ─────────────────────────────────                  ────────────────────────────────────
+  • 180 Compulsory Questions                         • 60 Compulsory Questions
+  • 4 Options (A, B, C, D)                           • 5 Options (A, B, C, D, E)
+  • Duration: 180 Minutes                            • Duration: 100 Minutes
+  • Marking: +4.0 Correct, -1.0 Wrong, 0 Blank       • Marking: +1.5 Correct, -0.4 Wrong, 0 Blank
+  • Maximum Score: 720 Raw Marks                     • Maximum Score: 90 Raw Marks
+  • Adjudication: Dropped Q (+4 all),                • Adjudication: Standard MUR Scoring,
+    Multiple-Correct (+4 attempted)                    5 Strict Discrete Sections
 ```
 
----
+## 3.1 Examination Versioning Principle
+Examination blueprints, question distributions, option counts, and marking schemes are **versioned data entities**, never hardcoded application constants. Before activating a new testing cycle, an authorized Academic Reviewer must verify official decree documents and publish a new version.
 
-# 2. Product Vision and Objectives
+## 3.2 NEET-UG 2026 Reference Baseline
+- **Governing Authority:** National Testing Agency (NTA) & National Medical Commission (NMC).
+- **Syllabus Standard:** NCERT Class 11 and Class 12 Core Sciences.
+- **Delivery Mode Simulation:** Digital simulation of official pen-and-paper pattern.
+- **Structure & Question Distribution:**
+  - Physics: 45 compulsory questions (180 marks)
+  - Chemistry: 45 compulsory questions (180 marks)
+  - Biology (Botany & Zoology): 90 compulsory questions (360 marks)
+  - **Total:** 180 questions | 180 minutes | 720 maximum raw marks.
+- **Scoring Rules:**
+  - Correct Answer: `+4.0`
+  - Incorrect Answer: `-1.0`
+  - Unanswered: `0.0`
+- **Official 2026 NTA Adjudication Rules:**
+  1. *Multiple Correct Options:* `+4.0` awarded only to candidates who selected any of the authorized correct options.
+  2. *All Options Correct:* `+4.0` awarded to all candidates who attempted the question.
+  3. *Dropped Question / Invalid Stem:* `+4.0` awarded to all candidates who appeared for the test, regardless of attempt.
 
-### 2.1 Product Vision
-To empower coaching institutes with an enterprise-grade digital campus that elevates NEET-UG preparation through rigorous assessment accuracy, leak-proof testing environments, structured curricular progression, and faculty-supervised AI workflows.
+## 3.3 IMAT 2026/27 Reference Baseline
+- **Governing Authority:** Italian Ministry of University and Research (MUR) — Decree No. 1005 (6 August 2026).
+- **Structure & Section Distribution:**
+  1. Reading Skills and Knowledge Acquired in Studies: 4 questions
+  2. Logical Reasoning and Problem Solving: 5 questions
+  3. Biology: 23 questions
+  4. Chemistry: 15 questions
+  5. Physics and Mathematics: 13 questions
+  - **Total:** 60 questions | 100 minutes | 90 maximum raw marks.
+- **Scoring Rules:**
+  - Correct Answer: `+1.5`
+  - Incorrect Answer: `-0.4`
+  - Unanswered: `0.0`
+- **Academic Safeguard:** Section 1 (*Reading Skills and Knowledge*) tests analytical reading, argument deconstruction, and cultural/historical literacy. It must **never** be generated or treated as an English grammar drill.
+- **Published Exam Convention Safeguard:** The official 2026 MUR paper published with Option A as the key for all questions. The platform treats this as an artifact of that specific past paper release; **AI generation and mock question authoring must strictly prevent Option A bias.**
 
-### 2.2 Strategic Objectives
-1. **Academic Rigor & Exact Exam Fidelity:** Replicate the exact NTA NEET-UG blueprint format (Physics, Chemistry, Botany, Zoology across Section A mandatory and Section B optional selection) with backend-authoritative evaluation (+4 for correct, -1 for incorrect, 0 for unattempted).
-2. **Zero Information Leakage:** Protect institutional intellectual property (notes, proprietary DPPs, test items) via tamper-evident watermarking, expiring pre-signed S3 URLs, and zero answer key disclosure in active student test payloads.
-3. **Cohort Boundary Enforcement:** Prevent cross-contamination between distinct admission batches (e.g., `Batch 1 (Dec)` repeaters vs `Batch 2 (May/June)` regular students) using database-enforced Row-Level Security (RLS).
-4. **Faculty Efficiency Amplification:** Reduce question authoring overhead by 70% using Groq-powered AI generation with mandatory human-in-the-loop faculty review before publishing into the immutable question bank.
-5. **Actionable Diagnostic Analytics:** Provide granular, Recharts-ready performance curves, subject mastery indexes, and difficulty-tier analyses to guide personalized remedial interventions.
-
----
-
-# 3. Problem Statement
-
-### 3.1 Industry Challenges in Medical Entrance Coaching
-- **Curricular Disorganization:** Medical aspirants face an overwhelming syllabus spanning 79+ NCERT chapters across Physics, Chemistry, Botany, and Zoology. Freeform cloud drives lead to outdated notes, missing Daily Practice Problems (DPPs), and unstructured learning.
-- **Flawed & Cheat-Prone Online Testing:** Client-side test engines compute marks in JavaScript or expose answer keys within browser network payloads, leading to widespread grade manipulation and zero exam validity.
-- **Section B Selection Complexities:** The NTA NEET-UG blueprint requires candidates to attempt exactly 10 out of 15 questions in Section B. Most third-party LMS platforms fail to enforce or correctly score this optional capping rule.
-- **Piracy & Resource Distribution:** Premium coaching notes, test series, and video lectures are routinely scraped, shared, or leaked due to public direct-storage URLs.
-- **Administrative Blind Spots:** Institute directors lack real-time visibility into faculty syllabus coverage, student engagement, or batch-level performance distributions.
-
----
-
-# 4. Target Audience and User Personas
-
-### 4.1 Target Audience
-- Single-institute medical coaching organizations (100 to 2,500 active students).
-- NEET-UG repeaters, 11th/12th standard medical aspirants.
-- Senior subject-matter faculty (Physics, Chemistry, Botany, Zoology).
-- Institute academic directors, batch coordinators, and IT administrators.
-
-### 4.2 User Personas
-
-#### Persona 1: Rohan Sharma (NEET Dropper / Aspirant)
-- **Role:** Student (`STUDENT`)
-- **Cohort:** Batch 1 (Dec Dropper Batch)
-- **Pain Points:** Loses track of NCERT topic completion; struggles with Section B question selection under time pressure; needs immediate diagnostic feedback on weak areas (e.g., Rotational Motion, Organic Reaction Mechanisms).
-- **Primary Goals:** Complete syllabus checklist; take timed 720-mark mock tests; access watermarked notes without platform friction; track percentile trends.
-
-#### Persona 2: Dr. Vandana Rao (Senior Zoology Faculty)
-- **Role:** Faculty (`FACULTY`)
-- **Responsibilities:** Authors weekly DPPs and monthly full-syllabus mock assessments; monitors student doubt queries; tracks batch curriculum progress.
-- **Pain Points:** Drafting 45 high-yield MCQs with distractor rationales takes 4+ hours per test; cannot easily spot which topics students collectively fail in mock drills.
-- **Primary Goals:** Leverage AI to draft NCERT-aligned MCQs; edit and approve questions into the permanent bank; review cohort mastery dashboards.
-
-#### Persona 3: Col. Rajesh Verma (Retd.) (Institute Director / Head of Ops)
-- **Role:** Institute Administrator (`ADMIN`)
-- **Responsibilities:** Student admissions, cohort transfers, document verification, staff onboarding, institutional integrity, audit governance.
-- **Pain Points:** Students changing batches mid-year create manual record chaos; unauthorized staff permission changes; dispute over mock test re-keying.
-- **Primary Goals:** Execute audited student batch transfers; verify Aadhaar and 12th marksheet documents; inspect tamper-evident audit logs; access real-time system telemetry.
+## 3.4 Deep Comparison Matrix
+| Architectural Dimension | NEET-UG Specification | IMAT Specification |
+|---|---|---|
+| **Question Count** | 180 questions | 60 questions |
+| **Options per Question** | Exactly 4 options (`A, B, C, D`) | Exactly 5 options (`A, B, C, D, E`) |
+| **Test Duration** | 180 minutes (3 hours) | 100 minutes (1 hour 40 mins) |
+| **Correct Marking** | `+4.0` marks | `+1.5` marks |
+| **Negative Marking** | `-1.0` marks | `-0.4` marks |
+| **Maximum Score** | 720.00 raw marks | 90.00 raw marks |
+| **Section Hierarchy** | Physics, Chemistry, Biology (Botany/Zoology) | Reading Knowledge, Logic, Biology, Chemistry, Physics/Math |
+| **Language Baseline** | English (launch) + 12 regional languages (future) | English exclusively |
+| **Adjudication Logic** | Dropped Q (+4 all), Multi-correct, All-correct | Standard single key; MUR decree adjustments |
 
 ---
 
-# 5. User Roles and Permissions
+# 4. Functional Requirements & Feature Workflows
 
-The system implements strict Role-Based Access Control (RBAC). Roles are stored in the server-managed database table `role_assignments` and evaluated against authenticated Supabase JWT identities.
-
-### 5.1 System Roles
-1. **`STUDENT`:** Medical coaching aspirants enrolled in one or more active cohorts. Restricted to personal academic progress, enrolled batch learning resources, active test attempts, personal scorecard analytics, personal document uploads, and student community posts.
-2. **`FACULTY`:** Subject-matter educators and teaching assistants. Granted read/write access to curriculum chapters, question bank authoring, AI draft generation/approval, assessment construction, cohort progress tracking, and discussion thread moderation.
-3. **`ADMIN`:** Coaching institute owners, academic deans, and system administrators. Full operational authority across user provisioning, role assignments, cohort creation, student transfers, answer key adjudication, document verification, audit log inspection, and system telemetry.
-
-### 5.2 Role-Based Access Matrix
-
-| Functional Module | Operations / Endpoints | Student | Faculty | Admin |
-| :--- | :--- | :---: | :---: | :---: |
-| **Auth & Profile** | `/auth/*`, `/users/me` (Profile Read/Update) | Yes | Yes | Yes |
-| **User Administration** | `/admin/users/*` (Invite, Suspend, Role Assignment) | No | No | **Yes** |
-| **Student Dashboard** | `/students/me/*` (Dashboard, Syllabus Checklist) | **Yes** | No | View As |
-| **Faculty Dashboard** | `/faculty/me/*`, `/faculty/cohorts/*` | No | **Yes** | Yes |
-| **Exams & Blueprints** | `/exams` (Read Catalog) | Yes | Yes | Yes |
-| **Blueprint Authoring** | `/admin/blueprints/*` (Create, Version, Scoring Rules) | No | No | **Yes** |
-| **Curriculum Tree** | `/curriculum` (Hierarchy & Study Hubs) | Enrolled | Yes | Yes |
-| **Curriculum Mutation** | `/admin/curriculum/*` (Add Chapters, Topics) | No | No | **Yes** |
-| **Cohorts Management** | `/cohorts` (Read Active Batches) | Yes | Yes | Yes |
-| **Cohort Administration** | `/admin/cohorts`, `/admin/enrollments/*` | No | No | **Yes** |
-| **Learning Resources** | `/resources` (View/Download via Signed URLs) | Enrolled | Yes | Yes |
-| **Resource Management**| `POST/DELETE /resources/*` | No | Author | **Yes** |
-| **Question Bank** | `/questions` (Browse, Author, Revise) | No | **Yes** | **Yes** |
-| **Protected Answer Keys**| `GET /questions/{id}/revisions/{revId}/answer-key` | **Forbidden** | **Yes** | **Yes** |
-| **Answer Key Adjudication**| `PUT /admin/questions/{id}/revisions/{revId}/answer-key`| **Forbidden** | No | **Yes** |
-| **Assessment Delivery** | `POST /assessments/{versionId}/attempts/start` | **Yes** | Test Run | Test Run |
-| **Active Attempt Runner**| `GET /attempts/{attemptId}/questions` (No Answer Keys) | **Yes** | No | No |
-| **Server-Side Scoring** | `POST /attempts/{attemptId}/submit` | **Yes** | No | No |
-| **Score Adjustments** | `POST /admin/attempts/{attemptId}/score-adjustments` | No | No | **Yes** |
-| **Analytics & Reports** | `/analytics/students/me` vs `/analytics/cohorts/*` | Self Only | Assigned | All |
-| **AI Question Engine** | `/ai/questions/generate`, `/ai/questions/drafts/*/publish`| No | **Yes** | **Yes** |
-| **AI Academic Chatbot** | `/ai/assistant/chat` (Admissions, Rules, Syllabus) | **Yes** | Yes | Yes |
-| **Student Documents** | `/documents/me` (Upload, View Status) | **Yes** | No | View All |
-| **Document Verification**| `POST /admin/documents/{id}/verify` (Approve/Reject) | No | No | **Yes** |
-| **Announcements** | `GET /announcements` vs `POST /admin/announcements` | Read Only | Read Only | **Manage** |
-| **Academic Calendar** | `GET /calendar/events` vs `POST /admin/calendar/events` | Read Only | Manage | **Manage** |
-| **Community Threads** | `/community/threads/*` (Post Doubt, Reply, Vote) | Enrolled | Moderate | **Admin** |
-| **Audit Logs & Telemetry**| `/admin/audit-logs/*`, `/admin/telemetry` | No | No | **Yes** |
-
----
-
-# 6. Business Requirements
-
-| ID | Business Requirement Description | Priority | Compliance Metric |
-| :--- | :--- | :---: | :--- |
-| **BR-001** | **Single Coaching Institute Model:** The platform must operate under a dedicated institute operational model for NEET-UG preparation without multi-tenant domain bleed. | Critical | Institute-isolated database schemas and configuration parameters. |
-| **BR-002** | **Full NEET-UG 2026 Blueprint Adherence:** The platform must execute assessments matching the NTA structure: 4 subjects (Physics, Chemistry, Botany, Zoology), 200 total questions, Section A (35 questions) and Section B (15 questions with 10 max attempts). | Critical | Zero scoring anomalies across 5,000 simulated test attempts. |
-| **BR-003** | **Institutional Intellectual Property Protection:** Notes, DPPs, and proprietary question banks must be shielded from unauthorized download and external hotlinking. | Critical | Zero public S3 URLs; 100% distribution via 15-minute expiring signed URLs with student watermarking. |
-| **BR-004** | **Backend-Authoritative Assessment Integrity:** All marks calculation (+4/-1/0), section selection capping, and submission timer checks must occur inside the server/database. | Critical | Zero answer key fields exposed in student API payloads; tamper attempts result in HTTP 403/410. |
-| **BR-005** | **Strict Cohort Boundary Enforcement:** Students enrolled in Batch 1 must not access Batch 2 live assessments, study materials, or internal announcements unless cross-enrolled. | Critical | Database RLS policy regression tests pass with 100% coverage. |
-| **BR-006** | **Human-in-the-Loop AI Quality Control:** No AI-generated question shall appear in student assessments without explicit review, verification, and 1-click publishing by a qualified faculty member. | High | System prevents direct student visibility of records in `ai_question_drafts`. |
-| **BR-007** | **Tamper-Evident Operational Auditability:** All administrative state mutations (cohort transfers, manual score adjustments, role changes, answer key revisions) must generate immutable audit records. | High | Every write event to `audit_logs` includes actor ID, client IP, action name, before/after diffs, and timestamp. |
-| **BR-008** | **Document Verification for Enrollment Integrity:** Enrolled students must complete mandatory identity verification (Aadhaar/10th/12th certificate) verified by an administrator before official mock test ranking eligibility. | Medium | Verification workflow tracked via `document_verification_logs`. |
-| **BR-009** | **Continuous Offline-Tolerant Autosave:** During high-stakes assessments, student responses must be continuously persisted with idempotency tokens to prevent data loss across spotty connections. | Critical | 100% answer retention across transient network drops up to 10 minutes. |
-| **BR-010** | **Academic Calendar Synchronization:** Test schedules, lecture milestones, and doubt sessions must be consolidated on a central academic calendar visible to students and faculty. | Medium | 100% event synchronization with calendar view endpoints. |
-
----
-
-# 7. Functional Requirements
-
-### 7.1 Module 01: System Health & Diagnostics
-- **FR-001:** The system shall provide an unauthenticated diagnostic endpoint (`GET /health`) returning service uptime, memory telemetry, and live PostgreSQL ping latency.
-- **FR-002:** The system shall return HTTP 503 Service Unavailable if database connection saturation exceeds 95% or if latency exceeds 2,500ms.
-
-### 7.2 Module 02: Authentication & Session Governance
-- **FR-003:** The system shall authenticate user credentials against Supabase Auth and issue a cryptographically signed JWT Bearer token containing user UUID, email, and institute identifier.
-- **FR-004:** The system shall verify access tokens on all protected routes and support token refreshing via `POST /auth/refresh`.
-- **FR-005:** The system shall maintain active session records in the `user_sessions` table and support explicit session invalidation via `POST /auth/logout`.
-
-### 7.3 Module 03: User Administration & Profile Management
-- **FR-006:** The system shall allow authenticated users to view and update their personal profile (phone number, avatar URL, bio) via `GET/PATCH /users/me`.
-- **FR-007:** The system shall allow administrators to issue user invitations via `POST /admin/users/invite` with pre-assigned roles and cohort tags.
-- **FR-008:** The system shall permit administrators to suspend, activate, or archive user accounts via `PATCH /admin/users/{id}/status`.
-- **FR-009:** The system shall permit administrators to assign or revoke user roles via `POST /admin/users/{id}/roles`, enforcing server-side logging in `audit_logs`.
-
-### 7.4 Module 04: Student Academic Workspace
-- **FR-010:** The system shall display a student dashboard (`GET /students/me/dashboard`) showing current cohort enrollment, upcoming assessment deadlines, recent mock test percentiles, and syllabus completion progress.
-- **FR-011:** The system shall provide a 7-subject syllabus completion tracker (`GET /students/me/progress`) detailing total chapters, completed topics, and subject mastery percentage.
-- **FR-012:** The system shall allow students to toggle topic completion status (`POST /students/me/progress/topics/{topicId}`), updating `student_topic_progress` with optimistic UI reflection.
-
-### 7.5 Module 05: Faculty Academic Workspace
-- **FR-013:** The system shall provide a faculty dashboard (`GET /faculty/me/dashboard`) listing assigned cohorts, pending AI question drafts awaiting review, upcoming scheduled assessments, and student doubt counts.
-- **FR-014:** The system shall allow faculty to view assigned cohorts via `GET /faculty/me/cohorts` and inspect a cohort progress matrix via `GET /faculty/cohorts/{cohortId}/progress`.
-
-### 7.6 Module 06: Exam Catalog & Blueprint Engine
-- **FR-015:** The system shall maintain an exam catalog (`GET /exams`) supporting NEET-UG and future competitive entrance exams.
-- **FR-016:** The system shall store versioned exam blueprints (`exam_blueprints`) defining duration (200 mins), total marks (720), and subjects.
-- **FR-017:** The system shall allow administrators to configure section rules (`exam_sections`) and scoring profiles (`scoring_profiles`) specifying `marks_per_correct` (+4.00), `marks_per_incorrect` (-1.00), and `marks_unattempted` (0.00).
-
-### 7.7 Module 07: 3-Tier Curriculum & Chapter Study Hubs
-- **FR-018:** The system shall organize academic curriculum hierarchically: `curriculum_subjects` (Physics, Chemistry, Botany, Zoology) $\rightarrow$ `curriculum_chapters` $\rightarrow$ `curriculum_topics`.
-- **FR-019:** The system shall provide a unified Chapter Study Hub (`GET /curriculum/chapters/{chapterId}/study-hub`) aggregating notes, DPPs, PYQs, and lecture video links.
-- **FR-020:** The system shall enable administrators to create chapters and topics with ordering indexes via `POST /admin/curriculum/chapters` and `POST /admin/curriculum/topics`.
-
-### 7.8 Module 08: Cohort & Batch Management
-- **FR-021:** The system shall manage distinct student batches (`cohorts`), specifically isolating `Batch 1 (Dec)` and `Batch 2 (May/June)`.
-- **FR-022:** The system shall enforce cohort capacity constraints (`max_capacity`) and track active student counts in real time.
-- **FR-023:** The system shall allow administrators to create cohorts via `POST /admin/cohorts` specifying academic year, start date, and target exam date.
-
-### 7.9 Module 09: Student Cohort Enrollments & Transfers
-- **FR-024:** The system shall allow administrators to enroll students into active cohorts via `POST /admin/enrollments`.
-- **FR-025:** The system shall support audited cohort transfers via `POST /admin/enrollments/{id}/transfer`, archiving prior enrollment, re-mapping historical attempt analytics, and writing an audit event.
-
-### 7.10 Module 10: Learning Resources & Digital Rights Management (DRM)
-- **FR-026:** The system shall catalogue learning resources (`resources`) categorized as `NOTES`, `DPP`, `PYQ`, `NCERT_EXTRACT`, or `VIDEO_LINK`.
-- **FR-027:** The system shall authorize presigned multipart file uploads to private S3 buckets via `POST /resources/{id}/files`.
-- **FR-028:** The system shall generate 15-minute expiring presigned download URLs (`POST /resources/{id}/signed-url`) that inject dynamic watermarking (student full name, roll number, IP, and timestamp).
-- **FR-029:** The system shall allow administrators to soft-delete obsolete learning resources via `DELETE /resources/{id}`.
-
-### 7.11 Module 11: Question Bank & Versioned Revisions
-- **FR-030:** The system shall support rich-text question authoring including LaTeX math formulas, chemical notation, and diagram image URLs.
-- **FR-031:** The system shall maintain immutable question revision histories (`question_revisions`), ensuring that historical assessments remain locked to the revision active at test time.
-- **FR-032:** The system shall enforce question formatting: exactly 4 options (`A`, `B`, `C`, `D`) for `MCQ_SINGLE` with exactly one designated correct option.
-
-### 7.12 Module 12: Protected Answer Keys & Adjudication
-- **FR-033:** The system shall strictly restrict answer key retrieval (`GET /questions/{id}/revisions/{revId}/answer-key`) to authorized `FACULTY` and `ADMIN` roles.
-- **FR-034:** The system shall enable administrators to adjudicate student challenges and update answer keys via `PUT /admin/questions/{id}/revisions/{revId}/answer-key`, automatically triggering background re-scoring of affected attempts.
-
-### 7.13 Module 13: Assessment Definition & Version Snapshotting
-- **FR-035:** The system shall allow faculty to construct assessments (`assessments`) categorized as `CHAPTER_DRILL`, `PART_SYLLABUS`, or `FULL_MOCK`.
-- **FR-036:** The system shall snapshot published assessments into an immutable version record (`assessment_versions`) via `POST /assessments/{id}/publish`, locking question order, options, and section rules against future edits.
-
-### 7.14 Module 14: Secure Assessment Runner & Server Scoring
-- **FR-037:** The system shall initialize timed student attempts via `POST /assessments/{versionId}/attempts/start`, generating a server-enforced deadline (`expires_at = starts_at + duration_seconds`).
-- **FR-038:** The system shall serve randomized assessment questions (`GET /attempts/{attemptId}/questions`) with zero answer key or explanation leakage.
-- **FR-039:** The system shall provide an idempotent autosave endpoint (`PUT /attempts/{attemptId}/answers/{assessmentQuestionId}`) supporting question status tags: `ANSWERED`, `MARKED_FOR_REVIEW`, `ANSWERED_AND_MARKED_FOR_REVIEW`.
-- **FR-040:** The system shall compute final scores on the server upon `POST /attempts/{attemptId}/submit`, enforcing Section B 10-question capping rules, calculating raw marks (+4/-1/0), and evaluating subject percentiles.
-- **FR-041:** The system shall expose detailed student scorecards (`GET /attempts/{attemptId}/results`) only after test window closure.
-- **FR-042:** The system shall allow administrators to record manual mark adjustments with mandatory justification via `POST /admin/attempts/{attemptId}/score-adjustments`.
-
-### 7.15 Module 15: Academic Analytics & Mastery Engine
-- **FR-043:** The system shall generate student diagnostic analytics (`GET /analytics/students/me`) detailing accuracy rates, time spent per question, subject mastery, and historical score curves.
-- **FR-044:** The system shall compute cohort-wide summary analytics (`GET /analytics/cohorts/{cohortId}/summary`) displaying score distributions, median percentiles, and top 10% benchmark comparisons.
-
-### 7.16 Module 16: AI Question Generation & 1-Click Publishing
-- **FR-045:** The system shall accept natural language generation prompts via `POST /ai/questions/generate` specifying subject, chapter, topic, target difficulty (`EASY`, `MEDIUM`, `HARD`), and question count (1 to 20).
-- **FR-046:** The system shall execute AI generation through Groq LLM with automatic cascading fallback (`openai/gpt-oss-120b` $\rightarrow$ `openai/gpt-oss-20b` $\rightarrow$ `qwen/qwen3.8-27b`), returning structured JSON with LaTeX equations.
-- **FR-047:** The system shall allow faculty to review, modify, and publish drafts into the question bank with a single action via `POST /ai/questions/drafts/{draftId}/publish`.
-
-### 7.17 Module 17: Context-Aware AI Academic Assistant
-- **FR-048:** The system shall provide an interactive AI chat interface (`POST /ai/assistant/chat`) answering student queries regarding institutional policies, test schedules, syllabus boundaries, and admissions.
-- **FR-049:** The system shall enforce guardrails preventing the AI assistant from solving active assessment questions or providing medical diagnoses.
-
-### 7.18 Module 18: Student Document Verification
-- **FR-050:** The system shall allow students to upload mandatory admission documents (`POST /documents/me/upload`) including Aadhaar ID, 10th marksheet, 12th marksheet, and category certificates.
-- **FR-051:** The system shall enable administrators to verify or reject uploaded documents with rejection reasons via `POST /admin/documents/{id}/verify`.
-
-### 7.19 Module 19: Institutional Announcements & Bulletins
-- **FR-052:** The system shall provide an announcement board (`GET /announcements`) supporting priority banners (`NORMAL`, `HIGH`, `URGENT`) and cohort-level gating.
-- **FR-053:** The system shall allow administrators to publish broadcast announcements via `POST /admin/announcements`.
-
-### 7.20 Module 20: Academic Calendar & Scheduling
-- **FR-054:** The system shall display academic deadlines, mock test dates, and live doubt clearing sessions (`GET /calendar/events`).
-- **FR-055:** The system shall allow faculty and administrators to schedule events via `POST /admin/calendar/events`.
-
-### 7.21 Module 21: Moderated Academic Community
-- **FR-056:** The system shall provide a subject-scoped discussion forum (`GET /community/threads`) for student academic doubts.
-- **FR-057:** The system shall allow students and faculty to post threads and nested replies via `POST /community/threads` and `POST /community/threads/{threadId}/replies`.
-- **FR-058:** The system shall allow faculty and administrators to moderate and delete inappropriate threads via `DELETE /admin/community/threads/{id}`.
-
-### 7.22 Module 22: Tamper-Evident Audit Logging
-- **FR-059:** The system shall capture all critical administrative mutations in the `audit_logs` table (`GET /admin/audit-logs`).
-- **FR-060:** The system shall support streaming exports of audit logs in CSV and JSON formats via `GET /admin/audit-logs/export`.
-
-### 7.23 Module 23: System Telemetry & Operational Health
-- **FR-061:** The system shall collect real-time telemetry metrics (`GET /admin/telemetry`) including active student sessions, concurrent running tests, database pool latency, and storage consumption.
-- **FR-062:** The system shall provide administrators with a temporary, audited "View As" student support session (`POST /admin/support-sessions`) expiring within 30 minutes.
-
-### 7.24 Module 24: Operational Resiliency & Edge Cases
-- **FR-063:** The system shall automatically reject duplicate answer autosaves that match the last stored `selected_option_id` to conserve database writes.
-- **FR-064:** The system shall support question filtering by both NCERT Class (11 vs 12) and cognitive difficulty level.
-- **FR-065:** The system shall ensure that deleted resources do not leave orphan physical files in S3 by scheduling asynchronous bucket cleanup jobs.
-- **FR-066:** The system shall support password resets and email verification through Supabase Auth webhooks.
-- **FR-067:** The system shall maintain an immutable log of student topic completions with timestamps to verify syllabus coverage velocity.
-- **FR-068:** The system shall allow faculty to clone published assessment blueprints to rapidly generate parallel mock variants.
-- **FR-069:** The system shall enforce a maximum file upload limit of 25MB for learning notes and 5MB for student verification documents.
-- **FR-070:** The system shall validate image uploads to ensure only standard web formats (`JPEG`, `PNG`, `WebP`) are stored for question diagrams.
-- **FR-071:** The system shall enforce unique enrollment constraints preventing a student from holding two simultaneous `ACTIVE` enrollments in the same cohort.
-- **FR-072:** The system shall reject assessment start requests if the current server time is outside the scheduled test delivery window.
-- **FR-073:** The system shall log all failed authorization attempts with client IP and target URI to detect credential stuffing.
-- **FR-074:** The system shall ensure that community thread upvotes are idempotent per user UUID.
-- **FR-075:** The system shall provide localized date-time rendering across all UI screens formatted in Indian Standard Time (IST).
-
----
-
-# 8. Detailed Feature Specifications
-
-### 8.1 NEET-UG 2026 Examination Delivery Engine
-
-The assessment engine must faithfully replicate the National Testing Agency (NTA) NEET-UG testing pattern.
-
-```mermaid
-classDiagram
-    class ExamBlueprint {
-        +UUID id
-        +String exam_code
-        +Int total_duration_minutes
-        +Decimal total_marks
-        +Boolean is_active
-    }
-    class ExamSection {
-        +UUID id
-        +String section_name
-        +String subject
-        +Int total_questions
-        +Int max_selectable_questions
-        +Boolean is_optional_selection
-    }
-    class ScoringProfile {
-        +Decimal marks_per_correct
-        +Decimal marks_per_incorrect
-        +Decimal marks_unattempted
-    }
-    ExamBlueprint "1" *-- "4..8" ExamSection : contains
-    ExamSection "1" *-- "1" ScoringProfile : applies
-```
-
-#### NEET-UG Section Structure Matrix
-
-| Subject | Section Name | Total Questions | Mandatory / Choice | Questions to Attempt | Marks per Q | Negative Mark | Section Total |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Physics** | Section A | 35 | Mandatory | 35 | +4 | -1 | 140 |
-| **Physics** | Section B | 15 | Optional Choice | **10** (out of 15) | +4 | -1 | 40 |
-| **Chemistry** | Section A | 35 | Mandatory | 35 | +4 | -1 | 140 |
-| **Chemistry** | Section B | 15 | Optional Choice | **10** (out of 15) | +4 | -1 | 40 |
-| **Botany** | Section A | 35 | Mandatory | 35 | +4 | -1 | 140 |
-| **Botany** | Section B | 15 | Optional Choice | **10** (out of 15) | +4 | -1 | 40 |
-| **Zoology** | Section A | 35 | Mandatory | 35 | +4 | -1 | 140 |
-| **Zoology** | Section B | 15 | Optional Choice | **10** (out of 15) | +4 | -1 | 40 |
-| **TOTALS** | **8 Sections** | **200 Qs** | — | **180 Questions** | — | — | **720 Marks** |
-
-#### Section B Capping Evaluation Algorithm
-When a candidate submits answers for Section B:
-1. Count total answered questions $N_{ans}$ in Section B for that subject.
-2. If $N_{ans} \le 10$, evaluate all answered questions.
-3. If $N_{ans} > 10$, the server sorts the answered questions by `display_order` ascending and evaluates **strictly the first 10 answered questions**.
-4. All subsequent answered questions (11th through 15th) are marked `UNANSWERED_OPTIONAL` and awarded `0.00` marks, matching official NTA adjudication standards.
-
----
-
-# 9. User Stories with Acceptance Criteria
-
-### US-01: Timed Assessment Runner
-**As a** Student enrolled in Batch 1  
-**I want to** start and execute a 200-minute timed NEET mock test with auto-saving answers  
-**So that** I can practice under real exam conditions without risk of losing my responses during network drops.
-
-#### Acceptance Criteria (Gherkin format):
-```gherkin
-Scenario: Starting a valid mock test attempt
-  Given the student is authenticated with an active enrollment in "Batch 1 (Dec)"
-  And an assessment version "NEET Mock #4" is in "PUBLISHED" state
-  When the student sends POST /assessments/{versionId}/attempts/start
-  Then the response code is 201 Created
-  And the response body contains an attemptId, server "startsAt", and "expiresAt" exactly 200 minutes later
-  And no correct answers or rationales exist in the returned payload
-
-Scenario: Submitting an answer within the active window
-  Given the student has an "IN_PROGRESS" attempt
-  When the student selects option "B" for question #14 and sends PUT /attempts/{attemptId}/answers/{qId}
-  Then the response code is 200 OK
-  And the attempt_answers record is upserted with selected_option_id and status "ANSWERED"
-  And the response time is less than 150 milliseconds
-
-Scenario: Attempting to save after deadline expiration
-  Given the attempt's "expiresAt" timestamp has elapsed by 15 seconds
-  When the student sends PUT /attempts/{attemptId}/answers/{qId}
-  Then the response code is 410 Gone
-  And the error code returned is "ATTEMPT_DEADLINE_EXPIRED"
-  And the database automatically transitions attempt status to "SUBMITTED"
-```
-
-### US-02: AI Question Drafting with Faculty Review
-**As a** Senior Physics Faculty member  
-**I want to** generate 5 conceptual MCQs on "Electromagnetic Induction" using Groq AI and edit them before publishing  
-**So that** I can create high-quality weekly DPPs in minutes while ensuring 100% NCERT accuracy.
-
-#### Acceptance Criteria:
-```gherkin
-Scenario: Generating AI questions with automatic model fallback
-  Given the faculty member is authenticated with role "FACULTY"
-  When the faculty sends POST /ai/questions/generate with topic "Faraday's Law" and count 5
-  Then the system invokes Groq LLM using primary model "openai/gpt-oss-120b"
-  And if the primary model returns rate-limit or 5xx, the system seamlessly falls back to "openai/gpt-oss-20b"
-  And the response returns 5 drafts stored in ai_question_drafts with status "PENDING_REVIEW"
-  And every draft contains exactly 4 options, a designated correct option, and LaTeX-formatted formulas
-
-Scenario: Approving and publishing an AI draft
-  Given a draft with status "PENDING_REVIEW" exists in ai_question_drafts
-  When the faculty reviews the question text, verifies the key, and sends POST /ai/questions/drafts/{draftId}/publish
-  Then a new record is created in questions and question_revisions
-  And the draft status updates to "PUBLISHED"
-  And the question immediately becomes selectable for assessments
-```
-
-### US-03: Audited Cohort Transfer
-**As an** Institute Administrator  
-**I want to** transfer a student from Batch 1 to Batch 2 with an explicit audit note  
-**So that** their curriculum access updates immediately while maintaining a clean compliance trail.
-
-#### Acceptance Criteria:
-```gherkin
-Scenario: Executing a student transfer
-  Given an active student enrollment in "Batch 1 (Dec)"
-  When the admin sends POST /admin/enrollments/{id}/transfer with targetCohortId "Batch 2 (May/June)" and reason "Parent relocation request"
-  Then the original enrollment status is set to "TRANSFERRED"
-  And a new enrollment record is created for Batch 2 with status "ACTIVE"
-  And a row is inserted into audit_logs capturing the admin ID, old cohort, new cohort, and transfer reason
-  And the student's subsequent API calls to /curriculum reflect Batch 2 materials within 100ms
-```
-
-### US-04: Chapter Study Hub Material Access
-**As a** Student enrolled in Batch 2  
-**I want to** open the Chapter Study Hub for "Chemical Bonding" and download watermarked PDF notes  
-**So that** I can review high-yield summaries safely and securely on my tablet.
-
-#### Acceptance Criteria:
-```gherkin
-Scenario: Accessing authorized chapter notes
-  Given the student is authenticated and enrolled in Batch 2
-  When the student requests POST /resources/{id}/signed-url for resource "NCERT Chemical Bonding Summary.pdf"
-  Then the response code is 200 OK
-  And the payload contains a signedUrl with an expiry time of exactly 900 seconds
-  And the PDF download stream renders a diagonal watermark displaying the student's name, roll number, and IP
-```
-
-### US-05: Answer Key Challenge Adjudication
-**As an** Institute Academic Dean (Admin)  
-**I want to** correct an erroneous answer key on a published question revision from Option C to Option B  
-**So that** student marks across 250 completed mock test attempts are automatically re-calculated.
-
-#### Acceptance Criteria:
-```gherkin
-Scenario: Correcting an official answer key
-  Given an assessment version has completed attempts with question #42 keyed as Option C
-  When the admin sends PUT /admin/questions/{id}/revisions/{revId}/answer-key with newCorrectOption "B" and justification "NTA Official Corrigendum 2026"
-  Then the response code is 200 OK
-  And an entry is logged in audit_logs
-  And a background worker re-scores all affected attempts, updating student scores and percentiles within 60 seconds
-```
-
-### US-06: Mandatory Document Verification
-**As an** Institute Admissions Administrator  
-**I want to** review student uploaded 10th and 12th marksheets and mark them verified  
-**So that** the student is cleared for official institute rank certificates and national test registration.
-
-#### Acceptance Criteria:
-```gherkin
-Scenario: Approving a valid student document
-  Given a student uploaded an Aadhaar card image in student_documents with status "PENDING"
-  When the admin reviews the image via presigned URL and sends POST /admin/documents/{id}/verify with status "VERIFIED"
-  Then the document record status transitions to "VERIFIED"
-  And an entry is added to document_verification_logs with verified_by set to the admin's UUID
-  And the student dashboard immediately reflects the verified badge
-```
-
----
-
-# 10. End-to-End User Workflows
-
-### 10.1 Assessment Lifecycle: Start, Autosave, Submit & Score
+## 4.1 Identity, Authentication & Track Selection
+- **FR-AUTH-01:** Integration with Supabase Auth for identity management. The platform extracts the authenticated `sub` (profile ID) via Bearer JWT.
+- **FR-AUTH-02:** User-editable metadata (`raw_user_meta_data`) must never be used for authorization. User roles are resolved strictly from `platform_roles` and `institution_memberships`.
+- **FR-TRACK-01:** Aspirants select their preparation track: `NEET_UG`, `IMAT`, or `BOTH`.
+- **FR-TRACK-02:** Selecting both tracks creates two distinct `learner_exam_access` records. The application shell provides a track toggle without merging data or progress.
+- **FR-TRACK-03:** Independent learners can access platform-level content; institute-enrolled learners automatically inherit access to institute batches upon accepting an invitation.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Student
-    participant Client as React Web App
-    participant API as Node/Express API
-    participant DB as PostgreSQL (Supabase)
-    
-    Student->>Client: Click "Start NEET Full Mock 01"
-    Client->>API: POST /assessments/{versionId}/attempts/start
-    API->>DB: Check active attempt & verify cohort enrollment
-    alt Active Attempt Exists
-        DB-->>API: Conflict: Active attempt running
-        API-->>Client: 409 Conflict (Return existing attemptId)
-    else New Attempt
-        API->>DB: INSERT into assessment_attempts (status='IN_PROGRESS', expires_at=NOW() + 200m)
-        DB-->>API: Created attemptId
-        API-->>Client: 201 Created (attemptId, duration, expires_at)
-    end
-    
-    Student->>Client: Open test runner view
-    Client->>API: GET /attempts/{attemptId}/questions
-    API->>DB: Fetch questions for version (JOIN question_revisions)
-    Note over API,DB: CRITICAL: Exclude correct_option_id, answer_key, and rationale
-    DB-->>API: Question text, LaTeX, options A/B/C/D
-    API-->>Client: 200 OK (Questions payload WITHOUT keys)
-    
-    loop Every Answer Selection
-        Student->>Client: Select Option B on Q12
-        Client->>API: PUT /attempts/{attemptId}/answers/q12 (selectedOptionId, status)
-        API->>DB: Check NOW() < expires_at
-        alt Within Deadline
-            API->>DB: UPSERT attempt_answers
-            DB-->>API: Success
-            API-->>Client: 200 OK (Saved)
-        else Deadline Expired
-            API->>DB: UPDATE assessment_attempts SET status='SUBMITTED'
-            API-->>Client: 410 Gone (ATTEMPT_DEADLINE_EXPIRED)
-        end
-    end
-    
-    Student->>Client: Click "Final Submit Test"
-    Client->>API: POST /attempts/{attemptId}/submit
-    API->>DB: Execute fn_score_attempt(attemptId)
-    Note over DB: Compute Section A mandatory (+4/-1/0)<br/>Apply Section B 10-Q cap<br/>Calculate total marks (out of 720)
-    DB-->>API: Marks breakdown, rank, percentile
-    API-->>Client: 200 OK (Final Scorecard Summary)
+    actor Learner as Aspirant / Student
+    participant API as Express API (apps/api)
+    participant Auth as Supabase Auth
+    participant DB as PostgreSQL (db.sql)
+
+    Learner->>Auth: Authenticate (Email/Password or OAuth)
+    Auth-->>Learner: Return Session JWT
+    Learner->>API: GET /api/v1/me (Bearer JWT)
+    API->>DB: Query profiles + institution_memberships
+    DB-->>API: Return Identity Context
+    API-->>Learner: Profile, Active Roles, Active Institutions
+
+    Learner->>API: POST /api/v1/me/exam-access (examCode: 'NEET_UG', examYear: 2026)
+    API->>DB: INSERT INTO learner_exam_access
+    DB-->>API: Record Created
+    API-->>Learner: Exam Track Activated (NEET_UG Dashboard Ready)
 ```
 
-### 10.2 Faculty AI Question Authoring & Publishing Workflow
+## 4.2 Multi-Tenant Institutional Workspaces
+- **FR-TEN-01:** Coaching institutes operate in isolated workspaces represented by `institutions`.
+- **FR-TEN-02:** Institute Admins invite faculty and students via `invitations` with cryptographic tokens and defined expiration.
+- **FR-TEN-03:** Cohort hierarchy: `institutions` -> `academic_years` -> `courses` -> `batches`.
+- **FR-TEN-04:** Students enroll into batches via `student_batch_enrollments`; faculty assign to batches via `faculty_batch_assignments`.
 
-```mermaid
-flowchart TD
-    A["Faculty selects Subject, Chapter & Topic"] --> B["Specify Difficulty: Easy / Medium / Hard"]
-    B --> C["Click 'Generate 5 MCQs via Groq'"]
-    C --> D{"Primary Model: gpt-oss-120b"}
-    D -- "Success" --> E["Parse JSON & LaTeX Output"]
-    D -- "Rate-Limit / 5xx" --> F{"Fallback Model: gpt-oss-20b"}
-    F -- "Success" --> E
-    F -- "Failure" --> G{"Tertiary Model: qwen3.8-27b"}
-    G -- "Success" --> E
-    G -- "Failure" --> H["Return HTTP 502 with Retry Advice"]
-    
-    E --> I["Store in ai_question_drafts (status: PENDING_REVIEW)"]
-    I --> J["Faculty Review Studio: Inspect LaTeX & Distractors"]
-    J --> K{"Faculty Action"}
-    K -- "Edit / Refine" --> L["Update Draft Text / Key"]
-    L --> J
-    K -- "Reject" --> M["Archive Draft"]
-    K -- "Approve" --> N["Click '1-Click Publish'"]
-    N --> O["Insert into questions & question_revisions"]
-    O --> P["Draft Status: PUBLISHED (Available for Mocks)"]
-```
+## 4.3 Curriculum & Syllabus Navigation
+- **FR-CURR-01:** Curriculums follow an explicit five-level hierarchy: `SUBJECT` -> `SECTION` -> `CHAPTER` -> `TOPIC` -> `SKILL` via `syllabus_nodes`.
+- **FR-CURR-02:** Hierarchical queries are optimized using the `syllabus_node_closures` transitive closure table, maintained automatically via database trigger `trg_maintain_syllabus_closures`.
+- **FR-CURR-03:** Topic progression (`student_topic_progress`) tracks status (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), revision cycles, and study timestamps.
+- **FR-CURR-04:** Study planning: faculty and independent learners create `study_plans`, `study_plan_items`, and log `study_sessions`.
 
-### 10.3 Student Document Verification State Diagram
+## 4.4 Learning Resources & Private Object Delivery
+- **FR-RES-01:** Resources support notes, PDFs, book references, DPPs, PYQs, videos, diagrams, and external links via `resources`.
+- **FR-RES-02:** Files are stored in private Supabase Storage buckets (`resources`). Public direct bucket access is denied.
+- **FR-RES-03:** The API authorizes resource access based on batch enrollment or personal entitlement and generates short-lived signed URLs (maximum validity: 60 seconds).
+- **FR-RES-04:** Content lifecycle governance follows strict state transitions: `DRAFT` -> `PENDING_REVIEW` -> `PUBLISHED` -> `ARCHIVED`/`REJECTED`.
+
+## 4.5 Question Bank Governance & Immutable Revisions
+- **FR-QB-01:** Logical questions (`questions`) are separated from immutable content revisions (`question_versions`).
+- **FR-QB-02:** Once a question version is referenced in an assessment or attempt, it is immutable. Corrections require creating version `N+1`.
+- **FR-QB-03:** NEET-UG questions require exactly 4 options (`A, B, C, D`); IMAT questions require exactly 5 options (`A, B, C, D, E`).
+- **FR-QB-04:** Answer keys (`question_answer_keys`) are stored in a dedicated confidential table protected by RLS and server-side isolation. **Answer keys are never transmitted to students during active testing.**
+- **FR-QB-05:** Adjudications (`question_adjudications`) store official post-exam challenge resolutions (`STANDARD`, `MULTIPLE_CORRECT`, `ALL_OPTIONS_CORRECT`, `DROPPED_FULL_CREDIT`, `AMBIGUOUS_STEM`).
+
+## 4.6 Assessment Authoring & Blueprint Versioning
+- **FR-ASM-01:** Assessments support `DPP`, `CHAPTER_TEST`, `SUBJECT_TEST`, `MOCK_TEST`, `REVISION_TEST`, and `PYQ_PRACTICE`.
+- **FR-ASM-02:** Publishing an assessment creates an immutable `assessment_versions` record containing the exact configuration snapshot: duration, section distribution, question versions, option ordering seed, and scoring policy version.
+- **FR-ASM-03:** Batch availability is scheduled via `assessment_batches` with start and expiration windows.
+
+## 4.7 Assessment Runner, Autosave & Authoritative Lifecycle
+- **FR-RUN-01:** Attempt initiation calls stored procedure `start_assessment_attempt()`. The server records the authoritative start time and computes `deadline_at`.
+- **FR-RUN-02:** Client countdown timers are visual displays only. The server rejects answer saves or submissions received after `deadline_at + 30 seconds` (grace period for network latency).
+- **FR-RUN-03:** Autosave calls stored procedure `autosave_attempt_answer()`. Answer saves are idempotent and update `attempt_answers`.
+- **FR-RUN-04:** Attempt recovery: if a student refreshes, closes the tab, or suffers temporary connection loss, reopening the test loads the saved answers and recalculates remaining time from `deadline_at`.
+- **FR-RUN-05:** Attempt events (`attempt_events`) log tab blur, network reconnects, and autosave syncs.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> NOT_UPLOADED : Student Enrolls
-    NOT_UPLOADED --> PENDING_VERIFICATION : Uploads Document (Aadhaar / Marksheet)
-    PENDING_VERIFICATION --> VERIFIED : Admin Approves
-    PENDING_VERIFICATION --> REJECTED : Admin Rejects with Reason
-    REJECTED --> PENDING_VERIFICATION : Student Re-uploads Corrected File
-    VERIFIED --> [*] : Eligible for Official Institute Ranking
+    [*] --> IN_PROGRESS: start_assessment_attempt()
+    IN_PROGRESS --> IN_PROGRESS: autosave_attempt_answer() [Idempotent]
+    IN_PROGRESS --> SUBMITTED: Student Manual Submit
+    IN_PROGRESS --> TIMED_OUT: Deadline Reached (Worker / Submit)
+    IN_PROGRESS --> ABANDONED: Test Window Expired Without Activity
+    SUBMITTED --> SCORED: calculate_and_finalize_score() [Transactional]
+    TIMED_OUT --> SCORED: calculate_and_finalize_score() [Transactional]
+    SCORED --> RESULT_RELEASED: Release Schedule Policy Satisfied
+    RESULT_RELEASED --> REGRADED: Question Adjudication Applied (Audit Trail)
+```
+
+## 4.8 Dual-Track Authoritative Scoring Engine
+- **FR-SCORE-01:** Scoring is 100% server-authoritative, executed inside stored procedure `calculate_and_finalize_score()`.
+- **FR-SCORE-02:** Float arithmetic is strictly prohibited; all mark calculations use `NUMERIC(5,2)` and `NUMERIC(7,2)`.
+- **FR-SCORE-03 (NEET Evaluation):**
+  - Evaluates standard 4-option MCQs: `+4.0` for match, `-1.0` for incorrect, `0.0` for blank.
+  - Applies adjudications: if `DROPPED_FULL_CREDIT`, `+4.0` is credited to all; if `ALL_OPTIONS_CORRECT`, `+4.0` credited if attempted; if `MULTIPLE_CORRECT`, `+4.0` credited if selected option is in `valid_option_ids`.
+- **FR-SCORE-04 (IMAT Evaluation):**
+  - Evaluates standard 5-option MCQs: `+1.5` for match, `-0.4` for incorrect, `0.0` for blank.
+  - Enforces 90.0 maximum raw score limit.
+- **FR-SCORE-05:** Outputs are stored immutably in `score_results` with complete section breakdowns (`section_breakdown_json`).
+- **FR-SCORE-06:** Regrading triggers `regrade_events` preserving previous score, new score, and author audit.
+
+## 4.9 Performance Analytics & Revision Recommendations
+- **FR-ANA-01:** Generates track-specific performance radar views:
+  - NEET: Overall score out of 720, Botany/Zoology split, Physics & Chemistry accuracy.
+  - IMAT: Overall score out of 90, Reading/Knowledge score, Logic score, Science scores.
+- **FR-ANA-02:** Cross-track analytics contamination is strictly forbidden: NEET and IMAT raw scores are never averaged or combined.
+- **FR-ANA-03:** Transparent revision recommendations are driven by database view `view_revision_recommendations`:
+  - Flag topics where attempted accuracy is below 60% with a minimum sample size of 5 questions.
+  - Display transparent reasoning (e.g. *"Revise Chemical Bonding: 42% accuracy across 12 attempted questions"*).
+
+---
+
+# 5. AI Integration Requirements (Groq API & Academic Safeguards)
+
+## 5.1 Groq API Backend Architecture & Security Isolation
+- **AI-SEC-01:** Groq Cloud API is integrated exclusively within `apps/api/src/infrastructure/ai/`.
+- **AI-SEC-02:** `GROQ_API_KEY` is loaded solely in server environment variables. No client-side exposure.
+- **AI-SEC-03:** Primary LLM model: `llama-3.3-70b-versatile`; Automatic fallback model: `llama-3.1-8b-instant`.
+- **AI-SEC-04:** Bounded exponential backoff retries on Groq HTTP 429 and HTTP 503 errors (maximum 3 retries).
+- **AI-SEC-05:** Hard timeout enforcement via `AbortController` (30,000 ms default).
+
+## 5.2 AI Question Generator Specifications
+- **AI-GEN-01:** Accessible exclusively to `FACULTY`, `ACADEMIC_REVIEWER`, `INSTITUTE_ADMIN`, and `PLATFORM_ADMIN`. Students are blocked with HTTP 403 Forbidden.
+- **AI-GEN-02:** Input parameters require explicit syllabus taxonomy: `examCode`, `examVersionId`, `sectionId`, `syllabusNodeId`, `subject`, `topic`, `difficulty`, `count` (1 to 10).
+- **AI-GEN-03:** The generator has **zero access** to active assessment answer keys or student records.
+- **AI-GEN-04:** Separate prompt engineering pipelines:
+  - NEET-UG: NCERT 11-12 curriculum, 4 options (`A, B, C, D`), Botany/Zoology distinction.
+  - IMAT: MUR decree guidelines, 5 options (`A, B, C, D, E`), analytical reading and logic standards.
+
+## 5.3 Anti-Option-A Bias Elimination Strategy
+1. **Prompt Constraint:** System and user prompts explicitly instruct the LLM: *"NEVER make Option A the default correct answer. Randomly distribute correct answers across all options."*
+2. **Cryptographic Shuffling:** Output options undergo Fisher-Yates shuffling using `crypto.randomInt()`. Options are re-keyed sequentially (`A` through `D` or `A` through `E`) and `correctOptionKey` is dynamically updated. This mathematically guarantees uniform ~25% (NEET) and ~20% (IMAT) distribution across positions.
+
+## 5.4 Structured Schema Validation & Sanitization
+All raw LLM completions pass through Zod schema validation (`validateGeneratedQuestions`):
+- Root object contains `questions` array.
+- NEET questions validated against `neetUGQuestionSchema` (exactly 4 options).
+- IMAT questions validated against `imatQuestionSchema` (exactly 5 options).
+- Exactly one option marked `isCorrect: true` matching `correctOptionKey`.
+- All options have unique text (no duplicate distractors).
+- Explanation length >= 20 characters.
+- Strict XSS regex sanitization rejects `<script>`, `javascript:`, `onerror=`, `onload=`.
+
+## 5.5 Mandatory Human-in-the-Loop Review Queue
+- **AI-REV-01:** AI-generated questions are saved to PostgreSQL with:
+  - `question_versions.review_status = 'DRAFT'`
+  - `ai_generation_reviews.review_status = 'PENDING'`
+- **AI-REV-02:** AI questions **cannot be published** or assigned to active tests until a qualified faculty member reviews them.
+- **AI-REV-03:** Faculty review actions via `POST /api/v1/content-bank/ai-drafts/reviews/:reviewId/decide`:
+  - `APPROVE`: Transitions review to `APPROVED` and question version to `APPROVED`.
+  - `EDIT`: Faculty modifies question stem or explanation; transitions review to `EDITED`.
+  - `REJECT`: Rejects draft; transitions review and version to `REJECTED`.
+
+## 5.6 Student AI Study Assistant Safeguards (Post-MVP Phase 3)
+- Grounded strictly in approved resources assigned to the learner's batch.
+- **Active Assessment Blindness:** The retrieval index strictly excludes `question_answer_keys` and unreleased `assessments`.
+- Medical Advice Disclaimer: Model outputs include disclaimers and do not provide medical diagnosis or treatment advice.
+
+---
+
+# 6. Database Architecture & Schema Mapping (`db.sql`)
+
+The database layer is implemented in PostgreSQL 15+ hosted on Supabase, featuring 51 tables, 27 custom enums, custom triggers, 5 production analytical views, and stored procedures.
+
+## 6.1 Database Entity Domain Mapping
+```text
+Section 2: Identity & Multi-Tenancy
+  ├── profiles                           (1:1 with auth.users)
+  ├── institutions                       (Coaching academy workspaces)
+  ├── institution_memberships            (Server-side RBAC)
+  ├── invitations                        (Cryptographic onboarding)
+  └── platform_roles                     (Global governance)
+
+Section 3: Exam Tracks & Blueprints
+  ├── exam_tracks                        (NEET_UG, IMAT)
+  ├── exam_versions                      (Annual cycle blueprints)
+  ├── exam_scoring_policies              (Decimal mark arithmetic)
+  ├── exam_sections                      (Section questions & timing)
+  └── learner_exam_access                (Dual-track enrollment)
+
+Section 4: Tenancy & Batches
+  ├── academic_years                     (Annual institutional terms)
+  ├── courses                            (Exam-track mapped courses)
+  ├── batches                            (Student cohorts)
+  ├── student_batch_enrollments          (Batch enrollment history)
+  └── faculty_batch_assignments          (Teacher batch allocation)
+
+Section 5: Curriculum Structure
+  ├── syllabus_nodes                     (SUBJECT to SKILL tree)
+  ├── syllabus_node_closures             (Transitive hierarchy closure)
+  ├── syllabus_learning_objectives       (Competency criteria)
+  ├── syllabus_prerequisites             (Curriculum graph edges)
+  ├── student_topic_progress             (Topic mastery & revision)
+  ├── study_plans                        (Personalized / assigned plans)
+  ├── study_plan_items                   (Milestones & tasks)
+  └── study_sessions                     (Logged study hours)
+
+Section 6: Learning Resources
+  ├── resources                          (Metadata, storage paths, state)
+  ├── resource_syllabus_mappings         (Node-level linking)
+  ├── resource_batch_assignments         (Cohort access gates)
+  └── resource_reviews                   (Faculty approval log)
+
+Section 7: Question Bank & Revisions
+  ├── questions                          (Stable logical item ID)
+  ├── question_versions                  (Immutable version snapshots)
+  ├── question_options                   (4 for NEET, 5 for IMAT)
+  ├── question_answer_keys               (Confidential key storage)
+  ├── question_assets                    (Diagrams, formulas, storage)
+  ├── question_syllabus_mappings         (Taxonomy mapping)
+  ├── question_reviews                   (Review workflow logs)
+  ├── question_sources                   (PYQ citations, licenses)
+  └── question_adjudications             (Official dispute resolutions)
+
+Section 8: Assessment Engine
+  ├── assessments                        (Test definitions & tracks)
+  ├── assessment_batches                 (Schedule & cohort access)
+  ├── assessment_versions                (Immutable published snapshots)
+  ├── assessment_sections                (Section configurations)
+  ├── assessment_section_questions       (Question version allocations)
+  ├── assessment_attempts                (Authoritative student attempts)
+  ├── attempt_answers                    (Autosaved response states)
+  ├── attempt_events                     (Audit events, tab blurs)
+  ├── score_results                      (Decimal score breakdown)
+  └── regrade_events                     (Audited recalculations)
+
+Section 9: AI Generation Safeguards
+  ├── ai_generation_jobs                 (Async job queue tracking)
+  ├── ai_generation_reviews              (Human-in-the-loop review queue)
+  └── ai_reference_sources               (RAG grounding excerpts)
+
+Section 10: Operations & Governance
+  ├── announcements & batches            (Notices & broadcasts)
+  ├── calendar_events & batches          (Academic schedules)
+  ├── notification_outbox                (Resilient delivery queue)
+  ├── discussion_threads & replies       (Moderated community)
+  ├── moderation_actions                 (Content moderation logs)
+  ├── student_documents & reviews        (Optional verification docs)
+  └── audit_logs                         (Append-only security log)
+```
+
+## 6.2 Key Stored Procedures & Functions
+1. `start_assessment_attempt(p_assessment_version_id, p_learner_id, p_institution_id)`
+   - Validates eligibility, batch window, and attempt limits.
+   - Computes authoritative `deadline_at = started_at + duration_minutes + accommodation_minutes`.
+   - Inserts record into `assessment_attempts` with status `IN_PROGRESS`.
+2. `autosave_attempt_answer(p_attempt_id, p_learner_id, p_question_version_id, p_selected_option_ids, p_time_spent_seconds)`
+   - Enforces `now() <= deadline_at + interval '30 seconds'`.
+   - Executes idempotent upsert into `attempt_answers`.
+3. `calculate_and_finalize_score(p_attempt_id, p_trigger_reason)`
+   - Row-locks attempt with `FOR UPDATE`.
+   - Evaluates marks via exact decimal calculations matching scoring policy and adjudications.
+   - Inserts `score_results` and transitions attempt to `SCORED`.
+4. `maintain_syllabus_closures()`
+   - Trigger maintaining `syllabus_node_closures` for high-speed sub-tree queries.
+
+## 6.3 Row Level Security (RLS) Policy Matrix
+All production tables have RLS enabled:
+
+| Table Name | SELECT Policy | INSERT / UPDATE Policy |
+|---|---|---|
+| `profiles` | Own profile or members of same institution | Own profile update only |
+| `institution_memberships` | Members of same institution | Institute Admin only |
+| `learner_exam_access` | Own access records | Self-registration / Institute Admin |
+| `syllabus_nodes` | Public (authenticated users) | Platform Admin / Academic Reviewer only |
+| `resources` | Entitled independent learner or enrolled batch member | Faculty / Institute Admin |
+| `question_versions` | Published versions or author/reviewer | Faculty / Reviewer only |
+| `question_answer_keys` | **Strictly denied to students.** Faculty/Admin only | Faculty / Reviewer only |
+| `assessment_attempts` | Own attempts or assigned faculty | Stored procedures / own in-progress updates |
+| `score_results` | Own score after `release_at` policy satisfied | Stored procedure (`calculate_and_finalize_score`) |
+| `audit_logs` | Institute Admin (own tenant); Platform Admin | **Append-only; Updates/Deletions strictly revoked** |
+
+---
+
+# 7. API Architecture & Endpoint Specifications (`api_design.md`)
+
+## 7.1 Middleware Pipeline
+Requests execute through the modular monolith pipeline:
+```text
+HTTP Request 
+   ├── 1. cors + helmet + requestId
+   ├── 2. authenticate.ts (Verifies Supabase JWT; populates req.user)
+   ├── 3. resolve-membership.ts (Injects active institution_id & RBAC role)
+   ├── 4. require-permission.ts (Enforces allowedRoles: FACULTY, ADMIN, etc.)
+   ├── 5. require-exam-access.ts (Enforces active NEET_UG / IMAT entitlement)
+   ├── 6. rate-limit.ts (Sliding window token guard; HTTP 429)
+   ├── 7. validate-request.ts (Zod DTO validation for body/params/query)
+   └── 8. Domain Controller -> Domain Service -> Repository
+```
+
+## 7.2 Core Endpoint Catalog Mapped to Domains
+```text
+Identity & Track Entitlement
+  GET    /api/v1/me                                  Profile & active memberships
+  GET    /api/v1/me/exam-access                      List active exam tracks
+  POST   /api/v1/me/exam-access                      Enroll in exam track (NEET/IMAT)
+  PATCH  /api/v1/me/exam-access/:accessId            Switch target exam year / cycle
+
+Exam Blueprints & Curriculum
+  GET    /api/v1/exam-tracks                         List supported tracks (NEET_UG, IMAT)
+  GET    /api/v1/exam-tracks/:examCode/versions      Annual version history
+  GET    /api/v1/exam-versions/:versionId            Blueprint sections & scoring policy
+  GET    /api/v1/exam-versions/:versionId/curriculum Complete hierarchical syllabus tree
+  GET    /api/v1/syllabus-nodes/:nodeId              Single topic / learning objectives
+
+Learning Resources
+  GET    /api/v1/resources                           List filtered resources
+  GET    /api/v1/resources/:resourceId               Resource metadata & short-lived signed URL
+  POST   /api/v1/resources                           Faculty drafts learning resource
+  POST   /api/v1/resources/:resourceId/submit-review Submit resource for academic review
+  POST   /api/v1/resources/:resourceId/publish       Publish resource to batches
+
+Question Bank & AI Generation
+  GET    /api/v1/questions                           Filter questions by node & status
+  POST   /api/v1/questions                           Author question draft with options & key
+  POST   /api/v1/questions/:questionId/versions      Create immutable question revision
+  POST   /api/v1/question-versions/:versionId/review Review & approve/reject version
+  POST   /api/v1/content-bank/ai-drafts/generate     Trigger AI drafting batch (Groq LLM)
+  GET    /api/v1/content-bank/ai-drafts/jobs/:jobId  Poll AI generation job status
+  GET    /api/v1/content-bank/ai-drafts/reviews/pending Faculty pending review queue
+  POST   /api/v1/content-bank/ai-drafts/reviews/:reviewId/decide Approve, edit, or reject AI draft
+
+Assessments & Test Runner
+  GET    /api/v1/assessments                         List scheduled tests for track/batch
+  POST   /api/v1/assessments                         Create assessment draft
+  POST   /api/v1/assessment-versions/:versionId/attempts Start attempt (calls start_assessment_attempt)
+  GET    /api/v1/attempts/:attemptId                 Resume attempt (questions WITHOUT keys)
+  PUT    /api/v1/attempts/:attemptId/answers/:questionVersionId Idempotent autosave response
+  POST   /api/v1/attempts/:attemptId/submit          Submit & finalize test score
+  GET    /api/v1/attempts/:attemptId/result          Get authoritative score & solution review
+  POST   /api/v1/attempts/:attemptId/request-review  Dispute question for academic review
 ```
 
 ---
 
-# 11. Use Cases and Acceptance Criteria
+# 8. UI Screen Inventory & Frontend Architecture
 
-### UC-01: Protected Resource Retrieval via Presigned URL
-- **Actor:** Enrolled Student
-- **Preconditions:** Student is authenticated; student is enrolled in the cohort linked to the chapter resource.
-- **Trigger:** Student clicks "Download NCERT Highlights PDF" on Chapter Study Hub.
-- **Flow:**
-  1. Client sends `POST /resources/{id}/signed-url`.
-  2. API evaluates Row-Level Security: verifies student has active enrollment in the cohort mapped to this resource.
-  3. API invokes AWS S3 / Cloudflare R2 SDK to generate a presigned `GET` URL with a strict 900-second (15-minute) TTL.
-  4. API logs a resource access telemetry event.
-  5. API returns `{ success: true, data: { signedUrl, expiresInSeconds: 900, watermarked: true } }`.
-  6. Client browser opens the stream; dynamic PDF viewer overlays user watermark (`Rohan Sharma | Roll: 2026-B1-042 | 157.48.21.90 | 05-Nov-2026`).
-- **Postconditions:** Direct URL expires after 15 minutes; raw bucket storage remains private and non-traversable.
+Built in React + TypeScript + Vite (`apps/web`), structured using Feature-Slice Architecture.
 
-### UC-02: Section B Optional Question Capping Under Active Exam Conditions
-- **Actor:** Student taking full-length mock test
-- **Preconditions:** Student has active attempt; test is on Section B of Physics (15 questions presented).
-- **Trigger:** Student answers 12 questions in Section B.
-- **Flow:**
-  1. Student selects answers for questions 1 through 12.
-  2. Each selection is persisted via `PUT /attempts/{attemptId}/answers/{qId}`.
-  3. Student submits test via `POST /attempts/{attemptId}/submit`.
-  4. The backend evaluation engine orders the answered questions by `display_order`.
-  5. Questions 1 through 10 are graded based on correct (+4) or incorrect (-1) scoring rules.
-  6. Questions 11 and 12 are assigned status `UNANSWERED_OPTIONAL` and given 0 marks.
-  7. Final scorecard reflects: 10 attempted, 2 optional unconsidered, 3 unattempted.
-- **Postconditions:** Scorecard adheres strictly to NTA NEET guidelines.
+## 8.1 Shared Screens
+- `SCR-PUB-01`: Landing Page & Exam Track Value Proposition.
+- `SCR-AUTH-01`: Sign In / Sign Up / Password Reset.
+- `SCR-TRACK-01`: Dual-Track Selection & Target Exam Year Switcher.
+- `SCR-PROF-01`: User Profile, Accessibility Accommodations & Preferences.
 
----
+## 8.2 Student Portal Screens
+- `SCR-STU-01`: **Unified Student Dashboard:** Displays separate track summaries for NEET-UG and IMAT (current cycle, study progress, upcoming mock tests, weak topics).
+- `SCR-STU-02`: **Curriculum Explorer:** Expandable syllabus tree (NCERT or MUR) with topic progress indicators (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`).
+- `SCR-STU-03`: **Resource Reader:** Embedded PDF document reader and video player with watermarking and short-lived URL management.
+- `SCR-STU-04`: **Topic Practice Drill Runner:** Untimed or lightly timed practice drills with immediate explanation reveal.
+- `SCR-STU-05`: **Mock Assessment Lobby:** Instructions, section distribution, timing, and marking rules.
+- `SCR-STU-06`: **Unified Assessment Runner:**
+  - Dynamic test engine driven by blueprint configuration (never hardcoded forks).
+  - Question navigation palette, mark-for-review, autosave status indicator (`Saving...`, `Saved`, `Offline`).
+  - Strict option rendering: 4 options for NEET, 5 options for IMAT.
+- `SCR-STU-07`: **Submission Confirmation:** Unanswered questions warning and final submission modal.
+- `SCR-STU-08`: **Results & Solution Review:** Released scores, correct answer highlights, detailed explanations, and question dispute submission.
+- `SCR-STU-09`: **Performance Analytics:** Topic accuracy radar, time allocation per section, historical score progression.
+- `SCR-STU-10`: **AI Study Assistant (Phase 3):** Grounded chat interface with syllabus references.
 
-# 12. Non-Functional Requirements
+## 8.3 Faculty Portal Screens
+- `SCR-FAC-01`: **Faculty Dashboard:** Assigned tracks, courses, batches, and pending review counts.
+- `SCR-FAC-02`: **Question Bank Manager:** Question authoring tool with LaTeX math support, diagram upload, and confidential answer key setter.
+- `SCR-FAC-03`: **AI Question Generator:** Form to select track, year, subject, section, difficulty, and batch size (1-10).
+- `SCR-FAC-04`: **AI Draft Review Queue:** Side-by-side review interface with inline editing and Approve/Reject controls.
+- `SCR-FAC-05`: **Assessment Builder:** Blueprint designer to assemble test sections, select question versions, and schedule batch access.
 
-### 12.1 Performance Requirements
-- **NFR-001:** P95 response time for answer autosaves (`PUT /attempts/{attemptId}/answers/{qId}`) must not exceed **150 milliseconds** under a concurrent load of 1,500 active test takers.
-- **NFR-002:** The system health endpoint (`GET /health`) must respond within **50 milliseconds**.
-- **NFR-003:** Complex analytics queries (`GET /analytics/cohorts/{cohortId}/summary`) must execute within **1,200 milliseconds** using pre-computed summary tables.
-- **NFR-004:** AI Question Generation streaming latency must deliver the first token within **1,000 milliseconds** via Groq LPUs.
-- **NFR-005:** Static assets and client bundles must be distributed via CDN edge locations with TTFB $< 80\text{ms}$.
-
-### 12.2 Reliability & High Availability
-- **NFR-006:** The platform must achieve **99.9% uptime** during operational hours (06:00 to 23:00 IST), excluding scheduled maintenance windows.
-- **NFR-007:** The assessment engine must survive abrupt client disconnects; state is preserved server-side, allowing students to resume their attempt within their remaining countdown time.
-- **NFR-008:** Recovery Point Objective (RPO) for assessment attempt answers must be **$< 5\text{ seconds}$**.
-- **NFR-009:** Recovery Time Objective (RTO) for full database restoration must be **$< 30\text{ minutes}$**.
-
-### 12.3 Security & Cryptographic Standards
-- **NFR-010:** All network communication must be enforced over **TLS 1.3**; insecure HTTP requests must automatically redirect with HSTS enabled (max-age=31536000).
-- **NFR-011:** Passwords must be hashed using Supabase Auth default **bcrypt** (work factor $\ge 10$) or Argon2id.
-- **NFR-012:** Database connections must utilize connection pooling (Supabase PgBouncer) with SSL mode `verify-full`.
-- **NFR-013:** JWT tokens must use asymmetric cryptographic signing (RS256) with automated key rotation.
-- **NFR-014:** All sensitive document uploads must be encrypted at rest using AES-256 (SSE-S3).
-
-### 12.4 Scalability Requirements
-- **NFR-015:** The database schema must comfortably scale to **50,000 enrolled students**, **500,000 question revisions**, and **10,000,000 attempt answer records** without table scan degradation via composite indexing.
-- **NFR-016:** Private file storage must support up to **5 Terabytes** of high-yield PDF notes, diagrams, and lecture assets.
-- **NFR-017:** Connection pooling must sustain up to 5,000 simultaneous client HTTP transactions without connection pool exhaustion.
-
-### 12.5 Accessibility, Usability & Localization
-- **NFR-018:** User interface components must comply with **WCAG 2.1 Level AA** standards for color contrast, screen reader navigation, and keyboard focus.
-- **NFR-019:** Mathematical and chemical expressions must render seamlessly via KaTeX without layout shift.
-- **NFR-020:** The client interface must be fully responsive across viewport widths from 360px (mobile) to 2560px (ultra-wide desktop).
-- **NFR-021:** All timestamps in user-facing dashboards must be localized to Indian Standard Time (IST, UTC+5:30).
-
-### 12.6 Maintainability & Code Governance
-- **NFR-022:** Backend services must maintain $\ge 85\%$ unit test branch coverage for all assessment scoring algorithms.
-- **NFR-023:** Codebase must adhere to strict TypeScript typing with zero `any` declarations in production API modules.
-- **NFR-024:** Database schema migrations must be backward-compatible and executed through version-controlled SQL migration scripts.
-
-### 12.7 Compliance & Auditing
-- **NFR-025:** Audit log records in `audit_logs` must be immutable (no `UPDATE` or `DELETE` permissions granted to standard users).
-- **NFR-026:** Audit log streaming exports must support output sizing up to 100,000 events without Node.js out-of-memory errors.
-- **NFR-027:** The system must enforce rate limiting of 100 requests per minute per IP for public endpoints and 1,000 requests per minute for authenticated endpoints.
-- **NFR-028:** Presigned S3 download URLs must enforce a hard upper bound of 15 minutes TTL.
-- **NFR-029:** Temporary administrative "View As" support sessions must strictly terminate after 30 minutes.
-- **NFR-030:** Telemetry snapshot frequency must not impose more than $1\%$ CPU overhead on the primary database instance.
+## 8.4 Administrator Screens
+- `SCR-ADM-01`: **Institute Management:** Batches, courses, faculty assignments, student enrollments.
+- `SCR-ADM-02`: **Platform Governance:** Annual exam configuration rollover, source URL verification, global audit logs.
 
 ---
 
-# 13. Authentication and Authorization Requirements
+# 9. Non-Functional Requirements (NFRs)
 
-### 13.1 Supabase JWT Token Architecture
-The system relies on Supabase Auth for identity management, augmented by institute-managed role assignments:
-1. **User Identity:** Managed in Supabase `auth.users`, synchronized with the application `users` table via PostgreSQL triggers.
-2. **Role Verification:** Tokens contain user claims; however, the backend API authoritatively queries `role_assignments` on every privileged operation to prevent stale-token or client-side claim spoofing.
-3. **Session Invalidation:** Logging out via `POST /auth/logout` revokes the refresh token and terminates active entries in `user_sessions`.
+## 9.1 Performance & Concurrency Targets
+- **NFR-PERF-01:** Common API read endpoints: p95 latency `< 500 ms`.
+- **NFR-PERF-02:** Autosave API endpoint: p95 latency `< 500 ms` under a concurrency of 1,000 active test takers per tenant.
+- **NFR-PERF-03:** Test finalization & scoring execution: complete within `1,500 ms` transactional database runtime.
+- **NFR-PERF-04:** Groq AI draft generation: batch of 5 questions completed in `< 5,000 ms` via LPU inference.
 
-### 13.2 PostgreSQL Row-Level Security (RLS) Policies
-Row-Level Security is strictly enabled across all sensitive application tables:
-- `student_topic_progress`: Students can only `SELECT` and `INSERT/UPDATE` records where `student_id = auth.uid()`.
-- `assessment_attempts`: Students can only view their own attempts; faculty can view attempts belonging to their assigned cohorts; administrators have global visibility.
-- `resources`: Read access is permitted only if the resource is public or mapped to a cohort where the student has an `ACTIVE` enrollment record.
+## 9.2 Reliability & Fault Tolerance
+- **NFR-REL-01:** High Availability: 99.9% uptime for assessment runner and answer autosave APIs.
+- **NFR-REL-02:** Database Durability: RPO (Recovery Point Objective) `< 5 minutes`; RTO (Recovery Time Objective) `< 1 hour`.
+- **NFR-REL-03:** Network Resilience: In the event of client-side disconnects, the assessment runner retries saves with exponential backoff and prevents data loss.
+- **NFR-REL-04:** Idempotent Finalization: Duplicate submissions return the existing score result without duplicate scoring records.
 
----
+## 9.3 Content Protection & Assessment Integrity
+- **NFR-SEC-01:** Private Storage: Zero public read access on Supabase buckets. All assets accessed via signed URLs valid for <= 60 seconds.
+- **NFR-SEC-02:** Watermarking: Educational PDFs and diagrams display dynamic user-specific watermarks (Student ID + Timestamp).
+- **NFR-SEC-03:** Answer Key Isolation: Active assessment answer keys are never delivered to the browser bundle or client cache.
+- **NFR-SEC-04:** Tamper-Evident Audit: All administrative, faculty review, scoring, and regrading events are appended to `audit_logs`.
 
-# 14. Database and Data Management Requirements
-
-### 14.1 Schema Overview (44 Tables, PostgreSQL 15+)
-
-The database schema is organized into modular relational domains:
-- **Identity & Governance:** `users`, `roles`, `permissions`, `role_permissions`, `role_assignments`, `user_sessions`, `profiles`.
-- **Academic Hierarchy:** `curriculum_subjects`, `curriculum_chapters`, `curriculum_topics`, `student_topic_progress`.
-- **Exam Blueprints & Scopes:** `exams`, `exam_blueprints`, `exam_sections`, `scoring_profiles`.
-- **Cohorts & Rosters:** `cohorts`, `enrollments`, `faculty_cohort_assignments`.
-- **Learning Content:** `resources`, `resource_files`, `study_materials`.
-- **Question Bank Engine:** `questions`, `question_revisions`, `question_options`, `question_tags`, `question_tag_mappings`.
-- **Assessment Snapshotting:** `assessments`, `assessment_versions`, `assessment_sections`, `assessment_questions`.
-- **Test Runner & Scoring:** `assessment_attempts`, `attempt_answers`, `score_adjustments`.
-- **Performance Analytics:** `student_subject_mastery`, `cohort_performance_summaries`.
-- **AI Pipelines:** `ai_generation_requests`, `ai_question_drafts`, `ai_chat_conversations`, `ai_chat_messages`.
-- **Compliance & Operations:** `student_documents`, `document_verification_logs`, `announcements`, `announcement_cohort_mappings`, `calendar_events`, `discussion_threads`, `thread_replies`, `audit_logs`, `system_telemetry_snapshots`, `support_sessions`.
-
-### 14.2 Database Constraints & Integrity Triggers
-1. **Immutable Versioning:** `assessment_versions` rows are read-only once `is_published = true`. Updates to parent `assessments` do not mutate active test versions.
-2. **Auto-Timestamps:** All tables feature `created_at` and `updated_at` columns managed via the generic PostgreSQL trigger function `set_updated_at()`.
-3. **Optimistic Locking:** Assessment attempts feature a monotonic `version` integer column incremented on every answer upsert to detect concurrent write collisions.
+## 9.4 Privacy, Data Governance & Accessibility
+- **NFR-PRV-01:** Data Minimization: No collection of unneeded government identifiers or personal documents for basic practice.
+- **NFR-PRV-02:** DPDP Act & GDPR Alignment: Users can request data export and account deletion. Data retention schedules enforce automated archiving.
+- **NFR-ACC-01:** Full compliance with WCAG 2.1 Level AA (keyboard navigation, screen-reader labels, contrast ratio >= 4.5:1).
+- **NFR-ACC-02:** Authorized PwD accommodations: configurable compensatory time (e.g. +20 minutes/hour for eligible candidates).
 
 ---
 
-# 15. API and Integration Requirements
+# 10. Cross-Document Discrepancy & Missing Requirements Log
 
-### 15.1 Architectural Style
-- **Protocol:** RESTful HTTPS, JSON request/response bodies, UTF-8 encoding.
-- **Specification:** OpenAPI 3.1.0 standard documented in [`openapi.yaml`](file:///c:/Users/ASUS/Downloads/Medical_LMS/docs/api/openapi.yaml).
-- **Error Format:** RFC 7807 compliant standardized error envelop:
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_FAILED",
-    "message": "The request payload failed schema validation.",
-    "details": [{ "field": "durationSeconds", "message": "Duration must be an integer between 300 and 14400." }]
-  },
-  "metadata": {
-    "requestId": "8a4b2c1d-7e9f-4a3b-8c2d-1e0f9a8b7c6d",
-    "timestamp": "2026-11-05T12:00:00.000Z"
-  }
-}
+This section explicitly documents inconsistencies and missing alignments across `project_overview.md`, `db.sql`, and `api_design.md`, providing the definitive architectural resolution.
+
+| ID | Issue Description | Source Conflict | Architectural Resolution |
+|---|---|---|---|
+| **DISC-01** | **API Version Prefix Inconsistency** | `api_design.md` uses `/api/v1/...`; `project_overview.md` Section 11 uses `/api/...` without versioning. | **Adopt `/api/v1/...` exclusively.** Matches modular monolith best practices and current backend implementation. |
+| **DISC-02** | **AI Drafting Route Pathing** | `api_design.md` lists `POST /api/v1/ai/question-drafts`; codebase and `folder_structure.md` use `POST /api/v1/content-bank/ai-drafts/generate`. | **Standardize on `/api/v1/content-bank/ai-drafts/...`** under the `content-bank` domain bounded context. Support `/api/v1/ai/question-drafts` as an alias if required. |
+| **DISC-03** | **Syllabus Versioning Table Entity** | `project_overview.md` mentions `SYLLABUS_VERSIONS` as an independent entity; `db.sql` ties syllabus versioning directly to `exam_versions`. | **Follow `db.sql`.** `exam_versions` serves as the authoritative blueprint root; `syllabus_nodes` references `exam_version_id`. Avoids redundant join tables. |
+| **DISC-04** | **Adjudication Enum Naming** | `project_overview.md` lists `INVALID_OR_DROPPED`; `db.sql` defines enum `adjudication_type` with `'DROPPED_FULL_CREDIT'` and `'AMBIGUOUS_STEM'`. | **Adopt `db.sql` enum values** (`DROPPED_FULL_CREDIT`, `ALL_OPTIONS_CORRECT`, `MULTIPLE_CORRECT`, `STANDARD`). Matches exact NTA 2026 scoring adjudication logic. |
+| **DISC-05** | **Batch Assignment Table Names** | `project_overview.md` ER diagram shows `STUDENT_ENROLLMENTS` and `FACULTY_ASSIGNMENTS`; `db.sql` implements `student_batch_enrollments` and `faculty_batch_assignments`. | **Adopt `db.sql` table names.** Explicitly clarifies that enrollment and assignments are batch-scoped rather than course-scoped. |
+| **DISC-06** | **Missing Tenancy & Operations Endpoints in `api_design.md`** | `api_design.md` omits endpoints for batches, announcements, academic calendar, and study plans, all of which are defined in `db.sql` and `project_overview.md`. | **Incorporate missing endpoints into PRD Section 7.2** (`/api/v1/batches`, `/api/v1/announcements`, `/api/v1/calendar`, `/api/v1/learning/progress`). |
+| **DISC-07** | **Resource File Storage Architecture** | `project_overview.md` describes separate `resource_files` table; `db.sql` consolidates `storage_path` directly on `resources`. | **Adopt `db.sql` consolidation.** One resource maps to one primary storage artifact or link, simplifying RLS and signed URL generation. |
+
+---
+
+# 11. MVP Scope, Roadmap & Phased Implementation
+
+```
+Phase 0: Research & Baselines  ──►  Phase 1: Foundation & RBAC  ──►  Phase 2: Question Bank & Tests
+(NTA/MUR Blueprint Validation)      (Dual Track, Syllabus, Auth)     (Runner, Autosave, Scoring)
+                                                                                  │
+Phase 5: Monetization          ◄──  Phase 4: Operational Pilot  ◄──  Phase 3: AI & Revision
+(Subscriptions, Scale)              (Pilot Hardening, Monitoring)    (Groq Drafter, Radar Analytics)
 ```
 
-### 15.2 External Integrations
-1. **Supabase Auth & Database:** Managed PostgreSQL 15, Auth engine, and PgBouncer connection pooling.
-2. **Groq LLM API:** High-throughput inference for AI question generation and chatbot interactions.
-3. **AWS S3 / Cloudflare R2:** S3-compatible private object store for PDFs, diagrams, and student verification uploads.
+## 11.1 Phased Implementation Roadmap
+- **Phase 0 — Product Validation & Baselines (Completed):** Verified official NTA NEET-UG 2026 bulletin and Italian MUR Decree No. 1005 (2026/27 baseline).
+- **Phase 1 — Secure Foundation (MVP Core):** Supabase Auth, profiles, RBAC memberships, dual-track selection (`NEET_UG`/`IMAT`), hierarchical syllabus trees, private storage buckets, and RLS security policies.
+- **Phase 2 — Question Bank & Authoritative Testing (MVP Core):** 4-option and 5-option question authoring, assessment builder, timed assessment runner, idempotent autosave, server-authoritative scoring engine, and result review.
+- **Phase 3 — AI Assistance & Revision Intelligence (MVP Priority):** Groq API integration (`llama-3.3-70b-versatile`), separate NEET/IMAT prompt templates, anti-Option-A cryptographic shuffling, faculty draft review queue, performance radar views, and rule-based revision recommendations.
+- **Phase 4 — Operational Pilot Hardening:** Institutional pilot rollout, load testing (1,000 concurrent test takers), accessibility audit, and backup restoration drills.
+- **Phase 5 — Monetization & Growth (Post-MVP):** Paid subscription plans, payment gateway integration, advanced cohort analytics, and mobile app clients.
+
+## 11.2 Feature Priority Breakdown
+| Capability / Feature | Phase | Priority | MVP Classification |
+|---|:---:|:---:|:---:|
+| User Registration & Dual-Track Selection | Phase 1 | P0 | **Must-Have (MVP)** |
+| Separate NEET-UG & IMAT Dashboards | Phase 1 | P0 | **Must-Have (MVP)** |
+| Hierarchical Syllabus Browser (NCERT / MUR) | Phase 1 | P0 | **Must-Have (MVP)** |
+| Learning Resource Library & Signed URLs | Phase 1 | P0 | **Must-Have (MVP)** |
+| Versioned Question Bank (4-Opt & 5-Opt) | Phase 2 | P0 | **Must-Have (MVP)** |
+| Timed Assessment Runner with Server Autosave | Phase 2 | P0 | **Must-Have (MVP)** |
+| Server-Authoritative Scoring Engine | Phase 2 | P0 | **Must-Have (MVP)** |
+| Dual-Track Result & Solution Review | Phase 2 | P0 | **Must-Have (MVP)** |
+| AI Question Generator (Groq + Faculty Review) | Phase 3 | P1 | **Must-Have (MVP)** |
+| Evidence-Based Revision Recommendations | Phase 3 | P1 | **Should-Have** |
+| Academic Calendar & Announcements | Phase 3 | P1 | **Should-Have** |
+| AI Study Assistant (Student-Facing Chat) | Phase 3 | P2 | **Later (Post-MVP)** |
+| Moderated Discussion Threads | Phase 5 | P3 | **Later (Post-MVP)** |
+| Subscriptions & Commercial Payment Gateways | Phase 5 | P3 | **Later (Post-MVP)** |
 
 ---
 
-# 16. AI Feature Requirements
+# 12. Acceptance Criteria, Testing Strategy & Release Gates
 
-### 16.1 AI Question Generation Pipeline
-- **Cascading Fallback Chain:**
-  1. *Primary Model:* `openai/gpt-oss-120b` (Deep conceptual reasoning, high-yield NEET physics/chemistry problems).
-  2. *Secondary Model:* `openai/gpt-oss-20b` (Fast inference, reliable biology botany/zoology recall questions).
-  3. *Tertiary Model:* `qwen/qwen3.8-27b` (Guaranteed fallback during severe Groq rate-limiting).
-- **Prompt Engineering Requirements:** Prompts must enforce:
-  - Exact NCERT class 11 and 12 curriculum boundaries.
-  - Strict JSON schema output containing `questionText`, `latexContent`, `options` (array of 4 items), `correctOptionIndex`, and `explanation`.
-  - Distractor rationales (explaining why incorrect options are plausible traps).
-- **Human-in-the-Loop Governance:** AI-generated items are saved to `ai_question_drafts` with status `PENDING_REVIEW`. They cannot be accessed by assessment assembly queries until explicitly approved by faculty via `POST /ai/questions/drafts/{draftId}/publish`.
+## 12.1 Authoritative Scoring Test Vectors
+The backend scoring engine must pass the following exact numerical test vectors:
 
-### 16.2 AI Academic Policy Chatbot
-- Context-gated student assistant restricted to institute schedules, syllabus guidelines, and test instructions.
-- Hard guardrail: When an assessment attempt is active for the student, all AI chatbot interactions are temporarily disabled to prevent real-time cheating.
+### Vector 1: NEET-UG 2026 Ordinary Scoring
+- **Test Paper:** 10 questions (4 options each, maximum score: 40.0)
+- **Results:** 7 Correct, 2 Incorrect, 1 Unanswered
+- **Formula:** `(7 × 4.0) + (2 × -1.0) + (1 × 0.0)`
+- **Expected Authoritative Raw Score:** `26.00` marks
 
----
+### Vector 2: NEET-UG 2026 Dropped-Question Adjudication
+- **Test Paper:** 10 questions containing 1 dropped question
+- **Results:** Candidate did not attempt the dropped question; 8 correct, 1 incorrect on other questions
+- **Formula:** `(8 × 4.0) + (1 × -1.0) + (1 × 4.0 [DROPPED_FULL_CREDIT])`
+- **Expected Authoritative Raw Score:** `35.00` marks
 
-# 17. Security and Privacy Requirements
+### Vector 3: IMAT 2026/27 Ordinary Scoring
+- **Test Paper:** 10 questions (5 options each, maximum score: 15.0)
+- **Results:** 6 Correct, 3 Incorrect, 1 Unanswered
+- **Formula:** `(6 × 1.5) + (3 × -0.4) + (1 × 0.0)`
+- **Expected Authoritative Raw Score:** `7.80` marks
 
-### 17.1 Zero Answer-Key Disclosure
-Under no circumstances shall the backend API include `correct_option_id`, `correct_answer`, `is_correct`, or `explanation` in student-facing payloads during an active test attempt (`GET /attempts/{attemptId}/questions`). Answer keys are strictly served via staff-only routes (`GET /questions/{id}/revisions/{revId}/answer-key`) requiring `FACULTY` or `ADMIN` privileges.
+## 12.2 Integration & Integrity Test Matrix
+1. **Dual-Track Separation:** Enrolling in NEET and IMAT simultaneously creates separate learner access records; syllabus progress, attempts, and analytics never overlap.
+2. **Answer Key Protection:** API requests to `/api/v1/attempts/:attemptId` return question text and options with `is_correct` strictly excluded. Direct student SELECT queries to `question_answer_keys` fail via RLS.
+3. **Autosave Recovery:** Simulating network disconnection during an active test and refreshing the browser restores the latest saved state and recalculates time remaining from `deadline_at`.
+4. **Idempotent Submission:** Triggering `POST /api/v1/attempts/:attemptId/submit` five times concurrently returns identical HTTP 200 responses referencing a single score record.
+5. **AI Draft State:** AI questions generated via Groq API are verified to have `review_status = 'DRAFT'`. Cannot be queried by student endpoints until approved by faculty.
 
-### 17.2 Dynamic Watermarking Engine
-All PDF downloads and view streams must render a diagonal, semi-transparent watermark across all pages displaying:
-- Student Full Name & Roll Number
-- IP Address of requesting client
-- Request timestamp (UTC & IST)
-- Confidentiality notice: *"Proprietary Coaching Material — Unauthorized Sharing is Legally Actionable"*
-
-### 17.3 Data Privacy & Student Protection
-- Student documents (Aadhaar cards, marksheets) are marked as sensitive PII. Access is restricted to `ADMIN` roles and the owning student.
-- Storage buckets containing PII must not have public read access; all access is mediated through expiring signed URLs.
-
----
-
-# 18. Performance and Scalability Requirements
-
-```mermaid
-graph LR
-    subgraph Client Tier
-        C1["Desktop Browsers"]
-        C2["Tablet / iPad"]
-        C3["Mobile Chrome/Safari"]
-    end
-    
-    subgraph Edge & Gateway
-        CF["Cloudflare CDN & WAF"]
-        NG["Nginx Reverse Proxy"]
-    end
-    
-    subgraph Application Tier
-        APP1["Express API Worker 1"]
-        APP2["Express API Worker 2"]
-        APP3["Express API Worker N"]
-    end
-    
-    subgraph Database & Cache
-        PGB["PgBouncer Connection Pooler"]
-        DB[("PostgreSQL Primary")]
-        S3[("Private Object Storage")]
-    end
-    
-    C1 & C2 & C3 --> CF
-    CF --> NG
-    NG --> APP1 & APP2 & APP3
-    APP1 & APP2 & APP3 --> PGB
-    PGB --> DB
-    APP1 & APP2 & APP3 --> S3
-```
-
-- **Database Connection Pooling:** PgBouncer configured with transaction-mode pooling (max 200 pooled server connections supporting up to 5,000 active client connections).
-- **Read-Write Separation:** Analytics and audit log queries should route to read replicas in future scaling phases.
-- **Client Bundle Size:** Web frontend production build must be under **500 KB gzip** for the initial bundle to ensure rapid loading on 4G cellular connections.
+## 12.3 Production Release Gates
+A release candidate is barred from production deployment until:
+1. All 50+ unit and integration tests pass cleanly with zero failures.
+2. Dual-track scoring test vectors pass exact decimal validation.
+3. Database migration scripts execute cleanly against a fresh staging database.
+4. RLS security audit passes: student roles cannot escalate privileges or read unauthorized tenant data.
+5. Assessment recovery and duplicate-submission test scripts pass under load.
+6. Groq API secret keys are confirmed absent from frontend build bundles.
 
 ---
 
-# 19. UI/UX Requirements
+# 13. Dependencies, Assumptions, Risks & Open Questions
 
-### 19.1 Design System & Typography
-- **Design Language:** Clean, clinical, distraction-free modern UI inspired by medical academic interfaces.
-- **Color Palette:**
-  - Primary: Deep Medical Blue (`#1E3A8A` / `#2563EB`)
-  - Accent / Success: Clinical Emerald (`#059669`)
-  - Warning / Review: Amber (`#D97706`)
-  - Error / Urgent: Crimson (`#DC2626`)
-  - Surface / Background: Crisp Slate (`#F8FAFC` to `#FFFFFF`)
-- **Typography:** Inter or Roboto for general interface; KaTeX / MathJax for LaTeX mathematical and chemical typesetting.
+## 13.1 Technical & Platform Dependencies
+- **Runtime & Language:** Node.js 20+ LTS, Express 4.21, TypeScript 5.5, React 18+.
+- **Database & Auth:** PostgreSQL 15+ managed via Supabase, Supabase Auth, Supabase Storage.
+- **AI Infrastructure:** Groq Cloud SDK (`groq-sdk`), Meta Llama 3.3 70B Versatile, Meta Llama 3.1 8B Instant.
+- **Validation & Tooling:** Zod 3.23, Pino 9.4, Vitest 2.1, Vite 5+.
 
-### 19.2 Screen Inventory & Interaction Details
+## 13.2 Core Architectural Assumptions
+1. Independent aspirants represent the initial primary user acquisition base; coaching institutes onboard in secondary cohorts.
+2. English is the initial release language for both NEET-UG and IMAT; regional Indian language NEET papers will be introduced when reviewed translations are available.
+3. Assessment deadlines must be server-enforced; local client timers are purely visual.
+4. AI LLM providers will experience periodic transient rate limits (HTTP 429) or outages, requiring client-side exponential backoff and fallback models.
 
-| Screen ID | Screen Name | Target Persona | Key Interactions & Functional Elements |
-| :--- | :--- | :--- | :--- |
-| **S-01** | **Authentication Portal** | All Users | Clean email/password sign-in; password reset flow; institute branding banner. |
-| **S-02** | **Student Dashboard** | Student | Enrolled cohort status; upcoming mock countdown card; 7-subject completion progress bar. |
-| **S-03** | **Syllabus Mastery Checklist** | Student | 7-subject breakdown (Physics, Chemistry, Botany, Zoology); chapter completion toggles; NCERT 11th/12th filter. |
-| **S-04** | **Chapter Study Hub** | Student | Notes viewer with watermarking; DPP interactive checklist; PYQ question cards with LaTeX; video lecture stream. |
-| **S-05** | **Timed Assessment Runner** | Student | Fullscreen test view; persistent 200-minute countdown clock; question palette (1–200) with color states (Answered, Review); Section A/B tabs. |
-| **S-06** | **Exam Scorecard & Analysis** | Student | Final marks out of 720; subject percentiles; Section B question audit; topic-level negative mark breakdown; Recharts curves. |
-| **S-07** | **AI Academic Assistant** | Student | Collapsible chat drawer; pre-configured prompt pills (admissions, test rules, fee schedule); input sanitizer. |
-| **S-08** | **Document Verification** | Student | Drag-and-drop document uploader (Aadhaar, 10th/12th marksheets); verification status badge (Pending, Verified, Rejected). |
-| **F-01** | **Faculty Command Center** | Faculty | Assigned cohort cards; pending AI draft approval badge; test schedule overview; unresolved student doubt count. |
-| **F-02** | **Question Bank Studio** | Faculty | Rich-text question author with LaTeX live preview; 4-option creator with single-key selector; tagger (Chapter, Topic, NCERT Class). |
-| **F-03** | **AI Question Generation Lab** | Faculty | Natural language topic prompt; difficulty slider; Groq fallback status indicator; side-by-side draft editor with 1-click publish. |
-| **F-04** | **Assessment Assembly Suite**| Faculty | Drag-and-drop section builder (Section A vs Section B); question bank picker; blueprint rules validator; 1-click snapshot publish. |
-| **F-05** | **Cohort Mastery Matrix** | Faculty | Heatmap of cohort topic mastery; high-error question identification table; student percentile rankings. |
-| **A-01** | **Operations Dashboard** | Admin | Active student counts across Batch 1 & 2; server telemetry ping; recent audit events; quick actions. |
-| **A-02** | **User & Role Governance** | Admin | Filterable user data table; invite dialog; account status toggle (Activate/Suspend); role assignment modal. |
-| **A-03** | **Cohort & Enrollment Hub** | Admin | Cohort creator; capacity tracker; student transfer workflow modal with mandatory transfer reason log. |
-| **A-04** | **Answer Key Adjudication**| Admin | Student challenge list; side-by-side revision viewer; key corrigendum updater with background batch re-scoring. |
-| **A-05** | **Document Review Queue** | Admin | Split-screen document inspector; 1-click Approve; Reject modal with mandatory reason dropdown. |
-| **A-06** | **Audit Trail & Telemetry** | Admin | Real-time audit log stream; CSV/JSON export button; system telemetry monitors (DB pool, memory, storage). |
+## 13.3 Risk Assessment & Mitigation Matrix
+| Identified Risk | Severity | Impact | Mitigation Strategy |
+|---|:---:|---|---|
+| **Annual Exam Pattern Changes** | High | Obsolete test simulations | Year-versioned blueprints; new exam cycles require explicit administrative verification before publication. |
+| **Option A Bias in Question Generation** | High | Distorted practice & invalid learning | Mandatory system prompt rules + cryptographic Fisher-Yates shuffling of option positions. |
+| **Exposed Assessment Answer Keys** | Critical | Academic dishonesty / assessment invalidation | Isolate answer keys in dedicated table `question_answer_keys`; strip keys from student payloads; enforce backend RLS. |
+| **Network Failure During Tests** | High | Lost answers / student distress | Client-side debounced autosave; server-side state persistence; idempotent recovery on refresh. |
+| **Cross-Tenant Data Leakage** | Critical | Breach of student privacy | Strict PostgreSQL Row Level Security (RLS) on all tables; tenant context injection in API middleware. |
+| **AI LLM Cost Overruns / Spikes** | Medium | High operational expense | Rate-limiting middleware on generation endpoints; batch size capped at 10; developer usage quotas. |
 
----
+## 13.4 Open Product & Technical Questions Requiring Stakeholder Sign-Off
+1. **NEET OMR Simulation:** Should Phase 2 include printable PDF question papers with scannable OMR answer sheets, or remain purely digital?
+2. **Result Release Policy:** Should practice tests release scores immediately upon submission, while institute scheduled mock tests hold scores until a fixed batch release time? *(Recommended: Configurable per assessment version)*.
+3. **Faculty Re-grading Policy:** In the event of a post-exam adjudication where an official question is dropped, should the system automatically recalculate all completed historical attempts, or require explicit institute admin authorization?
+4. **Data Retention Timeline:** What specific archival period (e.g. 1 year vs 3 years) should apply to student attempts, event logs, and uploaded admission documents?
 
-# 20. Analytics and Reporting Requirements
-
-### 20.1 Student Diagnostic Metrics
-- **Accuracy Ratio:** $\frac{\text{Correct Answers}}{\text{Total Attempted Questions}} \times 100\%$ per subject and per difficulty tier.
-- **Pacing Analysis:** Average time spent per question (seconds) contrasted against cohort benchmarks (flagging questions where the student spent $> 180s$).
-- **Subject Mastery Score:** A weighted rolling average computed across the student's last 5 unit drills and mock assessments.
-
-### 20.2 Cohort & Institute-Wide Metrics
-- **Score Distribution Curve:** Histogram grouping student total marks into 50-mark buckets (0–50 through 650–720).
-- **Negative Mark Vulnerability:** Identification of topics causing the highest aggregate negative mark deductions across the cohort.
-
----
-
-# 21. Error Handling and Failure Scenarios
-
-### 21.1 Error Code Catalog
-
-| Error Code | HTTP Status | Trigger Condition | User-Facing Resolution Message |
-| :--- | :---: | :--- | :--- |
-| `VALIDATION_FAILED` | 400 | Missing required body fields or invalid types | "Please check your inputs and try again." |
-| `AUTH_TOKEN_EXPIRED` | 401 | JWT expired or invalid signature | "Your session has expired. Please sign in again." |
-| `COHORT_ACCESS_DENIED`| 403 | Attempting to access other cohort's material | "You do not have access to this cohort material." |
-| `RESOURCE_NOT_FOUND` | 404 | Target UUID does not exist in database | "The requested material or test was not found." |
-| `ACTIVE_ATTEMPT_EXISTS`| 409 | Starting a test while an attempt is running | "You already have an active test attempt in progress." |
-| `ATTEMPT_DEADLINE_EXPIRED`| 410 | Submitting answers after test countdown ends | "The test deadline has passed. Responses cannot be saved."|
-| `SECTION_CAP_EXCEEDED`| 422 | Attempting to submit $>10$ questions in Section B | "Section B allows a maximum of 10 answers. Excess unselected."|
-| `RATE_LIMIT_EXCEEDED`| 429 | Exceeded 100 requests per minute limit | "Too many requests. Please wait a moment." |
-| `AI_PROVIDER_ERROR` | 502 | All Groq fallback models failed | "AI generation is temporarily busy. Please retry shortly." |
-| `DATABASE_UNAVAILABLE`| 503 | Database connection pool exhausted | "System undergoing maintenance. Please retry in 1 minute." |
-
----
-
-# 22. MVP Scope and Future Enhancements
-
-### 22.1 Phase 1: MVP Scope (Current Release)
-- Single coaching institute deployment.
-- Full NEET-UG 2026 examination blueprint (Physics, Chemistry, Botany, Zoology, 720 marks, Section A/B choice).
-- Complete RBAC governance: `STUDENT`, `FACULTY`, `ADMIN` with database RLS.
-- Timed assessment runner with server-side autosave and authoritative grading.
-- Groq AI question generator with automatic fallback and faculty 1-click review/publishing.
-- 15-minute expiring signed URLs with student watermarking.
-- Chapter Study Hubs (Notes, DPPs, PYQs, Videos).
-- Document upload and admin verification workflow.
-- Audited cohort enrollment and student transfers.
-- Recharts-ready student performance analytics.
-
-### 22.2 Phase 2: Post-MVP Enhancements
-- **Automated OMR Sheet Scanner:** Computer-vision pipeline to upload and grade physical pen-and-paper OMR sheets for hybrid offline coaching mock exams.
-- **Integrated Payment Gateway:** Direct online fee payment collection via Razorpay or Stripe with automated student enrollment activation.
-- **Native Mobile Apps:** Offline-first React Native / Flutter applications for iOS and Android.
-- **Automated Doubt Solver Bot:** RAG-based AI model indexing NCERT textbooks to answer student academic doubts with source citations.
-- **Multi-Institute SaaS Architecture:** Tenant-level database schema isolation to onboard multiple coaching institutes onto a single multi-tenant infrastructure.
-
----
-
-# 23. Dependencies and Technical Constraints
-
-### 23.1 Upstream Dependencies
-- **Supabase Cloud / PostgreSQL 15:** Core operational database, authentication service, and connection pooling.
-- **Groq Cloud API:** High-throughput LPU inference for AI question generation (`gpt-oss-120b`, `gpt-oss-20b`, `qwen3.8-27b`).
-- **AWS S3 or Cloudflare R2:** Object storage for PDF notes, question diagrams, and document uploads.
-
-### 23.2 Technical Constraints
-- The backend must execute as a modular monolith in Node.js / Express with TypeScript.
-- The browser must never compute final marks or store answer keys locally.
-- Assessments must strictly adhere to the NEET-UG marking scheme (+4 for correct, -1 for incorrect, 0 for unattempted).
-
----
-
-# 24. Risks and Mitigation Strategies
-
-| Risk ID | Risk Description | Severity | Probability | Mitigation Strategy |
-| :--- | :--- | :---: | :---: | :--- |
-| **RSK-01** | **Answer Key Leakage via Client Payloads** | Critical | Low | Active test endpoints strictly query views/functions that omit answer keys and rationales. Validated via automated test suites. |
-| **RSK-02** | **Student Internet Disconnection During Exam** | High | High | Client stores unsaved answers in local memory and retries via exponential backoff; server locks total countdown time to absolute wall clock. |
-| **RSK-03** | **Groq AI Rate Limiting or Outage** | Medium | Medium | Automated 3-tier model cascading fallback (`gpt-oss-120b` $\rightarrow$ `gpt-oss-20b` $\rightarrow$ `qwen3.8-27b`); graceful HTTP 502 with friendly retry. |
-| **RSK-04** | **Piracy of High-Yield Study Materials** | High | Medium | Short-lived (15-min) presigned URLs coupled with canvas/PDF watermarking bearing the student's name, roll number, and IP. |
-| **RSK-05** | **Section B Over-Attempt Scoring Discrepancies** | High | Low | Server-side scoring procedure enforces NTA rules: strictly evaluates first 10 answered questions by display order. |
-
----
-
-# 25. Assumptions and Open Questions
-
-### 25.1 Validated Assumptions
-1. The coaching institute operates with two primary cohorts: `Batch 1 (Dec)` (repeaters/droppers) and `Batch 2 (May/June)` (regular high school students).
-2. The initial rollout will be web-responsive, eliminating the immediate need for native app store builds.
-3. Faculty will review and approve all AI-generated question drafts prior to their inclusion in student examinations.
-
-### 25.2 Documented Discrepancies & Open Questions
-1. **Fee Collection / Payment Gateway Ledger:** `project_overview.md` references fee receipts; however, `db.sql` does not contain a `payments` table, and `api_design.md` omits payment endpoints.  
-   *Resolution:* Payments remain outside the automated software boundary for MVP. Document verification (`student_documents`) is used to upload offline bank transfer receipts, verified manually by administrators.
-2. **OMR Sheet Processing Pipeline:** `project_overview.md` notes that NEET-UG is pen-and-paper.  
-   *Resolution:* The current MVP provides a pure Computer-Based Testing (CBT) mock engine. OMR scanning is formally scheduled for Phase 2.
-3. **Subject Breakdown Architecture:** In curriculum, Biology is split into Botany and Zoology to match the 4-subject NEET test blueprint.  
-   *Resolution:* Implemented via `curriculum_subjects` records: Physics, Chemistry, Botany, Zoology.
-
----
-
-# 26. Product Release and Implementation Roadmap
-
-```mermaid
-gantt
-    title NEET Prep LMS Implementation Roadmap (2026-2027)
-    dateFormat  YYYY-MM-DD
-    section Phase 1: MVP Core
-    Database & Auth Setup           :done,    des1, 2026-11-01, 2026-11-10
-    Curriculum & Resources          :active,  des2, 2026-11-11, 2026-11-25
-    Question Bank & AI Studio       :         des3, 2026-11-26, 2026-12-10
-    Assessment Engine & Scoring     :         des4, 2026-12-11, 2026-12-30
-    Analytics & Audit Logging       :         des5, 2027-01-01, 2027-01-15
-    Pilot Testing with Batch 1      :         des6, 2027-01-16, 2027-01-31
-    section Phase 2: Enhancements
-    OMR Sheet Vision Scanner        :         des7, 2027-02-01, 2027-03-01
-    Integrated Payment Gateway      :         des8, 2027-03-02, 2027-03-25
-    section Phase 3: Expansion
-    Native Mobile Apps (iOS/Android):         des9, 2027-04-01, 2027-05-30
-    Multi-Institute SaaS Scaling    :         des10, 2027-06-01, 2027-07-31
-```
-
----
-
-# 27. Success Metrics and Key Performance Indicators
-
-| KPI Category | Metric Name | Target Benchmark | Measurement Frequency |
-| :--- | :--- | :---: | :---: |
-| **Assessment Fidelity** | Zero Scoring Calculation Discrepancies | **100% (0 errors)** | Continuous / Post-Test |
-| **System Reliability** | Test Autosave Success Rate | **$\ge 99.95\%$** | During Live Mock Tests |
-| **Faculty Productivity**| Reduction in Question Authoring Time | **$\ge 70\%$ reduction** | Monthly Faculty Survey |
-| **Student Engagement** | Weekly Active Test Takers | **$\ge 85\%$ of cohort** | Weekly Batch Review |
-| **Security / DRM** | Intellectual Property Leakage Incidents | **0 incidents** | Continuous Audit |
-| **System Latency** | Autosave P95 API Latency | **$< 150 \text{ ms}$** | Real-Time Telemetry |
-
----
-
-# 28. Final Product Acceptance Checklist
-
-Before designating the platform as production-ready, the engineering team and QA leads must verify all conditions below:
-
-- [x] **Specification Alignment:** OpenAPI 3.1.0 document [`openapi.yaml`](file:///c:/Users/ASUS/Downloads/Medical_LMS/docs/api/openapi.yaml) is 100% valid with 0 broken `$ref` targets and 0 deprecated syntax elements.
-- [x] **Database Schema Verification:** All 44 tables, 32 enums, RLS policies, and triggers from [`db.sql`](file:///c:/Users/ASUS/Downloads/Medical_LMS/database/db.sql) deployed successfully on PostgreSQL 15.
-- [ ] **Answer Key Protection Verification:** Automated security test verifies that student test runner payloads contain zero correct answers, options, or explanations.
-- [ ] **Section B Capping Verification:** Automated unit test confirms that submitting 12 answers in Section B results in exactly the first 10 being scored and the remaining 2 marked unattempted.
-- [ ] **Groq AI Fallback Verification:** Mock test simulates a 500 error on `openai/gpt-oss-120b`, confirming seamless fallback to `openai/gpt-oss-20b`.
-- [ ] **Presigned URL Expiry Verification:** Verified that S3 download URLs expire and return HTTP 403 exactly after 900 seconds.
-- [ ] **Watermarking Verification:** Verified that PDF downloads render the user's name, roll number, and IP across all pages.
-- [ ] **Cohort RLS Isolation:** Verified that a student authenticated in Batch 1 cannot query or fetch Batch 2 assessment versions.
-- [ ] **Audit Trail Completeness:** Verified that student cohort transfers and admin score adjustments write immutable entries into `audit_logs`.
-- [ ] **Load Testing Verification:** Confirmed that the autosave endpoint handles 1,500 concurrent connections with P95 latency $< 150\text{ms}$.
-
----
-*End of Product Requirements Document (PRD) — NEET Prep LMS*

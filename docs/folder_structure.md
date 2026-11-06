@@ -1,1060 +1,1127 @@
-# NEET Prep LMS — Production-Ready Folder Structure
+# MedPrep — Scalable, Production-Oriented Repository Structure
 
-## 1. Architecture Decisions
+**Based on:** `project_overview.md`, Version 3.0  
+**Product scope:** NEET-UG and IMAT only  
+**Primary user:** Aspirant  
+**Supporting users:** Faculty, tutors, coaching-institute administrators, platform administrators  
+**Architecture:** TypeScript monorepo with a modular-monolith backend  
+**Frontend:** React + TypeScript + Vite  
+**Backend:** Node.js + Express + TypeScript  
+**Platform services:** Supabase Auth, PostgreSQL, Row Level Security (RLS), private Supabase Storage  
+**Purpose:** Repository blueprint and implementation guidance
 
-| Layer | Technology | Responsibility |
-|---|---|---|
-| Frontend | React, TypeScript, Vite | Student, Faculty and Admin interfaces |
-| Styling | Tailwind CSS | Responsive UI |
-| Backend | Node.js, Express, TypeScript | Business logic and REST APIs |
-| Database | Supabase PostgreSQL | Persistent relational data |
-| Authentication | Supabase Auth | Identity and session management |
-| Authorization | RBAC + PostgreSQL RLS | Role and data access control |
-| File storage | Supabase Storage | Private learning resources and documents |
-| AI integration | Groq API | AI question generation and academic assistant |
-| Validation | Zod | Request and response validation |
-| Frontend testing | Vitest, React Testing Library, Playwright | UI and end-to-end testing |
-| Backend testing | Vitest | Unit and integration testing |
-| API documentation | OpenAPI | API contracts |
-| Monitoring | Structured logging and error monitoring | Production observability |
-| CI/CD | GitHub Actions | Automated testing and deployment |
-
-### Architectural approach
-
-Use a **modular monolith**, not microservices, for the initial release.
-
-The backend will have independently organized business modules for authentication, students, curriculum, assessments, analytics, resources and AI.
-
-Each module owns its business logic and exposes controlled interfaces to other modules.
-
-Background tasks such as AI generation, email notifications and report generation can run in a separate worker process.
-
-The architecture should support future examination types through configurable examination blueprints rather than hardcoded NEET-specific logic.
+> This is a recommended production-oriented structure, not proof that the application is production-ready. Production readiness must be demonstrated through implementation, security testing, exam-conformance testing, operational controls, and deployment validation.
 
 ---
 
-## 2. Complete Project Directory Structure
+## 1. Architecture decisions derived from the project overview
+
+1. **Two exam tracks only:** `NEET_UG` and `IMAT`. Do not create generic UCAT, MCAT, or unrelated exam modules.
+2. **Aspirant-first experience:** independent aspirants are first-class users. Institute workspaces, faculty, batches, and administration are supporting workflows.
+3. **One platform, two exam experiences:** share the application shell and reusable learning/assessment components, but keep NEET-UG and IMAT syllabi, exam configurations, scoring, result labels, and analytics distinct.
+4. **Version exam rules by cycle:** question distribution, option count, time, scoring, language, syllabus mapping, and applicable accommodations must be versioned and reviewed before publication.
+5. **Modular monolith first:** keep domain modules separated in one backend codebase. Do not split into microservices before actual scale, team ownership, or reliability requirements justify it.
+6. **Trusted backend decisions:** authorization, exam access, assessment deadlines, answer-key access, attempt finalization, and scoring are server-authoritative.
+7. **AI output is a draft:** generated questions require structural validation and human academic approval before publication.
+8. **Immutable history:** preserve the published syllabus, question, assessment, and scoring versions used by completed attempts.
+9. **RLS and tenant isolation are foundational:** institute-owned records and private resources must be isolated at database and server layers.
+10. **Testing follows the domain:** keep separate NEET scoring/adjudication tests, IMAT scoring/section tests, security tests, reliability tests, and end-to-end learner flows.
+11. **Avoid premature complexity:** establish the main boundaries early, but add implementation files when the related product phase begins.
+
+---
+
+## 2. Recommended monorepo structure
 
 ```text
-neet-prep-lms/
+medprep/
 │
 ├── apps/
-│   │
-│   ├── web/
+│   ├── web/                                      # React application
 │   │   ├── public/
-│   │   │   ├── favicon.ico
+│   │   │   ├── favicon.svg
 │   │   │   ├── logo.svg
 │   │   │   └── images/
 │   │   │
 │   │   ├── src/
-│   │   │   │
 │   │   │   ├── app/
 │   │   │   │   ├── App.tsx
 │   │   │   │   ├── main.tsx
-│   │   │   │   ├── router.tsx
+│   │   │   │   ├── router/
+│   │   │   │   │   ├── index.tsx
+│   │   │   │   │   ├── paths.ts
+│   │   │   │   │   └── guards/
+│   │   │   │   │       ├── AuthGuard.tsx
+│   │   │   │   │       ├── ExamAccessGuard.tsx
+│   │   │   │   │       └── MembershipGuard.tsx
 │   │   │   │   ├── providers/
+│   │   │   │   │   ├── AppProviders.tsx
 │   │   │   │   │   ├── AuthProvider.tsx
 │   │   │   │   │   ├── QueryProvider.tsx
-│   │   │   │   │   ├── ThemeProvider.tsx
-│   │   │   │   │   └── AppProviders.tsx
-│   │   │   │   ├── layouts/
-│   │   │   │   │   ├── PublicLayout.tsx
-│   │   │   │   │   ├── StudentLayout.tsx
-│   │   │   │   │   ├── FacultyLayout.tsx
-│   │   │   │   │   └── AdminLayout.tsx
-│   │   │   │   └── guards/
-│   │   │   │       ├── AuthGuard.tsx
-│   │   │   │       └── PermissionGuard.tsx
+│   │   │   │   │   └── ThemeProvider.tsx
+│   │   │   │   └── layouts/
+│   │   │   │       ├── PublicLayout.tsx
+│   │   │   │       ├── LearnerLayout.tsx
+│   │   │   │       ├── FacultyLayout.tsx
+│   │   │   │       ├── InstituteAdminLayout.tsx
+│   │   │   │       └── PlatformAdminLayout.tsx
 │   │   │   │
-│   │   │   ├── features/
+│   │   │   ├── features/                     # Domain capability slices (Self-contained)
+│   │   │   │   ├── exam-selection/           # Dual-track switcher (NEET-UG vs IMAT vs both)
+│   │   │   │   │   ├── api/
+│   │   │   │   │   └── components/
 │   │   │   │   │
-│   │   │   │   ├── auth/
+│   │   │   │   ├── curriculum/               # Unified syllabus navigator & topic tree
 │   │   │   │   │   ├── api/
 │   │   │   │   │   ├── components/
-│   │   │   │   │   ├── hooks/
-│   │   │   │   │   ├── pages/
-│   │   │   │   │   ├── schemas/
-│   │   │   │   │   └── index.ts
+│   │   │   │   │   └── hooks/
 │   │   │   │   │
-│   │   │   │   ├── student-dashboard/
-│   │   │   │   ├── faculty-dashboard/
-│   │   │   │   ├── admin-dashboard/
+│   │   │   │   ├── resources/                # PDF document viewer, video player, DPPs
+│   │   │   │   │   ├── api/
+│   │   │   │   │   └── components/
 │   │   │   │   │
-│   │   │   │   ├── exam-catalog/
+│   │   │   │   ├── practice/                 # Topic-wise drill runner & scratchpad
+│   │   │   │   │   ├── api/
+│   │   │   │   │   └── components/
+│   │   │   │   │
+│   │   │   │   ├── assessments/              # Unified exam runner, question palette, autosave sync
 │   │   │   │   │   ├── api/
 │   │   │   │   │   ├── components/
-│   │   │   │   │   ├── hooks/
-│   │   │   │   │   ├── pages/
-│   │   │   │   │   └── index.ts
+│   │   │   │   │   │   ├── runner/
+│   │   │   │   │   │   ├── palette/
+│   │   │   │   │   │   └── timer/
+│   │   │   │   │   └── hooks/
 │   │   │   │   │
-│   │   │   │   ├── curriculum/
+│   │   │   │   ├── analytics/                # Performance radars, subject breakdown, error analysis
 │   │   │   │   │   ├── api/
-│   │   │   │   │   ├── components/
-│   │   │   │   │   ├── hooks/
-│   │   │   │   │   ├── pages/
-│   │   │   │   │   └── index.ts
+│   │   │   │   │   └── components/
 │   │   │   │   │
-│   │   │   │   ├── batches/
-│   │   │   │   │   ├── api/
-│   │   │   │   │   ├── components/
-│   │   │   │   │   ├── hooks/
-│   │   │   │   │   ├── pages/
-│   │   │   │   │   └── index.ts
-│   │   │   │   │
-│   │   │   │   ├── enrollments/
-│   │   │   │   ├── resources/
-│   │   │   │   ├── question-bank/
-│   │   │   │   ├── assessments/
-│   │   │   │   ├── attempts/
-│   │   │   │   ├── analytics/
-│   │   │   │   ├── ai-assistant/
-│   │   │   ├── ai-question-generator/
-│   │   │   ├── announcements/
-│   │   │   ├── academic-calendar/
-│   │   │   ├── student-documents/
-│   │   │   ├── community/
-│   │   │   └── administration/
-│   │   │
-│   │   ├── shared/
-│   │   │   ├── components/
-│   │   │   │   ├── ui/
-│   │   │   │   ├── forms/
-│   │   │   │   ├── charts/
-│   │   │   │   ├── tables/
-│   │   │   │   ├── dialogs/
-│   │   │   │   └── feedback/
+│   │   │   │   └── ai-assistant/             # Academic grounding chat assistant
+│   │   │   │       ├── api/
+│   │   │   │       └── components/
 │   │   │   │
-│   │   │   ├── hooks/
-│   │   │   ├── lib/
-│   │   │   │   ├── api-client.ts
-│   │   │   │   ├── supabase-auth.ts
-│   │   │   │   ├── query-client.ts
-│   │   │   │   └── date-utils.ts
+│   │   │   ├── pages/                        # Composed views per Role Portal (Route targets)
+│   │   │   │   ├── student/                  # Student Dashboard, SyllabusView, DrillPage, ExamLobby, Results
+│   │   │   │   ├── faculty/                  # Faculty Dashboard, QuestionAuthoring, Reviews, AssessmentSetup
+│   │   │   │   ├── institute-admin/          # Batches, CohortEnrollments, FacultyAssignments, Reports
+│   │   │   │   └── platform-admin/           # Institutions, BlueprintVerification, AuditLogs
 │   │   │   │
-│   │   │   ├── constants/
-│   │   │   ├── types/
-│   │   │   └── utils/
+│   │   │   ├── shared/                       # Genuinely reusable cross-cutting components & hooks
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── ui/
+│   │   │   │   │   ├── forms/
+│   │   │   │   │   ├── navigation/
+│   │   │   │   │   ├── charts/
+│   │   │   │   │   └── feedback/
+│   │   │   │   ├── hooks/
+│   │   │   │   ├── styles/
+│   │   │   │   └── utils/
+│   │   │   │
+│   │   │   ├── tests/
+│   │   │   │   ├── component/
+│   │   │   │   └── e2e/
+│   │   │   │
+│   │   │       ├── auth/
+│   │   │       ├── exam-selection/
+│   │   │       ├── neet-ug/
+│   │   │       ├── imat/
+│   │   │       ├── dual-track-account/
+│   │   │       ├── assessment-recovery/
+│   │   │       └── role-access/
 │   │   │
-│   │   ├── styles/
-│   │   │   ├── globals.css
-│   │   │   └── theme.css
-│   │   │
-│   │   ├── tests/
-│   │   │   ├── setup.ts
-│   │   │   └── accessibility/
-│   │   │
-│   │   ├── .env.example
 │   │   ├── index.html
 │   │   ├── vite.config.ts
 │   │   ├── tsconfig.json
-│   │   └── package.json
-│   │
-│   ├── api/
-│   │   ├── src/
-│   │   │   │
-│   │   │   ├── app.ts
-│   │   │   ├── server.ts
-│   │   │   │
-│   │   │   ├── config/
-│   │   │   │   ├── env.ts
-│   │   │   │   ├── cors.ts
-│   │   │   │   ├── security.ts
-│   │   │   │   ├── database.ts
-│   │   │   │   └── ai-config.ts
-│   │   │   │
-│   │   │   ├── common/
-│   │   │   │   ├── errors/
-│   │   │   │   │   ├── AppError.ts
-│   │   │   │   │   ├── ErrorCodes.ts
-│   │   │   │   │   └── error-handler.ts
-│   │   │   │   │
-│   │   │   │   ├── middleware/
-│   │   │   │   │   ├── authenticate.ts
-│   │   │   │   │   ├── authorize.ts
-│   │   │   │   │   ├── validate-request.ts
-│   │   │   │   │   ├── rate-limit.ts
-│   │   │   │   │   ├── request-id.ts
-│   │   │   │   │   ├── security-headers.ts
-│   │   │   │   │   └── error-middleware.ts
-│   │   │   │   │
-│   │   │   │   ├── policies/
-│   │   │   │   │   ├── permissions.ts
-│   │   │   │   │   └── role-policy.ts
-│   │   │   │   │
-│   │   │   │   ├── constants/
-│   │   │   │   ├── utils/
-│   │   │   │   └── types/
-│   │   │   │
-│   │   │   ├── infrastructure/
-│   │   │   │   │
-│   │   │   │   ├── supabase/
-│   │   │   │   │   ├── client.ts
-│   │   │   │   │   ├── user-client.ts
-│   │   │   │   │   ├── admin-client.ts
-│   │   │   │   │   └── token-verifier.ts
-│   │   │   │   │
-│   │   │   │   ├── storage/
-│   │   │   │   │   ├── storage.service.ts
-│   │   │   │   │   └── signed-url.service.ts
-│   │   │   │   │
-│   │   │   │   ├── ai/
-│   │   │   │   │   ├── providers/
-│   │   │   │   │   │   └── groq/
-│   │   │   │   │   │       ├── groq.client.ts
-│   │   │   │   │   │       └── groq.provider.ts
-│   │   │   │   │   ├── model-router.ts
-│   │   │   │   │   └── ai.interface.ts
-│   │   │   │   │
-│   │   │   │   ├── queue/
-│   │   │   │   │   ├── queue.interface.ts
-│   │   │   │   │   ├── queue.config.ts
-│   │   │   │   │   └── jobs/
-│   │   │   │   │
-│   │   │   │   ├── email/
-│   │   │   │   └── observability/
-│   │   │   │       ├── logger.ts
-│   │   │   │       └── metrics.ts
-│   │   │   │
-│   │   │   ├── modules/
-│   │   │   │   │
-│   │   │   │   ├── auth/
-│   │   │   │   ├── users/
-│   │   │   │   ├── students/
-│   │   │   │   ├── faculty/
-│   │   │   │   ├── exam-catalog/
-│   │   │   │   ├── curriculum/
-│   │   │   │   ├── batches/
-│   │   │   │   ├── enrollments/
-│   │   │   │   ├── resources/
-│   │   │   │   ├── question-bank/
-│   │   │   │   ├── assessments/
-│   │   │   │   ├── attempts/
-│   │   │   │   ├── analytics/
-│   │   │   │   ├── ai-question-generator/
-│   │   │   │   ├── ai-assistant/
-│   │   │   │   ├── student-documents/
-│   │   │   │   ├── announcements/
-│   │   │   │   ├── academic-calendar/
-│   │   │   │   ├── community/
-│   │   │   │   ├── audit/
-│   │   │   │   ├── administration/
-│   │   │   │   └── health/
-│   │   │   │
-│   │   │   ├── routes/
-│   │   │   │   └── v1/
-│   │   │   │       └── index.ts
-│   │   │   │
-│   │   │   └── docs/
-│   │   │       └── openapi.yaml
-│   │   │
-│   │   ├── tests/
-│   │   │   ├── unit/
-│   │   │   ├── integration/
-│   │   │   ├── security/
-│   │   │   └── fixtures/
-│   │   │
-│   │   ├── .env.example
-│   │   ├── tsconfig.json
 │   │   ├── package.json
-│   │   └── Dockerfile
+│   │   └── .env.example
 │   │
-│   └── worker/
+│   └── api/                                    # Node.js / Express modular monolith
 │       ├── src/
-│       │   ├── index.ts
+│       │   ├── app.ts                          # Express composition; no listen()
+│       │   ├── server.ts                       # HTTP process entry point
+│       │   ├── worker.ts                       # Optional job-worker process entry
+│       │   │
 │       │   ├── config/
-│       │   ├── infrastructure/
-│       │   │   ├── queue/
-│       │   │   └── logger/
-│       │   ├── jobs/
-│       │   │   ├── ai-question-generation/
-│       │   │   ├── report-generation/
-│       │   │   ├── email-notifications/
-│       │   │   ├── document-processing/
-│       │   │   └── analytics-aggregation/
+│       │   │   ├── env.ts                      # Runtime environment validation
+│       │   │   ├── app-config.ts
+│       │   │   ├── cors.ts
+│       │   │   ├── security.ts
+│       │   │   └── constants.ts
+│       │   │
+│       │   ├── bootstrap/
+│       │   │   ├── register-modules.ts
+│       │   │   ├── register-routes.ts
+│       │   │   └── register-jobs.ts
+│       │   │
+│       │   ├── middleware/
+│       │   │   ├── authenticate.ts
+│       │   │   ├── resolve-membership.ts
+│       │   │   ├── require-permission.ts
+│       │   │   ├── require-exam-access.ts
+│       │   │   ├── validate-request.ts
+│       │   │   ├── rate-limit.ts
+│       │   │   ├── request-id.ts
+│       │   │   ├── security-headers.ts
+│       │   │   ├── not-found.ts
+│       │   │   └── error-handler.ts
+│       │   │
+│       │   ├── domains/                        # Domain-Driven Bounded Contexts (Vertical Slices)
+│       │   │   ├── identity/                   # Auth, profiles, memberships, permissions
+│       │   │   │   ├── identity.routes.ts
+│       │   │   │   ├── identity.controller.ts
+│       │   │   │   ├── identity.service.ts
+│       │   │   │   ├── identity.repository.ts
+│       │   │   │   └── identity.schemas.ts
+│       │   │   │
+│       │   │   ├── tenancy/                    # Multi-tenant institutions, batches, enrollments
+│       │   │   │   ├── tenancy.routes.ts
+│       │   │   │   ├── tenancy.controller.ts
+│       │   │   │   ├── tenancy.service.ts
+│       │   │   │   └── tenancy.repository.ts
+│       │   │   │
+│       │   │   ├── academics/                  # Curriculum taxonomy, subjects, chapters, topics
+│       │   │   │   ├── academics.routes.ts
+│       │   │   │   ├── academics.controller.ts
+│       │   │   │   └── academics.service.ts
+│       │   │   │
+│       │   │   ├── examination/                # Exam tracks (NEET/IMAT), blueprints, adapters
+│       │   │   │   ├── examination.routes.ts
+│       │   │   │   ├── examination.controller.ts
+│       │   │   │   ├── examination.service.ts
+│       │   │   │   └── adapters/
+│       │   │   │       ├── neet-ug.adapter.ts
+│       │   │   │       └── imat.adapter.ts
+│       │   │   │
+│       │   │   ├── content-bank/               # Question items, revisions, confidential keys, reviews
+│       │   │   │   ├── content-bank.routes.ts
+│       │   │   │   ├── content-bank.controller.ts
+│       │   │   │   ├── content-bank.service.ts
+│       │   │   │   ├── question-reviews.service.ts
+│       │   │   │   ├── ai-drafts.service.ts
+│       │   │   │   └── content-bank.repository.ts
+│       │   │   │
+│       │   │   ├── assessments/                # Test definitions, versions, attempts, scoring sync
+│       │   │   │   ├── assessments.routes.ts
+│       │   │   │   ├── assessments.controller.ts
+│       │   │   │   ├── attempts.service.ts
+│       │   │   │   └── assessments.repository.ts
+│       │   │   │
+│       │   │   ├── learning/                   # Study plans, progress tracking, AI tutor
+│       │   │   │   ├── learning.routes.ts
+│       │   │   │   ├── learning.controller.ts
+│       │   │   │   ├── study-plans.service.ts
+│       │   │   │   └── ai-tutor.service.ts
+│       │   │   │
+│       │   │   ├── communication/              # Announcements, calendar, notifications
+│       │   │   │   ├── communication.routes.ts
+│       │   │   │   ├── announcements.service.ts
+│       │   │   │   └── notifications.service.ts
+│       │   │   │
+│       │   │   └── platform/                   # Audit logs, health checks, telemetry
+│       │   │       ├── audit.service.ts
+│       │   │       └── health.controller.ts
+│       │   │
+│       │   ├── infrastructure/                 # External integration adapters
+│       │   │   ├── database/                   # Supabase client instances (user-scoped / service-role)
+│       │   │   │   ├── user-client.ts
+│       │   │   │   └── service-role-client.ts
+│       │   │   ├── storage/                    # Supabase Storage S3 client & signed URLs
+│       │   │   ├── ai/                         # LLM provider adapters (Groq / OpenAI)
+│       │   │   └── queue/                      # Redis / BullMQ / in-memory queues
+│       │   │
+│       │   ├── jobs/                           # Asynchronous job handlers
+│       │   │   ├── ai-question-gen.job.ts
+│       │   │   ├── attempt-timeout.job.ts
+│       │   │   └── notification-dispatch.job.ts
+│       │   │
+│       │   ├── shared/                         # Domain-agnostic utilities (errors, result, pagination)
+│       │   │   ├── errors/
+│       │   │   ├── result/
+│       │   │   ├── pagination/
+│       │   │   └── logging/
+│       │   │
 │       │   └── tests/
-│       ├── .env.example
+│       │       ├── unit/
+│       │       └── integration/
+│       │
+│       ├── tsconfig.json
 │       ├── package.json
-│       └── Dockerfile
+│       └── .env.example
 │
 ├── packages/
-│   ├── contracts/
+│   ├── api-contracts/                          # Safe shared DTOs & Zod schemas (Frontend + Backend)
 │   │   ├── src/
 │   │   │   ├── auth/
-│   │   │   ├── users/
-│   │   │   ├── exams/
 │   │   │   ├── curriculum/
 │   │   │   ├── assessments/
-│   │   │   ├── questions/
-│   │   │   ├── attempts/
-│   │   │   ├── analytics/
-│   │   │   ├── ai/
 │   │   │   ├── common/
 │   │   │   └── index.ts
+│   │   ├── tsconfig.json
 │   │   └── package.json
 │   │
-│   ├── config-eslint/
-│   │   ├── index.js
+│   ├── database/                               # Database schema types & Supabase client factories
+│   │   ├── src/
+│   │   │   ├── types.ts                        # Generated PostgreSQL & Supabase schema types
+│   │   │   ├── client.ts                       # User-scoped & admin service-role clients
+│   │   │   └── index.ts
+│   │   ├── tsconfig.json
 │   │   └── package.json
 │   │
-│   └── config-typescript/
-│       ├── base.json
-│       ├── react.json
-│       ├── node.json
+│   ├── exam-engine/                            # Official NEET-UG & IMAT rules & scoring strategies
+│   │   ├── src/
+│   │   │   ├── types.ts                        # Scoring interfaces & specification types
+│   │   │   ├── neet-ug/                        # 180Q, 4-opt, +4/-1/0, dropped-Q adjudication
+│   │   │   ├── imat/                           # 60Q, 5-opt, +1.5/-0.4/0, 5 sections, 90 marks
+│   │   │   └── index.ts
+│   │   ├── tsconfig.json
+│   │   └── package.json
+│   │
+│   └── config/                                 # Shared lint / TypeScript presets
 │       └── package.json
 │
 ├── supabase/
-│   ├── config.toml
-│   │
-│   ├── migrations/
-│   │   ├── 0001_create_enums.sql
-│   │   ├── 0002_create_profiles_and_roles.sql
-│   │   ├── 0003_create_exam_catalog.sql
-│   │   ├── 0004_create_curriculum.sql
-│   │   ├── 0005_create_batches_and_enrollments.sql
-│   │   ├── 0006_create_resources.sql
+│   ├── config.toml                             # Supabase CLI local orchestration configuration
+│   ├── migrations/                             # Ordered, immutable SQL migrations
+│   │   ├── 0001_create_extensions_and_types.sql
+│   │   ├── 0002_create_identity_and_roles.sql
+│   │   ├── 0003_create_exam_tracks_and_blueprints.sql
+│   │   ├── 0004_create_academic_structure_and_tenancy.sql
+│   │   ├── 0005_create_curriculum_and_study_plans.sql
+│   │   ├── 0006_create_learning_resources.sql
 │   │   ├── 0007_create_question_bank.sql
-│   │   ├── 0008_create_question_versions.sql
-│   │   ├── 0009_create_assessments.sql
-│   │   ├── 0010_create_attempts.sql
-│   │   ├── 0011_create_analytics.sql
-│   │   ├── 0012_create_documents.sql
-│   │   ├── 0013_create_announcements.sql
-│   │   ├── 0014_create_calendar.sql
-│   │   ├── 0015_create_community.sql
-│   │   ├── 0016_create_audit_logs.sql
-│   │   ├── 0017_create_functions_and_triggers.sql
-│   │   ├── 0018_create_rls_policies.sql
-│   │   ├── 0019_create_storage_policies.sql
-│   │   └── 0020_create_indexes.sql
-│   │
+│   │   ├── 0008_create_assessments_and_scoring.sql
+│   │   ├── 0009_create_ai_generation_and_jobs.sql
+│   │   ├── 0010_create_operations_and_audit.sql
+│   │   ├── 0011_create_indexes.sql
+│   │   ├── 0012_create_security_functions_and_triggers.sql
+│   │   ├── 0013_enable_rls_and_policies.sql
+│   │   └── 0014_create_storage_buckets_and_policies.sql
 │   ├── seed/
-│   │   ├── development.sql
-│   │   ├── neet-ug-blueprint.sql
-│   │   └── sample-curriculum.sql
+│   │   ├── 00_reference_data.sql
+│   │   ├── exam-configurations/
+│   │   │   ├── neet-ug/
+│   │   │   │   └── 2026.json
+│   │   │   └── imat/
+│   │   │       └── 2026-27.json
+│   │   └── demo/
+│   │       ├── demo-institution.sql
+│   │       ├── demo-users.sql
+│   │       └── demo-content.sql
 │   │
-│   └── tests/
-│       ├── rls/
-│       ├── constraints/
-│       └── functions/
+│   ├── tests/
+│   │   ├── rls/
+│   │   │   ├── independent-learner.test.sql
+│   │   │   ├── student-access.test.sql
+│   │   │   ├── faculty-access.test.sql
+│   │   │   ├── institute-isolation.test.sql
+│   │   │   └── platform-admin-access.test.sql
+│   │   └── constraints/
+│   │
+│   └── README.md
 │
 ├── tests/
-│   ├── e2e/
-│   │   ├── authentication/
-│   │   ├── student/
-│   │   ├── faculty/
-│   │   ├── admin/
-│   │   └── assessment/
+│   ├── exam-conformance/
+│   │   ├── neet-ug/
+│   │   │   ├── 2026-configuration.test.ts
+│   │   │   ├── 2026-scoring.test.ts
+│   │   │   ├── 2026-adjudication.test.ts
+│   │   │   └── 2026-language-mapping.test.ts
+│   │   └── imat/
+│   │       ├── 2026-27-configuration.test.ts
+│   │       ├── 2026-27-scoring.test.ts
+│   │       └── 2026-27-section-distribution.test.ts
 │   │
 │   ├── security/
-│   │   ├── authorization/
-│   │   ├── batch-isolation/
-│   │   ├── answer-key-protection/
-│   │   ├── file-access/
-│   │   └── api-abuse/
+│   │   ├── role-escalation.test.ts
+│   │   ├── cross-user-access.test.ts
+│   │   ├── cross-institution-access.test.ts
+│   │   ├── exam-entitlement.test.ts
+│   │   ├── answer-key-exposure.test.ts
+│   │   ├── forged-score.test.ts
+│   │   └── signed-url-expiry.test.ts
+│   │
+│   ├── reliability/
+│   │   ├── answer-autosave.test.ts
+│   │   ├── duplicate-submit.test.ts
+│   │   ├── timeout-finalization.test.ts
+│   │   ├── attempt-recovery.test.ts
+│   │   └── regrading-history.test.ts
 │   │
 │   ├── load/
-│   │   ├── concurrent-login/
-│   │   ├── assessment-submission/
-│   │   └── analytics-queries/
+│   │   ├── assessment-start.js
+│   │   ├── answer-save.js
+│   │   └── simultaneous-submit.js
 │   │
-│   └── ai-evaluation/
-│       ├── answer-accuracy/
-│       ├── schema-validation/
-│       └── academic-safety/
+│   └── fixtures/
+│       ├── neet-ug/
+│       ├── imat/
+│       ├── learners/
+│       └── institutions/
 │
 ├── docs/
-│   ├── project-overview.md
-│   ├── architecture/
-│   │   ├── high-level-architecture.md
-│   │   ├── backend-architecture.md
-│   │   ├── frontend-architecture.md
-│   │   ├── database-architecture.md
-│   │   └── security-architecture.md
+│   ├── product/
+│   │   ├── project-overview.md
+│   │   ├── mvp-scope.md
+│   │   ├── user-journeys.md
+│   │   └── product-decisions.md
 │   │
-│   ├── database/
-│   │   ├── er-diagram.md
-│   │   ├── data-dictionary.md
-│   │   └── migration-guide.md
+│   ├── architecture/
+│   │   ├── system-architecture.md
+│   │   ├── repository-structure.md
+│   │   ├── frontend-architecture.md
+│   │   ├── backend-architecture.md
+│   │   ├── database-design.md
+│   │   ├── assessment-lifecycle.md
+│   │   ├── scoring-design.md
+│   │   └── ai-workflows.md
+│   │
+│   ├── exam-specifications/
+│   │   ├── neet-ug/
+│   │   │   ├── annual-verification-checklist.md
+│   │   │   └── 2026/
+│   │   │       ├── official-sources.md
+│   │   │       ├── exam-configuration.md
+│   │   │       ├── syllabus-mapping.md
+│   │   │       ├── scoring-and-adjudication.md
+│   │   │       └── language-review.md
+│   │   └── imat/
+│   │       ├── annual-verification-checklist.md
+│   │       └── 2026-27/
+│   │           ├── official-sources.md
+│   │           ├── exam-configuration.md
+│   │           ├── syllabus-mapping.md
+│   │           ├── section-distribution.md
+│   │           └── scoring.md
 │   │
 │   ├── api/
-│   │   └── api-guidelines.md
+│   │   ├── api-conventions.md
+│   │   ├── authentication-and-authorization.md
+│   │   ├── error-catalog.md
+│   │   └── openapi.yaml
+│   │
+│   ├── database/
+│   │   ├── schema-overview.md
+│   │   ├── data-dictionary.md
+│   │   ├── rls-policy-matrix.md
+│   │   └── migration-policy.md
 │   │
 │   ├── security/
 │   │   ├── threat-model.md
-│   │   ├── access-control.md
+│   │   ├── secrets-management.md
+│   │   ├── content-protection.md
+│   │   ├── privacy-and-retention.md
 │   │   └── incident-response.md
 │   │
-│   ├── development/
-│   │   ├── setup-guide.md
-│   │   ├── coding-standards.md
-│   │   └── contribution-guide.md
+│   ├── operations/
+│   │   ├── local-development.md
+│   │   ├── environments.md
+│   │   ├── deployment.md
+│   │   ├── backup-and-restore.md
+│   │   ├── monitoring-and-alerting.md
+│   │   └── troubleshooting.md
 │   │
-│   ├── deployment/
-│   │   ├── deployment-guide.md
-│   │   ├── environment-configuration.md
-│   │   └── backup-recovery.md
+│   ├── decisions/                              # Architecture Decision Records
+│   │   ├── 0001-modular-monolith.md
+│   │   ├── 0002-neet-imat-exam-adapters.md
+│   │   ├── 0003-server-authoritative-scoring.md
+│   │   ├── 0004-supabase-rls.md
+│   │   └── 0005-versioned-assessments.md
 │   │
-│   ├── runbooks/
-│   │   ├── database-outage.md
-│   │   ├── ai-provider-outage.md
-│   │   └── assessment-incident.md
-│   │
-│   └── adr/
-│       └── 0001-modular-monolith.md
+│   └── runbooks/
+│       ├── assessment-incident.md
+│       ├── database-recovery.md
+│       ├── ai-provider-outage.md
+│       ├── storage-access-incident.md
+│       └── exam-configuration-rollover.md
 │
 ├── infra/
 │   ├── docker/
 │   │   ├── web.Dockerfile
-│   │   ├── api.Dockerfile
-│   │   └── worker.Dockerfile
-│   │
-│   ├── monitoring/
-│   │   └── dashboards/
-│   │
-│   └── deployment/
-│       ├── staging/
-│       └── production/
+│   │   └── api.Dockerfile
+│   ├── local/
+│   │   └── docker-compose.yml
+│   ├── deployment/
+│   │   ├── web/
+│   │   ├── api/
+│   │   └── worker/
+│   └── monitoring/
+│       ├── dashboards/
+│       └── alerts/
 │
 ├── scripts/
-│   ├── setup.sh
-│   ├── check-env.sh
-│   ├── validate-migrations.sh
-│   ├── run-tests.sh
-│   └── generate-types.sh
+│   ├── database/
+│   │   ├── reset-local.sh
+│   │   ├── migration-check.sh
+│   │   └── generate-types.sh
+│   ├── exam-config/
+│   │   ├── validate-config.ts
+│   │   ├── compare-versions.ts
+│   │   └── verify-publication-checklist.ts
+│   ├── quality/
+│   │   ├── check-env.ts
+│   │   └── check-secrets.sh
+│   └── release/
+│       ├── pre-release-check.sh
+│       └── create-release-notes.ts
 │
 ├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── security-checks.yml
-│       └── deploy.yml
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   ├── database-migration-check.yml
+│   │   ├── security-scan.yml
+│   │   ├── deploy-staging.yml
+│   │   └── deploy-production.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
+│
+├── .husky/
+│   ├── pre-commit
+│   └── commit-msg
 │
 ├── .editorconfig
 ├── .gitignore
 ├── .npmrc
 ├── .nvmrc
-├── .prettierrc
+├── .prettierignore
+├── .prettierrc.json
 ├── eslint.config.js
 ├── package.json
-├── pnpm-workspace.yaml
 ├── pnpm-lock.yaml
-├── tsconfig.json
+├── pnpm-workspace.yaml
 ├── turbo.json
+├── tsconfig.base.json
+├── docker-compose.yml
 ├── .env.example
-├── README.md
-└── LICENSE
+└── README.md
 ```
 
 ---
 
-## 3. Backend Module Structure
+## 3. Responsibilities of the major directories
 
-Every major backend feature should follow the same internal organization.
+### 3.1 `apps/web`
 
-For example, the assessment module:
+Contains the React application only.
 
-```text
-modules/
-└── assessments/
-    ├── assessment.routes.ts
-    ├── assessment.controller.ts
-    ├── assessment.service.ts
-    ├── assessment.repository.ts
-    ├── assessment.schemas.ts
-    ├── assessment.policies.ts
-    ├── assessment.types.ts
-    │
-    ├── domain/
-    │   ├── assessment.entity.ts
-    │   ├── assessment-status.ts
-    │   └── assessment-rules.ts
-    │
-    └── tests/
-        ├── assessment.service.test.ts
-        ├── assessment.repository.test.ts
-        └── assessment.policies.test.ts
-```
+Responsibilities:
 
-### Responsibility of each file
+- Aspirant onboarding and exam selection.
+- NEET-UG and IMAT learner experiences.
+- Curriculum, study plans, resources, practice, assessments, and results.
+- Faculty question authoring and review interfaces.
+- Institute administration workflows.
+- Platform administration screens where required.
+- Accessible and responsive user interfaces.
 
-| File | Responsibility |
-|---|---|
-| Routes | Define HTTP endpoints |
-| Controller | Handle HTTP requests and responses |
-| Service | Execute business operations |
-| Repository | Handle database operations |
-| Schemas | Validate incoming data |
-| Policies | Check resource-level permissions |
-| Types | Define internal TypeScript types |
-| Domain | Maintain important business rules |
-| Tests | Verify module behaviour |
+Rules:
 
-### Example assessment endpoints
+- The backend produces the authoritative result. Do not calculate final scores in the browser.
+- Do not store answer keys for active or unreleased assessments in client state or frontend bundles.
+- Do not expose Supabase service-role keys or AI provider credentials.
+- Route guards are a user-experience feature, not a security boundary.
+- Put feature-specific components, hooks, API calls, and schemas inside their feature folder.
+- Put components in `components/` only when they are genuinely shared.
 
-```text
-/api/v1/assessments
-/api/v1/assessments/:assessmentId
-/api/v1/assessments/:assessmentId/start
-/api/v1/assessments/:assessmentId/questions
-/api/v1/attempts/:attemptId/answers
-/api/v1/attempts/:attemptId/submit
-/api/v1/attempts/:attemptId/result
-```
+### 3.2 `apps/api`
 
-The routes should delegate their business operations to services. Controllers should not contain scoring logic or direct database manipulation.
+Contains the trusted backend and modular-monolith domain services.
+
+Responsibilities:
+
+- Authentication/session verification.
+- Exam-track entitlement.
+- Institution membership and permissions.
+- Annual exam configuration publication.
+- Syllabus and curriculum access.
+- Resource authorization.
+- Question and answer-key governance.
+- AI generation and faculty review.
+- Assessment configuration and versioning.
+- Attempt creation and answer saving.
+- Server-authoritative deadlines and scoring.
+- Result release and regrading.
+- Analytics and revision recommendations.
+- Notifications and audit events.
+
+The API may be deployed as an HTTP process and, when required, a separate worker process using the same codebase. This is still a modular monolith; it does not require separate microservices.
+
+### 3.3 `packages/api-contracts`
+
+Contains safe request/response contracts shared by web and API.
+
+Examples:
+
+- Exam-track selection request.
+- Public exam configuration response.
+- Syllabus tree response.
+- Resource summary DTO.
+- Assessment instructions DTO.
+- Student-safe question DTO.
+- Attempt status DTO.
+- Released result DTO.
+
+**Never export private answer keys, service-role types, internal scoring state, or privileged database entities into a package imported by the browser.** Student-facing DTOs must be separate from backend persistence models.
+
+### 3.4 `packages/exam-config-schema`
+
+Defines the structural schema for exam configuration documents.
+
+Allowed exam codes:
+
+- `NEET_UG`
+- `IMAT`
+
+Validate exam version metadata, section order and counts, option count, language configuration, duration, scoring-policy shape, and source/review metadata. This validates configuration structure; it does not establish that an official source was interpreted correctly. Academic verification and publication approval remain separate steps.
+
+### 3.5 `supabase/migrations`
+
+The ordered SQL migrations are the database schema source of truth.
+
+Rules:
+
+- Every schema or RLS change gets a new migration.
+- Never rewrite a migration already applied to a shared environment.
+- Include indexes, constraints, grants, triggers, and RLS policies in reviewed migrations.
+- Test migrations against a clean local database.
+- Keep schema migrations separate from demo seed data.
+- Generate TypeScript database types from the schema; do not manually edit generated output.
+
+### 3.6 `supabase/seed/exam-configurations`
+
+Contains versioned configuration data for the two supported exams.
+
+Examples:
+
+- `neet-ug/2026.json`
+- `imat/2026-27.json`
+
+Each file should include exam code and cycle, configuration version, official source URL(s), source publication date where available, reviewer/verification status, sections and question counts, option count, duration, scoring configuration, language configuration, and syllabus mapping version.
+
+A seed file is not automatically authoritative. It must pass schema validation and academic verification before being published to learners.
+
+### 3.7 `tests`
+
+Contains cross-module behavior and product-conformance tests. Keep separate suites for NEET scoring/adjudication, IMAT scoring/section distribution, dual-track separation, cross-user and cross-institute access, answer-key exposure, forged-score attempts, answer-save recovery, duplicate finalization, and concurrent assessment activity.
+
+### 3.8 `docs`
+
+Contains maintained product, architecture, exam verification, security, API, and operational documents. Keep official exam evidence separated by exam and cycle. Do not combine NEET and IMAT source verification into one generic document.
+
+### 3.9 `infra`
+
+Contains deployment and runtime configuration. Keep it simple until the hosting provider and operational requirements are finalized. Do not add Kubernetes or a large Terraform layout simply to make the repository look enterprise-grade.
 
 ---
 
-## 4. Frontend Feature Structure
+## 4. Standard backend module pattern
 
-Use feature-based organization rather than placing every page, hook and component in one global folder.
-
-For example:
+Use a vertical-slice structure for complex modules. Small modules may start with fewer files and grow as needed.
 
 ```text
-features/
-└── assessments/
-    ├── api/
-    │   ├── assessment.api.ts
-    │   └── assessment.queries.ts
-    │
-    ├── components/
-    │   ├── AssessmentCard.tsx
-    │   ├── AssessmentHeader.tsx
-    │   ├── QuestionPalette.tsx
-    │   ├── QuestionNavigator.tsx
-    │   ├── QuestionRenderer.tsx
-    │   └── ExamTimer.tsx
-    │
-    ├── hooks/
-    │   ├── useAssessment.ts
-    │   └── useAssessmentQuestions.ts
-    │
-    ├── pages/
-    │   ├── AssessmentListPage.tsx
-    │   ├── AssessmentDetailsPage.tsx
-    │   └── AssessmentInstructionsPage.tsx
-    │
-    ├── schemas/
-    │   └── assessment-form.schema.ts
-    │
-    ├── state/
-    │   └── assessment-session.store.ts
-    │
-    └── index.ts
+question-bank/
+├── question-bank.routes.ts
+├── question-bank.controller.ts
+├── question-bank.service.ts
+├── question-bank.repository.ts
+├── question-bank.schemas.ts
+├── question-bank.dto.ts
+├── question-bank.permissions.ts
+├── question-bank.errors.ts
+├── question-bank.types.ts
+└── __tests__/
+    ├── question-bank.service.test.ts
+    └── question-bank.repository.test.ts
 ```
 
-Keep assessment attempt functionality separate from assessment creation and management.
+Request flow:
 
-The student-facing question renderer must never receive answer-key data.
+```text
+HTTP Request
+    |
+    v
+Authentication middleware
+    |
+    v
+Resolve learner / institution membership
+    |
+    v
+Check permission and exam entitlement
+    |
+    v
+Validate request schema
+    |
+    v
+Controller
+    |
+    v
+Domain service
+    |
+    v
+Repository / trusted infrastructure
+    |
+    v
+PostgreSQL / private storage / external AI provider
+    |
+    v
+Safe response DTO
+```
+
+Rules:
+
+- Controllers handle HTTP concerns; they should not implement business rules.
+- Services coordinate use cases and domain rules.
+- Repositories encapsulate persistence access.
+- Validation occurs at external boundaries.
+- Authorization is checked server-side and reinforced with RLS.
+- Do not trust `profile_id`, `institution_id`, role, score, correct answer, or permission values supplied by the browser.
+- Use database transactions for attempt finalization and score persistence.
+- Use idempotency for retryable answer saves, submissions, and job processing.
 
 ---
 
-## 5. Database and Supabase Organization
+## 5. NEET-UG and IMAT separation
 
-All database changes must be managed through version-controlled SQL migrations.
+Do not create two duplicate frontends or two entire backends. Use shared workflows with separate exam adapters and versioned configuration.
 
-### Important database domains
+```text
+                  Shared Learner Application
+                            |
+                            v
+                      Selected Track
+                       /         \
+                      /           \
+                  NEET-UG         IMAT
+                    |              |
+                    v              v
+              NEET syllabus   IMAT syllabus
+              NEET sections   IMAT sections
+              4-option MCQ    5-option MCQ
+              NEET scoring    IMAT scoring
+              NEET analytics  IMAT analytics
+                      \          /
+                       \        /
+                   Shared Platform Services
+                   - Authentication
+                   - Learner entitlements
+                   - Resources
+                   - Question bank
+                   - Assessment lifecycle
+                   - Attempts
+                   - Results
+                   - Study plans
+                   - Notifications
+```
 
-| Domain | Core entities |
-|---|---|
-| Identity | profiles, roles |
-| Academic | exams, exam_blueprints, exam_sections |
-| Curriculum | subjects, chapters, topics, exam_subjects |
-| Enrollment | students, batches, enrollments |
-| Resources | resources, resource_files |
-| Question bank | questions, question_versions, question_options |
-| Assessments | assessments, assessment_questions |
-| Examination attempts | attempts, attempt_answers |
-| AI | ai_generation_jobs, ai_generation_reviews |
-| Analytics | student_performance, topic_performance |
-| Documents | student_documents, document_reviews |
-| Communication | announcements, calendar_events |
-| Governance | audit_logs |
+Implementation rules:
 
-### Essential database rules
+- Use shared curriculum components configured with the selected syllabus version.
+- Use one assessment runner driven by a published exam configuration.
+- Use separate scoring strategies for NEET-UG and IMAT.
+- Keep NEET-specific multiple-correct, all-options-correct, and dropped/invalid question handling in its scoring policy.
+- Keep IMAT's five-option format and section distribution in the IMAT configuration.
+- Keep separate analytics aggregations and labels.
+- Never compare NEET raw marks directly with IMAT raw marks.
+- Do not hardcode annual values in React components.
+- Retain old exam configuration versions for historical attempts.
 
-1. Give every entity a primary key.
-2. Use foreign keys for relational integrity.
-3. Create appropriate indexes for high-frequency queries.
-4. Enforce uniqueness for student answers within an attempt.
-5. Validate that selected options belong to the referenced question.
-6. Preserve immutable versions of published questions.
-7. Enable and test RLS on exposed tables.
-8. Restrict correct-answer information from student-facing queries.
-9. Keep audit logs protected against ordinary user modification.
-10. Apply all schema updates through migrations.
+---
+
+## 6. AI module boundaries
+
+### 6.1 AI question drafting
+
+```text
+ai-question-drafts/
+├── ai-drafts.routes.ts
+├── ai-drafts.controller.ts
+├── ai-drafts.service.ts
+├── ai-drafts.repository.ts
+├── ai-drafts.schemas.ts
+├── validators/
+│   ├── option-count.validator.ts
+│   ├── answer-key.validator.ts
+│   ├── syllabus-mapping.validator.ts
+│   └── markup-safety.validator.ts
+├── prompts/
+│   ├── neet-ug/
+│   │   ├── question-generation.prompt.ts
+│   │   └── explanation-generation.prompt.ts
+│   └── imat/
+│       ├── question-generation.prompt.ts
+│       └── explanation-generation.prompt.ts
+└── __tests__/
+    ├── output-validation.test.ts
+    └── approval-workflow.test.ts
+```
+
+Rules:
+
+- AI output is always a draft.
+- The selected exam track and exam version must be passed to the generator.
+- NEET prompts must follow the applicable NEET syllabus and question format.
+- IMAT prompts must follow the applicable IMAT section, syllabus, and five-option format.
+- Do not default Option A or any other option as correct.
+- Validate output structure before storing it.
+- Require qualified human academic review before publication.
+- Record provider/model and prompt version where useful.
+- Rate-limit requests and apply cost limits.
+- Do not send unnecessary learner personal data to the provider.
+
+### 6.2 AI study assistant
+
+Keep this separate from question generation because its data permissions and workflow are different.
+
+- Retrieve only approved resources the current learner may access.
+- Keep active assessment answer keys out of the retrieval index.
+- Link explanations to source materials where possible.
+- Apply institution and exam-track access filters.
+- Maintain a retention policy for prompts and responses.
+
+---
+
+## 7. Assessment and scoring module boundaries
+
+### Assessments
+
+Own assessment creation, assessment versions, section/question selection, eligibility, scheduling, attempt limits, result-release policy, explanation-release policy, and published assessment snapshots.
+
+### Attempts
+
+Own attempt creation, server start time and deadline, answer persistence, attempt state transitions, retry/idempotency behavior, submission, timeout handling, and recovery after refresh or network interruption.
+
+### Scoring
+
+Own loading the scoring policy snapshot, correct/incorrect/unanswered calculation, NEET question adjudication, IMAT ordinary scoring, section breakdown, result finalization, and regrading integration.
+
+Suggested policy organization:
+
+```text
+scoring/
+├── scoring.service.ts
+├── scoring.registry.ts
+├── scoring.types.ts
+├── score-calculator.ts
+├── policies/
+│   ├── neet-ug/
+│   │   ├── neet-ug-2026.policy.ts
+│   │   ├── neet-ug-adjudication.ts
+│   │   └── neet-ug-2026.test-vectors.ts
+│   └── imat/
+│       ├── imat-2026-27.policy.ts
+│       └── imat-2026-27.test-vectors.ts
+└── __tests__/
+    ├── neet-ug-scoring.test.ts
+    ├── neet-ug-adjudication.test.ts
+    └── imat-scoring.test.ts
+```
+
+Do not use a policy file as the only source of annual rules. Persisted exam-version configuration and assessment snapshots must identify which policy version was applied.
+
+---
+
+## 8. Database and Supabase organization
+
+### Migration principles
+
+- Use ordered, append-only migrations.
+- Keep schema, constraints, indexes, triggers, grants, and RLS policies reviewed.
+- Do not make production schema changes manually without a corresponding migration.
+- Do not put real student records in seed data.
+- Use fake demo accounts and content only in local/test environments.
+- Keep generated database types under a clearly marked generated directory.
 
 ### Storage organization
 
-Use private Supabase Storage buckets:
+Suggested private bucket separation:
 
 ```text
-resources/
-    notes/
-    books/
-    dpp/
-    pyq/
-    videos/
-    diagrams/
-
-student-documents/
-    admission/
-    identity/
-    academic/
-    other/
-
-question-media/
-    diagrams/
-    images/
+Supabase Storage
+├── platform-resources/
+├── institution-resources/
+├── question-assets/
+├── video-assets/
+└── private-exports/
 ```
 
-Store file paths and metadata in PostgreSQL, not the actual file contents.
+Use metadata and database policies to control access. Bucket names alone are not security boundaries. Do not create a public bucket for protected paid or institute-owned content by default.
 
-Private documents should only be accessed through properly authorized, short-lived signed URLs.
+### Service-role client
+
+Keep `service-role-client.ts` isolated in backend infrastructure. The Supabase service role can bypass RLS. Use it only in narrowly scoped trusted operations after explicit server-side authorization. Prefer a user-scoped client for operations that should remain constrained by that user's RLS permissions.
 
 ---
 
-## 6. Background Worker Organization
+## 9. Test organization and mandatory regression suites
 
-Do not perform slow AI generation, document processing or bulk report creation inside regular HTTP request handlers.
-
-Use a background worker for long-running work.
-
-```text
-apps/worker/src/jobs/
-
-├── ai-question-generation/
-│   ├── generate-questions.job.ts
-│   └── validate-generated-questions.ts
-│
-├── report-generation/
-│   └── generate-student-report.job.ts
-│
-├── email-notifications/
-│   └── send-announcement-email.job.ts
-│
-├── document-processing/
-│   └── process-document.job.ts
-│
-└── analytics-aggregation/
-    └── aggregate-performance.job.ts
-```
-
-### Worker requirements
-
-- Retry temporary failures with bounded exponential backoff.
-- Prevent duplicate job execution through idempotency.
-- Track job status and failure reason.
-- Support safe retries.
-- Avoid logging sensitive student document contents.
-- Alert administrators when important jobs repeatedly fail.
-
-Use a properly implemented queue adapter. Choose the underlying queue technology after validating the expected workload and deployment environment.
-
----
-
-## 7. Shared Packages
-
-### `packages/contracts`
-
-This package is important because both the frontend and backend need to agree on request and response formats.
-
-Example:
-
-```text
-packages/contracts/src/
-
-├── auth/
-│   ├── login.schema.ts
-│   └── user.schema.ts
-│
-├── assessments/
-│   ├── assessment.schema.ts
-│   └── assessment-response.schema.ts
-│
-├── questions/
-│   └── question.schema.ts
-│
-├── attempts/
-│   ├── attempt.schema.ts
-│   └── submit-attempt.schema.ts
-│
-└── index.ts
-```
-
-Use Zod schemas to validate API contracts and infer TypeScript types.
-
-Do not share database service-role credentials, repositories, backend entities or privileged types with the frontend.
-
----
-
-## 8. Testing Organization
-
-A production system needs more than basic component tests.
-
-| Testing type | Tool or method | Main objective |
+| Test category | Location | Required coverage |
 |---|---|---|
-| Unit testing | Vitest | Validate individual functions |
-| Component testing | React Testing Library | Validate interface behaviour |
-| API integration | Vitest | Validate API and database integration |
-| E2E testing | Playwright | Test complete user workflows |
-| Database testing | SQL and Supabase local environment | Validate constraints and RLS |
-| Security testing | Automated and manual security tests | Find unauthorized access |
-| Load testing | k6 | Measure concurrent workload |
-| AI evaluation | Curated evaluation dataset | Verify academic output quality |
+| UI component tests | `apps/web/tests/component` | Form behavior, accessible interactions, display logic |
+| Browser E2E | `apps/web/tests/e2e` | Complete learner, faculty, and admin workflows |
+| Backend unit tests | `apps/api/src/**/__tests__` | Domain services and policy logic |
+| API integration tests | `apps/api/src/tests/integration` | Routes, permissions, database behavior |
+| RLS tests | `supabase/tests/rls` | Direct database authorization boundaries |
+| Exam conformance | `tests/exam-conformance` | Official-format configuration and scoring |
+| Security | `tests/security` | Role escalation, IDOR, tenant leakage, answer-key exposure |
+| Reliability | `tests/reliability` | Autosave, retry, timeout, finalization, regrading |
+| Load | `tests/load` | Concurrent assessment start, answer save, submission |
+| Accessibility | `tests/accessibility` | Keyboard, screen reader, contrast, timer communication |
 
-### Most important test scenarios
+### 9.1 NEET-UG 2026 reference regression cases
 
-```text
-Authentication
-    - Student login
-    - Faculty login
-    - Admin login
-    - Invalid session
-    - Suspended account
+- 180 questions.
+- Physics: 45.
+- Chemistry: 45.
+- Biology: 90.
+- Four options per standard question.
+- 180-minute full-length timer.
+- Ordinary scoring: +4 / -1 / 0.
+- Multiple-correct adjudication.
+- All-options-correct adjudication.
+- Invalid/dropped question adjudication.
+- Language version and option mapping.
+- Clear indication that an online assessment is a practice simulation of the official pen-and-paper examination.
 
-Authorization
-    - Student cannot access Admin APIs
-    - Student cannot access Faculty endpoints
-    - Student cannot access another student's records
-    - Batch-specific content isolation
+### 9.2 IMAT 2026/27 reference regression cases
 
-Assessment
-    - Start assessment
-    - Save answers
-    - Resume after refresh
-    - Submit assessment
-    - Automatic timeout
-    - Duplicate submission prevention
-    - Server-side scoring
-    - Answer-key protection
+- 60 questions.
+- Five options per standard question.
+- 100-minute full-length timer.
+- Section distribution: 4 / 5 / 23 / 15 / 13.
+- Ordinary scoring: +1.5 / -0.4 / 0.
+- Reading/knowledge separated from logical reasoning.
+- Combined Physics/Mathematics exam allocation preserved.
+- English question content.
+- Historical assessment version remains reproducible.
 
-AI
-    - Invalid AI response
-    - Missing answer options
-    - Incorrect schema
-    - Duplicate questions
-    - Faculty approval requirement
+### 9.3 Security and reliability regression cases
 
-Storage
-    - Unauthorized document access
-    - Expired signed URL
-    - Wrong batch resource access
-    - File upload validation
-```
+- User cannot assign themselves an administrator or faculty role through editable metadata.
+- A learner cannot retrieve another learner's attempts by changing an identifier.
+- A learner cannot retrieve an active answer key.
+- A learner cannot forge an authoritative score.
+- An expired signed URL cannot access protected content beyond its expiry.
+- A suspended user loses protected access.
+- Repeated submission does not create duplicate results.
+- Refresh/network recovery restores server-saved answers and server deadline.
+- Regrading creates an audit record and preserves previous results.
+
+Update these tests whenever a new official NEET-UG or IMAT configuration is reviewed and published.
 
 ---
 
-## 9. Environment Configuration
+## 10. Environment and secret handling
 
-Use separate environment files for each application.
+Use separate environment examples for the frontend and backend:
 
 ```text
-neet-prep-lms/
-│
-├── .env.example
-│
-├── apps/
-│   ├── web/.env.example
-│   ├── api/.env.example
-│   └── worker/.env.example
+.env.example
+apps/web/.env.example
+apps/api/.env.example
 ```
 
-### Web environment
+### Frontend variables
 
-```env
+```text
 VITE_API_BASE_URL=
 VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_ANON_KEY=
 ```
 
-### API environment
+Only browser-safe values belong in the frontend.
 
-```env
-NODE_ENV=development
-PORT=5000
+### Backend variables
 
+```text
+NODE_ENV=
+PORT=
+WEB_ORIGIN=
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-
+DATABASE_URL=
 GROQ_API_KEY=
-
-CORS_ORIGIN=
 LOG_LEVEL=
 ```
 
-### Worker environment
+Rules:
 
-```env
-NODE_ENV=development
-
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-
-GROQ_API_KEY=
-
-QUEUE_CONNECTION=
-LOG_LEVEL=
-```
-
-These are templates, not actual credentials.
-
-Never put service-role keys or AI provider secrets in the React frontend.
-
-Use a secrets manager or protected deployment environment for real production credentials. Keep `.env` files out of Git.
+- `.env.example` contains placeholders, not real credentials.
+- Real `.env` files are excluded from Git.
+- `SUPABASE_SERVICE_ROLE_KEY` and `GROQ_API_KEY` stay server-side.
+- Never embed secrets in frontend Vite variables, Docker build arguments, logs, screenshots, test fixtures, or documentation.
+- Use different credentials for local, test, staging, and production.
+- Rotate credentials after suspected exposure.
 
 ---
 
-## 10. Root Project Configuration
+## 11. Root workspace configuration
 
-Use pnpm workspaces to manage the monorepo.
+| File | Responsibility |
+|---|---|
+| `package.json` | Root scripts and workspace commands |
+| `pnpm-workspace.yaml` | Workspace package declarations |
+| `pnpm-lock.yaml` | Reproducible dependency resolution |
+| `turbo.json` | Optional build/test task orchestration |
+| `tsconfig.base.json` | Shared TypeScript compiler settings |
+| `eslint.config.js` | Lint rules |
+| `.prettierrc.json` | Formatting rules |
+| `.nvmrc` | Pinned Node.js version |
+| `.npmrc` | Package-manager behavior |
+| `.editorconfig` | Consistent editor settings |
+| `.env.example` | Documented safe variable names |
+| `docker-compose.yml` | Optional local service orchestration |
+| `README.md` | Setup, commands, architecture links, contribution rules |
 
-### `pnpm-workspace.yaml`
-
-```yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-```
-
-### Root `package.json`
-
-```json
-{
-  "name": "neet-prep-lms",
-  "private": true,
-  "packageManager": "pnpm@10",
-  "scripts": {
-    "dev": "turbo run dev --parallel",
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "format": "prettier --write .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
-  },
-  "devDependencies": {
-    "prettier": "^3",
-    "turbo": "^2",
-    "typescript": "^5"
-  }
-}
-```
-
-Pin exact dependency versions through the package manager and lockfile in the actual repository. The version ranges above are illustrative starting points, not a verified compatibility matrix.
-
-### `turbo.json`
-
-```json
-{
-  "$schema": "https://turborepo.dev/schema.json",
-  "tasks": {
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
-    },
-    "lint": {
-      "outputs": []
-    },
-    "typecheck": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    }
-  }
-}
-```
-
-Each application should define its own scripts and dependencies.
+Recommended package manager: **pnpm workspaces**. Turborepo is optional; use it if task orchestration and caching are useful. It is not required by the product architecture.
 
 ---
 
-## 11. Coding and Architecture Rules
+## 12. Recommended root commands
 
-Follow these rules consistently.
+```bash
+pnpm install
 
-### Frontend
+# Development
+pnpm dev
+pnpm dev:web
+pnpm dev:api
 
-- Organize application code by business feature.
-- Keep reusable design-system components in `shared/components`.
-- Keep API communication inside feature API modules.
-- Never place Supabase service-role credentials in the frontend.
-- Never implement authoritative examination scoring in the browser.
-- Use server responses as the source of truth for important application state.
-- Use accessible components and responsive layouts.
+# Quality
+pnpm lint
+pnpm typecheck
+pnpm format:check
 
-### Backend
+# Tests
+pnpm test
+pnpm test:unit
+pnpm test:integration
+pnpm test:e2e
+pnpm test:security
+pnpm test:exam-conformance
+pnpm test:load
 
-- Keep business logic inside services and domain rules.
-- Keep database operations inside repositories.
+# Database
+pnpm db:start
+pnpm db:reset
+pnpm db:migrate
+pnpm db:types
+
+# Exam configuration
+pnpm exam-config:validate
+pnpm exam-config:compare
+```
+
+Exact scripts depend on selected package versions and test tools. Do not run destructive reset or demo-seed commands in production.
+
+---
+
+## 13. Naming and implementation conventions
+
+- Folder and non-component filenames: `kebab-case`.
+- React components: `PascalCase`.
+- Functions and variables: `camelCase`.
+- Database tables and columns: consistent `snake_case`.
+- Internal exam codes: `NEET_UG` and `IMAT`.
+- Use domain-specific identifiers such as `examVersionId` and `questionVersionId`.
+- Keep exam-year values in data/configuration, not UI constants.
+- Store timestamps in UTC and display them in the relevant learner/institute timezone.
+- Avoid `any` in exam configuration, scoring, and API contracts.
+- Keep controllers thin.
+- Keep scoring logic in tested domain services.
+- Keep database access in repositories or dedicated data-access functions.
 - Validate all external input.
-- Authenticate and authorize every protected API request.
-- Apply resource-level permission checks, not just role checks.
-- Use database transactions for critical multi-step operations.
-- Use idempotency for payment, submission and retry-sensitive operations.
-- Add request IDs and structured logging.
-- Never expose database errors or secrets directly to clients.
-
-### Database
-
-- Never manually modify the production database schema.
-- Use migrations for every schema modification.
-- Review every RLS policy.
-- Test policies using realistic student and faculty identities.
-- Avoid unnecessary service-role access.
-- Keep published assessment and question revisions stable.
-
-### AI
-
-- Treat AI output as untrusted input.
-- Validate every generated question.
-- Require authorized faculty approval before publishing.
-- Store generation and review metadata.
-- Apply usage limits and rate limits.
-- Never expose the AI API key to the browser.
-
-### Security
-
-- Do not claim complete screenshot prevention in a web browser.
-- Use watermarking as a piracy deterrent.
-- Store files privately.
-- Apply least-privilege access.
-- Maintain audit trails for administrative actions.
-- Protect administrative impersonation features with explicit, audited support-session controls rather than changing the underlying authenticated identity.
+- Use safe DTOs at API boundaries.
+- Do not expose answer-key fields in student-facing queries before release.
+- Keep historical versions immutable; corrections create new versions or audited adjudications.
 
 ---
 
-## 12. Recommended Implementation Order
+## 14. CI/CD and release workflow
 
-Do not build all directories and modules at once.
+### Pull-request workflow
 
-### Phase 1 — Foundation
+1. Install locked dependencies.
+2. Run formatting check.
+3. Run lint and TypeScript checks.
+4. Run unit tests.
+5. Start a disposable database and apply migrations.
+6. Run RLS and integration tests.
+7. Run NEET-UG and IMAT exam-conformance tests.
+8. Build frontend and API.
+9. Run security/dependency scanning.
+10. Run selected end-to-end tests.
 
-1. Create the monorepo.
-2. Configure pnpm workspaces and TypeScript.
-3. Set up React and Vite.
-4. Set up the Express API.
-5. Connect Supabase.
-6. Establish authentication and trusted role assignment.
-7. Create initial database migrations.
-8. Implement RLS and authorization tests.
-9. Establish CI/CD and logging.
-
-### Phase 2 — Core NEET LMS
-
-1. Exam blueprint and curriculum.
-2. Students and faculty management.
-3. Batch and enrollment management.
-4. Learning resources.
-5. Question bank and question revisions.
-6. Assessment creation.
-7. Server-side scoring and submission.
-8. Student results and analytics.
-9. Admin audit functionality.
-
-### Phase 3 — Advanced Features
-
-1. AI question generation.
-2. Faculty question review and approval.
-3. Student academic assistant.
-4. Academic calendar.
-5. Announcements.
-6. Document verification.
-7. Community discussions.
-8. Background report generation.
-9. Advanced analytics.
-
-### Phase 4 — Production Hardening
-
-1. Security testing.
-2. Load and concurrency testing.
-3. Backup restoration verification.
-4. Monitoring and alerting.
-5. Network and outage recovery tests.
-6. Accessibility checks.
-7. Production deployment.
-8. Controlled coaching institute pilot.
-
----
-
-## 13. Features to Keep Outside the Initial MVP
-
-The following should not delay the initial release:
-
-- IMAT, UCAT and MCAT blueprints.
-- Multi-institute SaaS tenancy.
-- Advanced community features.
-- Sophisticated offline examination delivery.
-- AI-generated diagram automation.
-- Advanced proctoring integrations.
-- Complex payment and billing workflows.
-
-Build them when the initial NEET platform is reliable and users demonstrate the need.
-
----
-
-## 14. Final Architecture Recommendation
-
-The intended architecture is:
+### Deployment workflow
 
 ```text
-                   STUDENT / FACULTY / ADMIN
-                              |
-                              v
-                     REACT FRONTEND
-                              |
-                              v
-                        EXPRESS API
-                              |
-               +--------------+--------------+
-               |              |              |
-               v              v              v
-           AUTH/RBAC     BUSINESS MODULES   AI SERVICES
-                              |
-          +-------------------+-------------------+
-          |                   |                   |
-          v                   v                   v
-      CURRICULUM          ASSESSMENTS          RESOURCES
-          |                   |                   |
-          v                   v                   v
-      ENROLLMENTS       SCORING ENGINE       PRIVATE STORAGE
-          |                   |                   |
-          +-------------------+-------------------+
-                              |
-                              v
-                     SUPABASE POSTGRESQL
-                              |
-                              v
-                       BACKGROUND QUEUE
-                              |
-                              v
-                       WORKER PROCESS
-                  /          |          \
-                 v           v           v
-               AI JOBS     REPORTS    NOTIFICATIONS
+Developer Branch
+      |
+      v
+Pull Request Checks
+      |
+      v
+Code Review + Required CI
+      |
+      v
+Merge to Main
+      |
+      v
+Staging Deployment
+      |
+      v
+Staging Smoke + Security + Exam Regression
+      |
+      v
+Production Approval
+      |
+      v
+Production Deployment
+      |
+      v
+Monitoring + Rollback Readiness
 ```
 
-### Final engineering decision
+Production release must be blocked if critical/high security issues remain, scoring tests fail, exam configuration lacks academic verification, or backup/restore procedures have not been tested.
 
-Build this project as a **modular monolith in a TypeScript monorepo**, with:
+---
 
-- One React application.
-- One Express API.
-- One separately deployable background worker.
-- One Supabase PostgreSQL database.
-- One private cloud storage environment.
-- Shared validated API contracts.
-- Version-controlled database migrations.
-- Automated security, integration and end-to-end tests.
+## 15. What this structure does not guarantee
 
-This structure is scalable enough for the initial institute deployment and allows you to introduce additional examination configurations, more workers and eventually multiple institutional tenants without rewriting the entire application.
+Creating these folders does not make the platform production-ready. Before real students depend on it, the implementation must demonstrate:
 
-**Most importantly: this is the proposed target structure. Production readiness will depend on implementing, securing, load-testing and operating each component correctly.***564tr```````````````
+- Correct RLS on all protected database tables and storage access paths.
+- Trusted role, membership, and exam entitlement checks.
+- No service-role or AI provider secret in frontend bundles.
+- Server-authoritative attempt deadlines, answer-key access, and scoring.
+- Idempotent answer saves and submission finalization.
+- Versioned exam configurations, questions, and assessment snapshots.
+- Human approval before AI-generated questions are published.
+- NEET-specific adjudication and IMAT-specific scoring conformance.
+- Cross-user and cross-institution security tests.
+- Assessment recovery and concurrent-submission tests.
+- Backup restoration, monitoring, and incident runbooks.
+- Accessibility testing for the exam runner.
+- Privacy, retention, and content-license review.
+- Representative load testing.
+
+The folder structure makes these concerns visible and gives them a home. It does not replace the engineering work needed to satisfy them.
+
+---
+
+## 16. Recommended implementation order
+
+1. Create the monorepo, pnpm workspaces, TypeScript, linting, formatting, and CI.
+2. Configure local Supabase and create the first database migrations.
+3. Implement profiles, independent learner access, institutions, memberships, and invitations.
+4. Implement the two exam tracks and versioned exam configurations.
+5. Import and verify separate NEET-UG and IMAT syllabus structures.
+6. Implement courses, batches, enrollments, and faculty assignments.
+7. Implement private resources and content eligibility.
+8. Implement question versions, sources, review, and approval.
+9. Implement NEET-UG and IMAT scoring strategies with conformance tests.
+10. Implement assessment versions, attempts, answer saving, deadlines, and results.
+11. Implement exam-specific analytics and revision plans.
+12. Add AI question drafts with structural validation and faculty approval.
+13. Add the grounded AI study assistant, announcements, calendar, and notifications.
+14. Complete security, accessibility, load, backup/restore, and production release checks.
+
+**Final recommendation:** Use this repository structure as the blueprint, but implement it incrementally in the order above. Keep the product focused on NEET-UG and IMAT, share common platform services, preserve separate exam rules, and avoid adding empty modules or infrastructure that the current product phase does not need.

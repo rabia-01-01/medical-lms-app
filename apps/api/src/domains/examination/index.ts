@@ -1,0 +1,3 @@
+﻿// Bounded Context: examination
+export {};
+

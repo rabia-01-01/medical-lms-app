@@ -1,2808 +1,2578 @@
-# NEET Prep LMS
-## Final Product Overview, Requirements, Architecture, Data Model, Security Specification, and Delivery Plan
+# MedPrep
+## NEET-UG and IMAT Aspirant Learning, Practice & Assessment Platform
 
-**Document version:** 2.0  
-**Document status:** Finalized product direction and updated engineering specification  
-**Prepared:** 4 November 2026  
-**Supersedes:** Original `project_overview.md`  
-**Initial product scope:** Single coaching institute, NEET-UG preparation  
-**Planned future extensibility:** Additional exam tracks and multi-institute SaaS, subject to separate product decisions  
+**Updated project overview, product requirements, examination specifications, architecture, data model, security controls, testing strategy, and implementation roadmap**
 
-> **Document purpose:** This document defines the product that should be built, the behaviour it must provide, the technical architecture and data model required to support it, and the evidence needed before it can be treated as production-ready. It is a specification, not proof that every feature has already been implemented or independently tested.
-
----
-
-## Table of Contents
-
-1. [Final Product Decision](#1-final-product-decision)
-2. [Executive Summary](#2-executive-summary)
-3. [Problem Statement and Product Value](#3-problem-statement-and-product-value)
-4. [Product Principles](#4-product-principles)
-5. [Goals, Non-Goals, and Scope Boundaries](#5-goals-non-goals-and-scope-boundaries)
-6. [Target Users and Permission Model](#6-target-users-and-permission-model)
-7. [NEET-UG Exam Scope and Configuration Rules](#7-neet-ug-exam-scope-and-configuration-rules)
-8. [Primary User Journeys](#8-primary-user-journeys)
-9. [Functional Modules and Requirements](#9-functional-modules-and-requirements)
-10. [Assessment and Scoring Specification](#10-assessment-and-scoring-specification)
-11. [AI Features and Academic Quality Controls](#11-ai-features-and-academic-quality-controls)
-12. [High-Level System Architecture](#12-high-level-system-architecture)
-13. [Low-Level Application Architecture](#13-low-level-application-architecture)
-14. [Technology Stack](#14-technology-stack)
-15. [Database Design and Data Dictionary](#15-database-design-and-data-dictionary)
-16. [Entity Relationship Diagram](#16-entity-relationship-diagram)
-17. [Authorization and Row-Level Security Design](#17-authorization-and-row-level-security-design)
-18. [Backend API Contract](#18-backend-api-contract)
-19. [Security Architecture](#19-security-architecture)
-20. [Privacy, Documents, and Data Governance](#20-privacy-documents-and-data-governance)
-21. [Content Rights and Academic Integrity](#21-content-rights-and-academic-integrity)
-22. [Non-Functional Requirements](#22-non-functional-requirements)
-23. [User Experience, Accessibility, and Localization](#23-user-experience-accessibility-and-localization)
-24. [Reliability, Monitoring, Backup, and Recovery](#24-reliability-monitoring-backup-and-recovery)
-25. [Testing and Verification Strategy](#25-testing-and-verification-strategy)
-26. [Deployment and Environment Strategy](#26-deployment-and-environment-strategy)
-27. [Implementation Roadmap](#27-implementation-roadmap)
-28. [Risks and Mitigations](#28-risks-and-mitigations)
-29. [Success Metrics and Pilot Evaluation](#29-success-metrics-and-pilot-evaluation)
-30. [Definition of Done and Production Exit Criteria](#30-definition-of-done-and-production-exit-criteria)
-31. [Assumptions and Decisions to Revisit](#31-assumptions-and-decisions-to-revisit)
-32. [Glossary](#32-glossary)
-33. [Official and Technical References](#33-official-and-technical-references)
-34. [Change Log](#34-change-log)
-
----
-
-# 1. Final Product Decision
-
-## 1.1 Finalized project idea
-
-**NEET Prep LMS is a secure, AI-assisted learning and assessment management platform for a single NEET-UG coaching institute.** It brings student enrolment, batch management, NEET curriculum planning, learning resources, question-bank management, practice tests, mock examinations, verified scoring, academic analytics, faculty workflows, announcements, and institute administration into one web application.
-
-The platform is intended to improve the institute's day-to-day academic operations and give students a structured environment for preparation. It is not an official examination authority, an NTA system, an admission portal, or a replacement for the official NEET examination.
-
-## 1.2 Product decisions
-
-| Decision | Final choice | Reason |
-|---|---|---|
-| Initial customer | One coaching institute | Keeps permissions, operations, and delivery manageable for the first release. |
-| Initial examination | NEET-UG | Provides a focused, verifiable curriculum and assessment target. |
-| Main user roles | Student, Faculty, Admin | Covers the required academic and operational responsibilities without inventing unnecessary roles. |
-| Main platform | Responsive web application | Works on desktop, tablet, and mobile browsers without requiring separate native apps. |
-| Initial curriculum | Physics, Chemistry, Biology | Matches the NEET-UG 2026 subject structure; Biology can be organized into Botany and Zoology content areas. |
-| Assessment format | NEET-UG practice and mock tests | The application provides online practice; the official NEET-UG 2026 examination was pen-and-paper. |
-| Scoring authority | Backend/database only | A browser must never be trusted to calculate or submit an authoritative score. |
-| AI publishing policy | Faculty approval required | AI-generated material can contain factual, answer-key, and diagram errors. |
-| Content protection | Access control, watermarking, traceability | Browser-based controls cannot guarantee prevention of screenshots or external recording. |
-| First release | Secure LMS and assessment workflow | Establishes a dependable foundation before adding AI, payments, community, or international exams. |
-| Future exam support | Versioned exam configuration | Other exams must have their own syllabus, question formats, timing, and scoring rules. |
-
-## 1.3 Product positioning
-
-The platform should be positioned as:
-
-> **A coaching-institute learning and assessment platform that organizes NEET preparation, supports faculty-led assessment creation, and turns verified student practice results into actionable academic insights.**
-
-Do not position it as:
-
-- An official NTA or Government of India platform.
-- An official NEET online examination delivery system.
-- A guaranteed anti-cheating or screenshot-proof application.
-- An AI system that guarantees correct medical or scientific answers.
-- A system that predicts a student's admission or examination result with certainty.
-
-## 1.4 What makes this idea useful
-
-The product combines workflows that are commonly separated across spreadsheets, messaging groups, PDF folders, and independent test tools:
-
-1. Student and cohort administration.
-2. Organized syllabus and learning-resource access.
-3. Faculty-managed question authoring and publishing.
-4. Timed practice assessments with server-verified results.
-5. Topic-level performance analysis.
-6. Institute announcements and operational audit trails.
-
-Its real-world value must be demonstrated through a pilot with an actual coaching institute. A feature-rich user interface alone is not evidence of product-market fit.
-
----
-
-# 2. Executive Summary
-
-Coaching institutes preparing students for NEET-UG need a dependable way to manage academic content, batches, assessments, student progress, and faculty activity. When these processes are spread across separate files and applications, students may struggle to locate current material, faculty may repeat manual test-preparation work, and administrators may find it difficult to maintain consistent records.
-
-NEET Prep LMS addresses this operational problem through a role-based platform built around one institute's NEET-UG preparation programme.
-
-The initial product includes:
-
-- Secure student, faculty, and administrator accounts.
-- Admin-controlled student enrolment and dynamic cohort assignment.
-- Versioned NEET curriculum mapping for Physics, Chemistry, and Biology.
-- Chapter and topic organization.
-- Private notes, PDFs, diagrams, and lecture-video metadata.
-- Faculty-managed question banks.
-- Daily Practice Problems (DPPs), chapter tests, subject tests, and full-length mock tests.
-- A timed online practice runner with answer saving and review navigation.
-- Server-side answer evaluation and score persistence.
-- Student dashboards showing verified assessment history and topic-level performance.
-- Faculty dashboards for assigned cohorts, resources, questions, and student progress.
-- Admin dashboards for enrolment, content, announcements, and audit records.
-
-The next release can add AI-assisted question drafting and an academic tutor grounded in institute-approved material. Generated questions must pass automated validation and faculty review before publication.
-
-The original concept also described IMAT, UCAT, and MCAT support. Those examinations are retained as possible future exam tracks, but they are not included in the first release. Their formats and scoring methods differ from NEET-UG and must not be forced into one universal subject or marking configuration.
-
-The proposed stack is React, TypeScript, Vite, Tailwind CSS, Node.js, Express, Supabase Auth, PostgreSQL, private Supabase Storage, and Recharts. The exact dependency versions must be selected from maintained and security-supported releases at implementation time rather than frozen in this long-lived specification.
-
----
-
-# 3. Problem Statement and Product Value
-
-## 3.1 Problems to validate with the institute
-
-The following are product hypotheses. They must be validated through interviews and baseline measurements with the target institute rather than treated as universal facts about every coaching centre.
-
-| Problem hypothesis | Operational consequence | Product response |
-|---|---|---|
-| Learning materials are spread across PDFs, drives, and messaging groups. | Students spend time locating the correct version of a resource. | Searchable subject, chapter, and topic resource library. |
-| Different batches follow different teaching schedules. | Students may receive content too early, too late, or from the wrong cohort. | Dynamic cohort assignments and server-enforced resource visibility. |
-| Faculty repeatedly prepare and distribute tests manually. | More repetitive work and inconsistent test configuration. | Reusable question bank and assessment builder. |
-| Students receive only a total score or a basic answer key. | Weak chapters and recurring errors are not easy to identify. | Verified attempt history and topic-level analytics. |
-| Administrators use manual records for enrolment and access. | Status changes and access decisions may be inconsistent. | Centralized student, cohort, and access administration. |
-| AI question tools may produce unreviewed questions. | Incorrect explanations or answer keys can mislead students. | AI drafts with validation, review, approval, and revision history. |
-
-## 3.2 Product value by user
-
-### Students
-
-- Find the correct syllabus, chapter notes, and practice tests in one place.
-- View cohort-specific content and announcements.
-- Take timed practice tests on supported devices.
-- Review correct answers and faculty explanations after the configured release time.
-- Understand performance by subject, chapter, and topic.
-
-### Faculty
-
-- Organize resources around the institute's curriculum.
-- Reuse approved questions across multiple assessments.
-- Create and schedule assessments for assigned cohorts.
-- Review generated AI questions rather than publishing unverified outputs.
-- Identify students or topics that may need academic support.
-
-### Administrators
-
-- Manage admissions to the institute's learning platform and cohort assignments.
-- Control user roles and faculty assignments.
-- Publish institute-wide or cohort-specific announcements.
-- Monitor content publishing and operational activity.
-- Review access and audit records.
-
-## 3.3 Value proposition to test
-
-The pilot should test whether the platform:
-
-- Reduces the time required to prepare and publish an assessment.
-- Reduces the time students spend locating learning material.
-- Reduces errors in cohort and content access management.
-- Improves the usefulness of post-test feedback.
-- Makes institute operations more traceable.
-
-No percentage improvement should be advertised until it has been measured against the institute's pre-pilot workflow.
-
----
-
-# 4. Product Principles
-
-1. **Exam-specific correctness:** Exam rules, curriculum, scoring, and timing are versioned configuration, not scattered constants in frontend code.
-2. **Server is authoritative:** Identity, permissions, assessment deadlines, answer keys, scoring, and publication state are validated on trusted backend/database components.
-3. **Least privilege:** Each user receives only the data and actions required for their role and assigned cohort.
-4. **Faculty remains accountable:** AI can assist with drafting but cannot autonomously publish academic questions.
-5. **Privacy by design:** Collect only student data required for a defined institute purpose.
-6. **Traceable changes:** Important administrative and academic changes are auditable.
-7. **Accessible by default:** The interface must work with keyboard navigation, assistive technology, zoom, and a range of device sizes.
-8. **Reliable under weak connectivity:** Save progress safely and communicate network state. Do not claim unsupported offline examination capability.
-9. **No false security claims:** Watermarking and access controls deter and trace misuse; they do not make browser content impossible to capture.
-10. **Deliver in stages:** Complete and test the NEET MVP before adding multi-exam, payment, community, or multi-institute complexity.
-
----
-
-# 5. Goals, Non-Goals, and Scope Boundaries
-
-## 5.1 MVP goals
-
-The first production pilot must allow one institute to:
-
-- Create and manage students, faculty, and administrator accounts.
-- Assign students to cohorts and faculty to subjects/cohorts.
-- Maintain a versioned NEET-UG curriculum.
-- Publish protected learning resources.
-- Build and publish question banks and assessments.
-- Run timed online practice assessments.
-- Store answers safely and calculate scores on the backend.
-- Provide results and actionable performance breakdowns.
-- Publish announcements.
-- Audit important administrative actions.
-
-## 5.2 Explicit non-goals for MVP
-
-The MVP will not:
-
-- Conduct or claim to conduct the official NTA NEET examination.
-- Replace the official pen-and-paper examination process.
-- Support all of NEET, IMAT, UCAT, and MCAT as fully configured products from day one.
-- Guarantee screenshot, screen recording, or external-device prevention.
-- Provide live remote proctoring or automated misconduct judgments.
-- Automatically publish AI-generated questions.
-- Store payment-card details or operate as a payment processor.
-- Require medical-fitness certificates for ordinary learning-platform access.
-- Provide a public social network or unrestricted student discussion forum.
-- Guarantee uninterrupted offline exam submission.
-- Make admission, rank, or success guarantees.
-
-## 5.3 Scope by release
-
-| Capability | MVP | Phase 2 | Phase 3 |
-|---|---:|---:|---:|
-| Student/faculty/admin accounts | Yes | Improve | — |
-| Dynamic cohorts and enrolment | Yes | Improve | Multi-institute extension considered |
-| NEET-UG curriculum | Yes | Version updates | Additional exam blueprints |
-| Protected resource library | Yes | Better indexing/search | Offline resource package, if justified |
-| Question bank and manual assessments | Yes | Improve authoring | Advanced item types |
-| Server-side scoring and attempt history | Yes | Improve | Formal exam analytics |
-| Student/faculty/admin dashboards | Basic | Advanced | Institution-wide reporting |
-| Announcements | Basic | Scheduling and notifications | Integrations |
-| Academic calendar | Basic | Advanced | Integrations |
-| AI question drafting | No | Yes | Improve/evaluate |
-| AI academic tutor | No | Yes | Improve/evaluate |
-| Student support FAQ assistant | Optional | Yes | Integrations |
-| Optional document verification | No | Only if justified | Improve governance |
-| Discussion forum | No | No | Yes, with moderation |
-| Payments | No | Optional discovery | Only with business need and gateway |
-| Offline exam mode | No | Research only | Only after threat and recovery design |
-| Multi-institute SaaS | No | Architecture review | Separate product release |
-
----
-
-# 6. Target Users and Permission Model
-
-## 6.1 Primary roles
-
-### Student
-
-A student is enrolled by the institute or completes a registration flow that remains pending until the institute approves it.
-
-Allowed activities:
-
-- View and update permitted profile fields.
-- View own enrolment and cohort information.
-- View published resources assigned to the student's active cohort.
-- View published assessments available to the student's cohort.
-- Start, resume where policy permits, and submit own attempts.
-- View own results after the configured result-release time.
-- View own topic and subject analytics.
-- Read announcements and calendar events visible to the student.
-- Ask the academic assistant questions within its approved capabilities, when enabled.
-
-Not allowed:
-
-- View another student's private profile, documents, answers, or results.
-- Read answer keys while an assessment is active.
-- Change scores, attempt deadlines, role assignments, cohort membership, or published assessment content.
-- Upload or publish academic material unless a separate permission is explicitly granted.
-
-### Faculty
-
-Faculty members are assigned to one or more subjects and cohorts by an administrator.
-
-Allowed activities:
-
-- View assigned cohorts and permitted student progress.
-- Create and edit draft resources for assigned subjects/cohorts.
-- Create and maintain questions and explanations.
-- Build assessments from approved question revisions.
-- Review AI-generated question drafts when the feature is enabled.
-- Publish or request publication according to institute policy.
-- Publish academic announcements if granted permission.
-- Review assessment results for assigned cohorts.
-
-Not allowed by default:
-
-- Change user roles or institute-level settings.
-- Access unrelated cohorts.
-- Review private admission documents unless a specific duty and permission require it.
-- Change a student's submitted answers or score without a traceable correction process.
-
-### Administrator
-
-The administrator manages the institute's platform configuration and academic operations.
-
-Allowed activities:
-
-- Create, suspend, reactivate, and manage users.
-- Assign roles through a trusted administrative workflow.
-- Approve or reject student registration/enrolment.
-- Create academic programmes, academic years, and cohorts.
-- Assign faculty to subjects and cohorts.
-- Manage curriculum, resource visibility, assessment publication, and announcements.
-- Review audit records and operational health.
-- Configure assessment release rules and institute settings.
-
-High-risk actions such as role changes, bulk exports, user suspension, and assessment-result corrections must be logged with actor, timestamp, target, reason, and relevant metadata.
-
-## 6.2 Role assignment is not user self-service
-
-A public signup request must never be able to grant itself `FACULTY` or `ADMIN` privileges by submitting a role field or metadata value.
-
-- New public registrations default to a pending Student state.
-- A trusted administrator approves enrolment.
-- Faculty and Admin accounts are invited or provisioned through a trusted administrative process.
-- Role changes are made server-side or through a tightly restricted database function.
-- The system must not use user-editable authentication metadata as the source of authorization truth.
-- If roles are copied into JWT claims for performance, the system must handle claim staleness and re-check critical role changes against trusted data.
-
-## 6.3 No unrestricted impersonation
-
-The original concept included administrator "View As" impersonation. For the MVP, replace it with a **read-only support preview**:
-
-- Admin selects a student and provides a reason.
-- The application renders the student's permitted view without issuing a reusable student session.
-- The preview is read-only for student data and cannot submit an assessment, change a profile, or perform an action as the student.
-- The preview has a short expiry and a visible administrator banner.
-- The start, end, target account, and reason are recorded in an audit log.
-
-A true impersonation capability should not be introduced without a separate threat model and approval process.
-
----
-
-# 7. NEET-UG Exam Scope and Configuration Rules
-
-## 7.1 Verified 2026 baseline
-
-The official NTA NEET-UG 2026 Information Bulletin describes the following examination scheme:
-
-| Item | NEET-UG 2026 official baseline |
+| Document field | Value |
 |---|---|
-| Subjects | Physics, Chemistry, Biology (Botany and Zoology) |
-| Questions | 180 compulsory questions |
+| Document version | 3.0 |
+| Prepared / verified against published information | 6 November 2026 |
+| Product scope | NEET-UG and IMAT only |
+| Primary users | NEET-UG and IMAT aspirants |
+| Supporting users | Faculty, tutors, coaching-institute administrators |
+| Initial delivery approach | Aspirant-facing platform with institute / batch workspaces |
+| Initial examination baseline | NEET-UG 2026 and IMAT 2026/27 |
+| Architecture direction | React + TypeScript, Node.js/Express, Supabase/PostgreSQL |
+| Implementation status | Product and technical specification; implementation claims require separate verification |
+
+> **Important scope decision:** This product is specifically for **NEET-UG and IMAT aspirants**. It is not a generic LMS for every competitive examination. It will maintain two distinct exam-preparation tracks with shared platform services and separate syllabi, question formats, assessment rules, content, and analytics. UCAT, MCAT, and unrelated examinations are out of scope.
+
+---
+
+# 0. Final Product Decision
+
+## 0.1 Finalized idea
+
+**MedPrepOS is a specialized NEET-UG and IMAT preparation platform that gives aspirants one place to study the correct exam-specific syllabus, access reviewed learning resources, practise questions, take exam-pattern mock tests, understand their performance, and receive structured revision support.**
+
+It supports two distinct preparation tracks:
+
+1. **NEET-UG track** — aligned to the applicable National Testing Agency (NTA) bulletin and National Medical Commission (NMC) syllabus for the selected examination year.
+2. **IMAT track** — aligned to the applicable Italian Ministry of University and Research (MUR) decree, syllabus, and official test materials for the selected academic year.
+
+A student may prepare for NEET-UG, IMAT, or both. If a student selects both, the platform must keep their syllabus progress, question banks, mock tests, scoring, and analytics separated by examination track.
+
+The platform combines:
+
+- Exam-specific curriculum and syllabus tracking.
+- Structured study material and resource management.
+- Reviewed question banks and previous-paper practice, subject to content rights.
+- Distinct NEET-UG and IMAT assessment configurations.
+- Timed tests, answer saving, scoring, and solution review.
+- Subject / section / topic-level performance analytics.
+- AI-assisted question drafting and study assistance, with academic safeguards.
+- Faculty, tutor, batch, and institute tools where the learner is part of a coaching programme.
+- A secure account, access-control, and audit foundation.
+
+## 0.2 The correct product positioning
+
+**Recommended product description:**
+
+> MedPrepOS is a dual-track medical entrance preparation platform for NEET-UG and IMAT aspirants. It combines exam-specific learning resources, syllabus-based practice, realistic mock assessments, performance analytics, and AI-assisted academic support. Its assessment engine applies the rules configured for the selected exam and year, while faculty and academic reviewers retain control over the quality and publication of learning content.
+
+## 0.3 Primary product value
+
+The platform should answer six practical questions for an aspirant:
+
+1. What should I study for *my selected examination and examination year*?
+2. Which resources and practice questions belong to each syllabus topic?
+3. Am I practising with the correct number of options, timing, and marking rules?
+4. Which subjects, sections, and topics require more revision?
+5. How has my performance changed across comparable tests?
+6. What should I revise or practise next?
+
+## 0.4 Product audiences and business approach
+
+The **aspirant is the primary user**. The platform may serve an aspirant directly or through a participating coaching institute.
+
+| Audience | Value provided |
+|---|---|
+| Independent aspirant | Personal study plan, resources, topic practice, mock tests, progress tracking |
+| Institute-enrolled aspirant | Assigned courses, batches, faculty resources, scheduled tests, academic feedback |
+| Faculty / tutor | Curriculum mapping, resource publishing, question authoring, assessment creation, learner progress |
+| Coaching institute | Student and batch management, content governance, assessment administration, reports |
+| Platform administrator | Product operations, institution setup, platform-level governance |
+
+Recommended initial commercial approach:
+
+- Validate the core learner experience with a small pilot group.
+- Support a pilot institute and individual learner accounts without building a complex billing system first.
+- Add paid learner subscriptions or institute plans only after product usage and willingness to pay are validated.
+- Do not make a claim about revenue, market size, or guaranteed outcomes without market research.
+
+## 0.5 Product boundaries
+
+| The platform will provide | The platform will not claim to provide |
+|---|---|
+| NEET-UG and IMAT preparation workflows | Official NTA or MUR examination services |
+| Practice papers and mock assessments | The official examination itself |
+| Exam-year-specific scoring configurations | Guaranteed official scores, ranks, or admission |
+| Performance indicators and revision recommendations | Guaranteed rank or admission prediction |
+| AI-generated draft questions reviewed by faculty | Guaranteed correctness of unreviewed AI output |
+| Content access control and piracy deterrence | Screenshot-proof or piracy-proof DRM |
+| Exam information links and preparation resources | Official application, registration, or counselling decisions |
+
+---
+
+# 1. Problem Statement and Product Opportunity
+
+## 1.1 Problems the product addresses
+
+NEET-UG and IMAT aspirants prepare for different admission tests, but both need reliable and organized preparation workflows. Common problems to validate with real aspirants and institutes include:
+
+- Study notes, videos, question banks, and mock tests are scattered across different tools.
+- Students may follow a generic syllabus or an outdated exam pattern.
+- Question practice may not match the current examination's number of options, section distribution, timing, or marking rules.
+- Students receive total marks but not sufficiently useful topic-level feedback.
+- Faculty may spend significant time drafting, checking, organizing, and publishing practice questions.
+- Students taking two examinations may mix their study plans and misunderstand the differences between the examinations.
+- Institutes may manage batches, assignments, and test results manually.
+- Students may not know which resources are approved, current, or relevant to their selected exam year.
+
+These are product hypotheses, not quantified market findings. Validate them through interviews, observation, and pilot usage before claiming that the platform saves a particular amount of time or improves scores by a particular percentage.
+
+## 1.2 Proposed solution workflow
+
+```text
+Aspirant creates an account
+          |
+          v
+Selects NEET-UG, IMAT, or both
+          |
+          v
+Selects available exam-year / syllabus version
+          |
+          v
+Gets a separate exam-specific dashboard
+          |
+          v
+Studies syllabus topics and approved resources
+          |
+          v
+Practises topic-wise and full-length questions
+          |
+          v
+Takes the corresponding exam-pattern assessment
+          |
+          v
+Server saves answers and calculates the result
+          |
+          v
+Student reviews solutions and performance
+          |
+          v
+Uses revision recommendations and continues practice
+```
+
+Faculty and institutes can add a parallel workflow:
+
+```text
+Institute / Faculty setup
+          |
+          v
+Assigns exam track, course, faculty and batch
+          |
+          v
+Publishes exam-specific resources and questions
+          |
+          v
+Creates and schedules practice assessments
+          |
+          v
+Reviews participation and academic progress
+```
+
+## 1.3 What should make the product different
+
+The product's strongest differentiator is not merely having a quiz interface or chatbot. It is **maintaining two accurate and separate preparation experiences within one platform**.
+
+- NEET-UG and IMAT have different question formats and scoring policies.
+- They have different syllabus organization and topic priorities.
+- They need separate exam-year content and test configurations.
+- Their raw scores must not be treated as directly comparable.
+- An aspirant preparing for both should be able to switch between tracks without mixing progress or test rules.
+
+---
+
+# 2. Examination Scope and Verified Reference Baselines
+
+## 2.1 Exam-year principle
+
+Examination patterns, syllabi, official instructions, and admission processes can change. The platform must treat each year's official documentation as a versioned source of truth.
+
+The values in this section are a **verified reference baseline based on published 2026 materials**. They must not be hardcoded as permanent rules. Before activating a later cycle, the platform owner or academic reviewer must check the latest official bulletin or decree and publish a new configuration version.
+
+## 2.2 NEET-UG 2026 reference baseline
+
+The NTA's NEET-UG 2026 Information Bulletin specifies the following examination pattern:
+
+| Attribute | NEET-UG 2026 reference |
+|---|---|
+| Organizing authority | National Testing Agency (NTA), with relevant regulatory syllabus / admission rules |
+| Main academic areas | Physics, Chemistry, Biology (Botany and Zoology) |
+| Total questions | 180 compulsory questions |
+| Physics | 45 questions |
+| Chemistry | 45 questions |
+| Biology | 90 questions |
+| Question type | MCQ with four options and one correct / best answer |
 | Duration | 180 minutes (3 hours) |
-| Total marks | 720 |
-| Physics | 45 questions, 180 marks |
-| Chemistry | 45 questions, 180 marks |
-| Biology | 90 questions, 360 marks |
-| Question format | MCQ with four options and one correct/best answer |
+| Maximum marks | 720 |
 | Correct answer | +4 |
 | Incorrect answer | -1 |
 | Unanswered | 0 |
-| Official examination mode | Pen-and-paper for NEET-UG 2026 |
+| Official delivery mode for 2026 | Pen-and-paper |
+| Question-paper languages listed for 2026 | English, Hindi, Assamese, Bengali, Gujarati, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu, Urdu |
 
-**Important:** This is a 2026 reference configuration, not a guarantee that the next examination cycle will use identical rules. The NTA bulletin itself notes that information may be updated. Before enabling the next exam year, the administrator/content owner must review the latest official NTA and NMC information and approve a new blueprint version.
+**Important NEET-UG 2026 marking exceptions in the NTA bulletin:**
 
-The full 2026 scheme and marking details are in Chapter 4 of the [official NEET-UG 2026 Information Bulletin](https://cdnbbsr.s3waas.gov.in/s37bc1ec1d9c3426357e69acd5bf320061/uploads/2026/02/202602231394640855.pdf), pages 21–22.
+- If more than one option is found correct, +4 is awarded only to candidates who marked any of the correct options.
+- If all options are found correct, +4 is awarded to candidates who attempted the question.
+- If no option is correct, a question is found wrong, or a question is dropped, +4 is awarded to all candidates who appeared, whether they attempted the question or not.
 
-## 7.2 What the online assessment runner represents
+These exceptions mean that a simplistic `correct ? +4 : incorrect ? -1 : 0` calculation is not sufficient for all official-paper adjudication cases.
 
-The platform's timed online assessment runner is for:
+**Accessibility note:** The NEET-UG 2026 bulletin describes compensatory time for eligible PwD/PwBD candidates with a physical limitation to write. Practice assessments should provide configurable, authorized accommodations. The platform must not independently determine a candidate's official disability eligibility or claim to reproduce every official accommodation rule.
 
-- Daily practice problems.
-- Chapter and subject tests.
-- Institute mock tests.
-- Revision tests.
-- Practice based on published NEET patterns.
+### 2.2.1 NEET-UG curriculum structure
 
-It must not claim to reproduce the official examination delivery method. NEET-UG 2026 was pen-and-paper; an online browser test is an institute practice experience.
+The initial curriculum should follow the current NMC-notified NEET-UG syllabus for the selected year.
 
-## 7.3 Curriculum structure
-
-Use the following logical hierarchy:
+Recommended organization:
 
 ```text
-Exam Track
-  └── Exam Blueprint / Exam Year
-        └── Subject
-              └── Chapter
-                    └── Topic
+NEET-UG
+  ├── Physics
+  │    ├── Chapter
+  │    │    └── Topic
+  │    └── Practice questions
+  ├── Chemistry
+  │    ├── Physical Chemistry
+  │    ├── Organic Chemistry
+  │    ├── Inorganic Chemistry
+  │    └── Topic practice
+  └── Biology
+       ├── Botany
+       ├── Zoology
+       └── Chapter / Topic practice
 ```
 
-For the initial NEET-UG track:
+Do not treat the illustrative branches above as a replacement for the official syllabus. Each node must be imported or mapped against the applicable NMC/NTA syllabus version.
 
-- Physics.
-- Chemistry.
-- Biology.
-  - Biology content may be grouped into Botany and Zoology for learning navigation, based on the current approved syllabus mapping.
+### 2.2.2 NEET-UG language support
 
-Do not hardcode a universal list of seven academic subjects. The original seven-subject design mixed NEET subjects with areas associated with other entrance examinations. Those subjects do not form one shared NEET syllabus.
+The NEET-UG 2026 bulletin lists 13 examination-paper language options. The product should:
 
-## 7.4 Curriculum source governance
+- Store the original language of each question and resource.
+- Support translated versions only when they have been reviewed.
+- Keep a canonical question identity across translations.
+- Preserve option order and answer-key mapping across translations.
+- Clearly identify the language version shown to the student.
+- Avoid automatic machine translation as the only quality control for scientific terms.
+- Apply the language choices of the relevant official year only when verified.
 
-- Import the applicable syllabus from the official NTA/NMC source for the selected examination year.
-- Record the source URL, date retrieved, exam year, content owner, and approval date.
-- Map every chapter and topic to the applicable syllabus version.
-- Mark removed or changed topics without deleting historical references used by past assessments.
-- Keep faculty-created learning resources linked to the curriculum version they support.
-- Do not label an unofficial institute topic list as the official syllabus.
+The product's interface language and the language of an examination question are separate settings.
 
-## 7.5 Future exam extensibility
+### 2.2.3 NEET-UG official paper versus online practice
 
-IMAT, UCAT, and MCAT may be considered later, but each requires a separate blueprint.
+The official NEET-UG 2026 examination mode is pen-and-paper. MedPrepOS is a digital preparation product; its online test runner is therefore a practice simulation, not the official NTA examination interface.
 
-Examples of why they cannot share one hardcoded exam model:
+Possible practice modes:
 
-- UCAT contains separately timed Verbal Reasoning, Decision Making, Quantitative Reasoning, and Situational Judgement subtests; its official scoring uses scaled scores and Situational Judgement bands, with no negative marking for incorrect responses. See the [official UCAT format and scoring page](https://www.ucat.ac.uk/about-ucat/test-format-and-scoring/).
-- MCAT has four separately scaled sections and no additional penalty for wrong answers. See the [AAMC MCAT scoring guidance](https://students-residents.aamc.org/mcat-scores/how-mcat-exam-scored).
-- IMAT must be configured from the official examination-year source applicable to the target cycle, not from an old stored assumption.
+1. **Digital timed practice:** Select answers online and receive immediate or scheduled feedback.
+2. **Paper simulation (later enhancement):** Provide a printable question paper and OMR-style response sheet, with manual response entry or a carefully validated capture workflow.
+3. **Topic practice:** Untimed or lightly timed practice with explanations.
 
-Future exam support requires a product and academic review, current official source verification, syllabus mapping, test cases, and a separate acceptance sign-off.
+Do not tell students that completing an online mock is identical to sitting the official pen-and-paper test.
 
----
+## 2.3 IMAT 2026/27 reference baseline
 
-# 8. Primary User Journeys
+The Ministry of University and Research (MUR) published Ministerial Decree No. 1005 dated 6 August 2026 for the 2026/2027 English-language admission test cycle. The official MUR portal identifies the IMAT track and publishes the 2026 test calendar and question paper.
 
-## 8.1 Student onboarding and enrolment
+The 2026 paper and decree-based materials provide the following reference structure:
 
-1. Student receives an institute invitation or submits a registration request.
-2. Authentication verifies the account.
-3. The system creates a basic profile with a non-privileged default state.
-4. An administrator reviews the registration and assigns an academic programme/cohort.
-5. The system records the enrolment status and start/end dates.
-6. The student sees only published content permitted for the assigned cohort.
-7. The student receives a welcome message and a link to the study dashboard.
+| Section / area | Questions |
+|---|---:|
+| Reading skills and knowledge acquired during studies | 4 |
+| Logical reasoning and problem solving | 5 |
+| Biology | 23 |
+| Chemistry | 15 |
+| Physics and Mathematics | 13 |
+| **Total** | **60** |
 
-## 8.2 Student learning journey
+| Attribute | IMAT 2026/27 reference |
+|---|---|
+| Authority / annual rules | MUR and the applicable official decree |
+| Question type | Multiple-choice |
+| Options per question | Five |
+| Total questions | 60 |
+| Duration | 100 minutes |
+| Correct answer | +1.5 |
+| Incorrect answer | -0.4 |
+| Unanswered | 0 |
+| Maximum raw score | 90 |
+| Main scientific areas | Biology, Chemistry, Physics and Mathematics |
+| Other areas | Reading skills / knowledge acquired during studies; logical reasoning / problem solving |
+| Assessment language | English-language examination track |
 
-1. Student signs in.
-2. Student opens the dashboard and sees upcoming tests, announcements, and progress.
-3. Student opens a subject, chapter, or topic.
-4. Student reads approved notes or views an authorized lecture resource.
-5. Student starts a DPP or mock assessment.
-6. The server creates an attempt and returns the approved question presentation payload without answer keys.
-7. Student answers questions; changes are saved through an authenticated API.
-8. Student submits, or the server finalizes the attempt at its deadline.
-9. The server calculates the score and stores the result.
-10. Student sees results when the release policy permits.
-11. Student reviews explanations and topic-level feedback.
+The official 2026 MUR question-paper page states that the published version has option A as the correct answer for all questions. Treat that as a property of that published paper version, not as a general rule for future papers or generated questions.
 
-## 8.3 Faculty content and assessment journey
+### 2.3.1 IMAT curriculum structure
 
-1. Faculty signs in and sees assigned subjects/cohorts.
-2. Faculty creates or updates a resource draft.
-3. Faculty tags the resource with subject, chapter, topic, and cohort visibility.
-4. Faculty submits the resource for publication, or publishes it if granted that permission.
-5. Faculty creates questions manually or requests AI drafts when enabled.
-6. Faculty validates question text, four options, the answer key, explanation, syllabus relevance, and rights to diagrams or source material.
-7. Faculty creates an assessment and selects question revisions.
-8. The platform snapshots the approved question revisions into an immutable assessment version.
-9. Faculty schedules or publishes the assessment for assigned cohorts.
-10. Faculty reviews verified results and identifies topics needing additional instruction.
+Use an IMAT-specific taxonomy:
 
-## 8.4 Administrator operations journey
+```text
+IMAT
+  ├── Reading skills and knowledge acquired during studies
+  ├── Logical reasoning and problem solving
+  ├── Biology
+  ├── Chemistry
+  └── Physics and Mathematics
+       ├── Physics topics
+       └── Mathematics topics
+```
 
-1. Admin signs in with a protected account.
-2. Admin reviews pending registrations and user status.
-3. Admin creates academic years, programmes, and cohorts.
-4. Admin assigns students to cohorts and faculty to subjects/cohorts.
-5. Admin reviews resource and assessment publication states.
-6. Admin publishes institute-wide or cohort-specific announcements.
-7. Admin reviews audit logs and operational alerts.
-8. Admin exports only the records needed for a defined institute purpose.
+The 2026 question distribution is important for test construction and preparation analytics. It must be stored in the `exam_version` / section configuration rather than assumed to remain identical in future years.
 
----
+### 2.3.2 IMAT content and delivery safeguards
 
-# 9. Functional Modules and Requirements
+- Use English as the exam-question language for the IMAT preparation track unless a later official specification establishes otherwise.
+- Keep the reading/knowledge section distinct from the logical reasoning section.
+- Do not label the reading/knowledge section simply as an English grammar test.
+- Keep Physics and Mathematics as a combined official question allocation where required by the exam configuration, while allowing study planning to track Physics and Mathematics topics separately.
+- Do not reuse old IMAT distributions without checking the applicable annual decree.
+- Do not infer admission eligibility, ranking thresholds, tie-break rules, or university seat availability from a practice score. Such information belongs to the official annual decree and admissions information, and can vary by candidate category and cycle.
 
-The requirement identifiers below should be used in backlog tickets, test cases, and release checklists.
+## 2.4 NEET-UG versus IMAT: product design comparison
 
-## 9.1 Authentication and session governance
-
-| ID | Requirement | Acceptance condition |
+| Design dimension | NEET-UG | IMAT |
 |---|---|---|
-| FR-AUTH-001 | Support secure sign-in and sign-out. | Valid users can sign in; invalid credentials do not create sessions; logout invalidates the active application session. |
-| FR-AUTH-002 | Support password reset or the selected secure recovery method. | Recovery does not reveal whether an email address is registered. |
-| FR-AUTH-003 | Create a profile after account provisioning. | Profile creation is idempotent and cannot assign privileged roles from user-editable metadata. |
-| FR-AUTH-004 | Enforce Student, Faculty, and Admin permissions. | Protected API and database operations reject unauthorized calls even when invoked outside the UI. |
-| FR-AUTH-005 | Support account suspension. | Suspended accounts cannot perform protected actions; existing sessions are invalidated or rejected according to the session policy. |
-| FR-AUTH-006 | Protect administrator accounts. | Admin access requires strong authentication; MFA should be enabled for administrators where supported. |
-| FR-AUTH-007 | Restrict faculty/admin account creation. | Public registration cannot self-assign staff roles. |
+| Subject taxonomy | Physics, Chemistry, Biology (Botany/Zoology) | Reading/knowledge, reasoning, Biology, Chemistry, Physics/Mathematics |
+| 2026 question count | 180 | 60 |
+| 2026 option count | 4 | 5 |
+| 2026 duration | 180 minutes | 100 minutes |
+| 2026 correct mark | +4 | +1.5 |
+| 2026 wrong mark | -1 | -0.4 |
+| 2026 unanswered mark | 0 | 0 |
+| 2026 maximum raw score | 720 | 90 |
+| Official 2026 mode | Pen-and-paper | Follow MUR's applicable 2026 decree and instructions |
+| Language approach | 13 listed paper languages in 2026 | English-language test |
+| Special scoring cases | Multiple-correct, all-correct, dropped/invalid question rules in 2026 bulletin | Apply the applicable MUR decree's rules |
 
-## 9.2 Student profile and enrolment
+**Core engineering conclusion:** One assessment product can serve both examinations, but it must load an exam-specific configuration and scoring policy. It must never use a single universal `+4/-1` rule or a fixed four-option/five-option assumption.
 
-- Student profile includes name, verified contact details where collected, profile status, created/updated timestamps, and permitted preferences.
-- Student academic details are stored separately from authentication credentials.
-- A student can have multiple enrolment records over time.
-- The platform must support cohort transfer with an effective date and an audit record.
-- Historical attempts remain linked to the enrolment/cohort context under which they occurred.
-- Students must not be allowed to change their own cohort or role.
+## 2.5 Annual verification workflow
 
-## 9.3 Academic programme, year, and cohort management
+Before a new NEET-UG or IMAT cycle is activated:
 
-- Create academic years with start and end dates.
-- Create programmes such as NEET-UG long-term preparation or repeater preparation.
-- Create dynamic cohorts/batches with names, schedules, capacity, start/end dates, and active state.
-- Do not hardcode the original labels `Batch 1 (Dec)` and `Batch 2 (May/June)` in application logic.
-- Assign students to cohorts through `student_enrollments`.
-- Assign faculty to subjects and cohorts through explicit assignment records.
-- A cohort transfer must not rewrite historical test or attendance context.
+1. Retrieve the latest official NTA/NMC or MUR documentation.
+2. Record the official source URL, publication date, and applicable cycle.
+3. Compare question count, subject/section distribution, option format, duration, scoring, languages, and accommodation rules with the previous version.
+4. Update curriculum and assessment configuration.
+5. Obtain academic review and approval.
+6. Run scoring and assessment regression tests.
+7. Publish the new version.
+8. Retain the previous version for historical attempts.
 
-## 9.4 Curriculum management
-
-- Maintain exam, blueprint year/version, subject, chapter, and topic records.
-- Support ordering and visibility of chapters/topics.
-- Associate content and questions with syllabus nodes.
-- Track student progress at chapter/topic level.
-- Allow the administrator to mark a curriculum version as current, draft, archived, or superseded.
-- Prevent a published assessment from silently changing because the current curriculum tree was edited.
-
-## 9.5 Learning resource management
-
-### Supported resource types
-
-- Notes.
-- PDF study material.
-- Faculty-approved book extracts or links where permitted by rights.
-- Daily Practice Problems.
-- Previous Year Question resources where the institute has permission to use and distribute them.
-- Lecture videos or approved external video links.
-- Images and diagrams.
-
-### Requirements
-
-- Store file metadata separately from the binary file.
-- Store protected resources in private storage buckets.
-- Use short-lived authenticated downloads or signed URLs generated after server-side authorization.
-- Validate file size, MIME type, extension, and actual content where feasible.
-- Scan uploaded files using an appropriate malware-scanning workflow before publication.
-- Limit allowed upload types to the institute's actual requirements.
-- Record uploader, owner, upload time, checksum, storage path, resource status, and curriculum mapping.
-- Support `DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `ARCHIVED`, and `REJECTED` states.
-- Recheck cohort and enrolment authorization before issuing a download authorization.
-- Avoid storing long-lived public URLs for paid or restricted resources.
-
-### Viewer behaviour
-
-- Provide an accessible PDF viewer with page navigation, zoom, and readable text where available.
-- Provide a responsive video player with playback controls and captions where supplied.
-- Provide image zoom/pan without losing keyboard accessibility.
-- Do not promise that in-browser viewing prevents photography, screenshots, or external recording.
-
-## 9.6 Question bank
-
-### MVP question type
-
-The MVP should focus on the NEET-UG 2026 baseline: single-select MCQ with four options and one correct/best answer. The database may be designed for later question types, but unsupported formats must remain disabled until their scoring and review rules are implemented.
-
-### Question fields
-
-- Logical question ID.
-- Revision ID and revision number.
-- Question statement.
-- Subject, chapter, and topic.
-- Question type.
-- Options and option ordering.
-- Correct answer key stored outside student-readable data access.
-- Explanation/rationale.
-- Optional image/diagram reference and accessibility description.
-- Difficulty label assigned by faculty, not treated as an objective measurement unless calibrated.
-- Source/reference notes and content-rights status.
-- Author, reviewer, approval status, and timestamps.
-
-### Question states
-
-`DRAFT -> IN_REVIEW -> APPROVED -> PUBLISHED -> ARCHIVED`
-
-Rejected or withdrawn revisions remain auditable and must not be silently reused in a new assessment.
-
-### Question versioning
-
-- Published question revisions are immutable.
-- Editing a published question creates a new revision.
-- A published assessment references exact question revision IDs.
-- Historical attempts continue to reference the exact revision used at the time of the attempt.
-- Correct-answer changes require a correction reason and audit event.
-
-## 9.7 Assessment builder
-
-### Assessment types
-
-- DPP.
-- Chapter test.
-- Subject test.
-- Full mock test.
-- Revision test.
-- PYQ practice set, only where the institute has rights to use the material.
-
-### Assessment configuration
-
-- Title and description.
-- Exam and blueprint version.
-- Assessment type.
-- Subject/chapter/topic scope.
-- Target cohort(s).
-- Question revision list and order.
-- Duration and availability window.
-- Scoring profile.
-- Attempt limit and retake policy.
-- Navigation policy.
-- Answer/result release policy.
-- Publication and archival state.
-
-A published assessment version is immutable. To change questions, timing, or marking, create a new assessment version.
-
-## 9.8 Online assessment runner
-
-The practice runner must provide:
-
-- Clear assessment instructions before the attempt begins.
-- Server-created attempt ID and server-authoritative start/deadline timestamps.
-- A question display that does not expose answer-key data.
-- Single-select answer controls for the NEET MVP.
-- Question palette showing answered, unanswered, and marked-for-review states.
-- Previous/next navigation and question review.
-- Answer save status and network status indicators.
-- A submit confirmation step.
-- Automatic finalization after the server-side deadline.
-- A safe response when a student's network is interrupted.
-- Recovery/resume only when allowed by assessment policy and validated by the server.
-
-Fullscreen may be offered as an optional concentration aid, but it must not be treated as a security boundary. Do not force an unsupported browser-lock or anti-capture promise.
-
-## 9.9 Results and performance analytics
-
-### Student result view
-
-- Assessment title and attempt date.
-- Correct, incorrect, unanswered counts.
-- Raw score and maximum score.
-- Accuracy and completion status.
-- Subject/chapter/topic breakdown where sample size is meaningful.
-- Time spent, where it can be measured reliably.
-- Correct answer and explanation after result release.
-- Historical score trend.
-
-### Faculty view
-
-- Cohort-level completion and score distribution.
-- Subject/chapter/topic accuracy.
-- Students needing follow-up based on defined thresholds.
-- Comparison of assessment versions only where the assessments are meaningfully comparable.
-
-### Analytics rules
-
-- Analytics must use server-verified attempt results.
-- Define each metric in code and documentation.
-- Show sample size when aggregating scores.
-- Avoid presenting a small sample as a reliable mastery estimate.
-- Do not infer a student's medical condition, intelligence, or admission outcome from scores.
-- Do not generate a predicted NEET rank unless a separate validated model and responsible-use review justify it; it is outside the MVP.
-
-## 9.10 Announcements and academic calendar
-
-### Announcements
-
-- Admin may publish institute-wide announcements.
-- Authorized faculty may publish to assigned cohorts.
-- Fields include title, body, audience, priority, publication time, expiry, author, and status.
-- Students see only announcements for their role/cohort.
-- Editing or withdrawing a published critical announcement creates an audit record.
-
-### Calendar
-
-- Store event title, description, event type, start/end time, target cohort, author, and publication status.
-- Support lectures, tests, deadlines, and institute events.
-- Render local timezone consistently; store timestamps in UTC and display in the configured institute timezone.
-- Calendar reminders are optional and should be added only when notification delivery is reliable.
-
-## 9.11 Notifications
-
-MVP notifications may be in-app. Email/SMS/push delivery can be phased in later.
-
-- Avoid sending duplicate notifications after retries.
-- Record delivery state where an external provider is used.
-- Do not include sensitive student records in notification body text.
-- Allow users to control non-essential notifications.
-
-## 9.12 Student document management — optional and restricted
-
-Document verification is not a required core feature for a NEET learning platform. Add it only when the institute has a clear operational or legal need.
-
-If enabled:
-
-- Configure required document types per institute policy.
-- Collect the minimum information necessary.
-- Do not require a medical fitness certificate by default.
-- Store files in a private bucket.
-- Restrict access to specifically authorized administrators.
-- Record reviewer, review time, status, and reason.
-- Show students a limited status view without exposing internal notes unnecessarily.
-- Define a retention and deletion schedule.
-- Do not reuse uploaded documents for AI training or unrelated purposes.
-
-Document states: `NOT_SUBMITTED`, `PENDING_REVIEW`, `VERIFIED`, `REJECTED`, `EXPIRED`, `DELETED`.
-
-## 9.13 Community discussion — post-MVP
-
-A discussion forum is not necessary to prove the core product. If added later, it must include:
-
-- Thread and reply relationships.
-- Reporting and moderation workflows.
-- Role labels.
-- Spam and abuse controls.
-- Clear content rules.
-- Audit records for moderator actions.
-- Protection against file/link abuse.
-
-Do not launch unrestricted nested discussion before assigning moderation responsibility.
-
-## 9.14 Administration and audit logging
-
-Audit the following events at minimum:
-
-- User created, suspended, reactivated, or role changed.
-- Student enrolled, transferred, or removed from a cohort.
-- Faculty assignment changed.
-- Resource uploaded, approved, published, archived, or deleted.
-- Question revised, approved, published, withdrawn, or answer key corrected.
-- Assessment created, published, versioned, cancelled, or rescheduled.
-- Attempt manually adjusted or reopened.
-- Document reviewed or exported, if document module is enabled.
-- Administrator support preview started/ended.
-- Bulk export initiated.
-
-Audit fields: actor ID, action, entity type, entity ID, event timestamp, request/correlation ID, reason where required, and structured metadata that excludes secrets.
-
-Audit records should be append-only for normal application roles. Do not log passwords, access tokens, signed URLs, or unnecessary personal information.
+No future-year pattern should be invented or assumed.
 
 ---
 
-# 10. Assessment and Scoring Specification
+# 3. User Personas and Roles
 
-## 10.1 Scoring configuration
+## 3.1 Aspirant (primary persona)
 
-Scoring rules are defined in a versioned `scoring_profile` linked to the exam blueprint/assessment version. Do not hardcode `+4/-1` in the React component or shared UI utilities.
+An aspirant can:
 
-For the NEET-UG 2026 reference baseline:
+- Select NEET-UG, IMAT, or both.
+- Select an available examination year / syllabus version.
+- Study subjects, sections, chapters, topics, and skills.
+- Access eligible resources.
+- Practise questions.
+- Take topic, subject, section, and full-length mock tests.
+- Review answers and explanations according to release rules.
+- Track exam-specific performance.
+- Receive revision suggestions.
+- Use an AI study assistant where enabled.
+- Manage language and accessibility preferences.
 
-```text
-Correct answer:   +4
-Incorrect answer: -1
-Unanswered:        0
+## 3.2 Faculty / tutor
+
+A faculty member can:
+
+- View assigned exam tracks, subjects, and batches.
+- Upload and manage resources.
+- Create and edit questions.
+- Review AI-generated draft questions.
+- Approve or reject academic content within assigned permission.
+- Create and schedule assessments.
+- Review assigned students' performance.
+- Share announcements and revision plans.
+
+## 3.3 Institute administrator
+
+An institute administrator can:
+
+- Manage the institute workspace.
+- Invite faculty and students.
+- Assign roles using trusted workflows.
+- Create academic years, courses, and batches.
+- Assign exam tracks and faculty.
+- Enroll students.
+- Assign resources and assessments.
+- Review institute-level reports.
+- Manage announcements and operational settings.
+- View authorized audit events.
+
+## 3.4 Platform administrator
+
+A platform administrator can:
+
+- Create and manage participating institutions.
+- Manage platform-level exam templates and configuration releases.
+- Manage platform content, where licensed and approved.
+- Monitor service health and usage.
+- Manage platform support processes.
+- Review platform-level audit events.
+
+Platform administration is separate from institute-level administration.
+
+## 3.5 Optional support role
+
+A support role may be added later with narrow permissions. Support access to a student's account or records must be justified, time-limited where possible, visible to the user or institution as appropriate, and audited.
+
+---
+
+# 4. Functional Requirements
+
+## 4.1 Account onboarding and exam-track selection
+
+Requirements:
+
+- Register and authenticate users.
+- Allow an aspirant to select NEET-UG, IMAT, or both.
+- Allow exam-track selection to be changed without deleting historical progress.
+- Store each selected track as a separate learner enrollment / preparation profile.
+- Store the examination cycle and syllabus version selected by the learner.
+- Allow a learner to join an institution or remain an independent learner.
+- Support invitations for institute-enrolled learners.
+- Support account recovery and session revocation.
+- Avoid collecting unnecessary personal or identity information.
+
+Acceptance criteria:
+
+- A student enrolled in both tracks sees two separate track dashboards.
+- NEET progress does not appear as IMAT progress, and vice versa.
+- A student can switch tracks without losing saved attempts.
+- A suspended account cannot use a cached session to gain access to protected server resources.
+
+## 4.2 Student dashboard
+
+The dashboard should show:
+
+- Active exam track(s).
+- Current exam cycle / syllabus version.
+- Study progress for the selected track.
+- Upcoming assessments.
+- Recent attempts.
+- Subject/section performance.
+- Topics needing revision.
+- Announcements.
+- Recommended next study action.
+
+Avoid mixing raw NEET marks and IMAT marks into one combined score. If the student prepares for both, show two independent summaries.
+
+## 4.3 Curriculum and syllabus browser
+
+Requirements:
+
+- Separate NEET-UG and IMAT syllabus trees.
+- Separate exam-year syllabus versions.
+- Support subject/section → chapter/topic/skill hierarchy.
+- Support faculty-approved syllabus mapping.
+- Support display order and optional prerequisites.
+- Support topic completion and revision status.
+- Store syllabus source metadata.
+- Show the year/version to the learner.
+- Allow resources and questions to be mapped to exact syllabus nodes.
+- Preserve historical mappings when the syllabus changes.
+
+## 4.4 Study plans and topic progress
+
+Students should be able to:
+
+- Mark topics as not started, in progress, completed, or revise again.
+- Record study sessions or revision dates.
+- View subject/section completion.
+- See recommended topics based on a transparent rule.
+- Maintain separate study plans for NEET-UG and IMAT.
+
+Faculty should be able to assign a study plan to a batch or learner, if permitted.
+
+## 4.5 Learning resources
+
+Supported content types:
+
+- Study notes.
+- PDF documents.
+- Faculty-created summaries.
+- Video lectures.
+- Diagrams and images.
+- DPP / topic practice sheets.
+- Previous-year questions (PYQs), where permitted.
+- External reference links.
+- Revision checklists.
+
+Requirements:
+
+- Upload resource metadata and files.
+- Store files in private object storage.
+- Validate file type, size, and ownership.
+- Map resources to exam track, exam year, syllabus nodes, course, and eligible batch.
+- Support draft, review, published, archived, and withdrawn statuses.
+- Record author, reviewer, and publisher.
+- Provide in-app reading where practical.
+- Support text alternatives for educational images and captions/transcripts where available.
+- Use authenticated access or short-lived signed URLs.
+- Allow expired or withdrawn content to become inaccessible.
+- Respect copyright, license, and institute ownership terms.
+
+The platform must not assume that every PDF, book, or previous-year paper can legally be republished. Content ingestion requires rights review.
+
+## 4.6 Question bank
+
+Requirements:
+
+- Create questions manually.
+- Support single-answer MCQ as the first supported format.
+- Store option count per question and validate it against the selected exam configuration.
+- Support four options for the NEET-UG 2026 reference format.
+- Support five options for the IMAT 2026 reference format.
+- Add other question types only when justified by the official pattern or a clearly labeled practice feature.
+- Map each question to exam track, exam version, subject/section, chapter/topic, difficulty, and tags.
+- Store explanation and source/reference metadata.
+- Support image and diagram attachments with descriptive alternative text.
+- Support draft, review, approved, published, rejected, and retired states.
+- Track author, reviewer, and version history.
+- Prevent a student from retrieving the answer key before release.
+- Support reporting and correction of disputed questions.
+- Do not assume a correct option based on its position.
+- Validate that the answer key refers to a valid option.
+
+## 4.7 Previous-year question practice
+
+Requirements:
+
+- Import only questions the platform is permitted to use.
+- Record exam name, year, paper/set where applicable, source URL, license/permission status, and verification notes.
+- Preserve the original question and answer-key relationship.
+- Keep official answer-key updates and corrections as versioned records.
+- Distinguish official past-paper questions from faculty-created practice questions and AI-generated drafts.
+- Do not label an approximate or reconstructed question as an official PYQ.
+- Ensure option shuffling updates the answer-key mapping correctly.
+- Keep the published IMAT 2026 paper's answer-key convention as a property of that particular published paper, not a global rule.
+
+## 4.8 Practice and assessment types
+
+Supported assessment types:
+
+- Topic-wise practice.
+- Chapter test.
+- Subject / section test.
+- Daily Practice Problems (DPP).
+- Timed mini-test.
+- Previous-year paper practice.
+- Full-length NEET-UG mock.
+- Full-length IMAT mock.
+- Revision / diagnostic test.
+- Institute test series.
+
+Every assessment must declare its exam track and configuration version.
+
+## 4.9 NEET-UG assessment runner
+
+For a NEET-UG 2026-compatible practice configuration:
+
+- 180 compulsory questions.
+- Physics 45, Chemistry 45, Biology 90.
+- Four options for each standard single-answer MCQ.
+- 180-minute full-length duration.
+- +4 correct, -1 incorrect, 0 unanswered.
+- Support question navigation and answer review.
+- Support mark-for-review.
+- Support section / subject filters for practice tests.
+- Support scheduled and self-paced test modes.
+- Save answers server-side.
+- Calculate score on the backend.
+- Support question-level adjudication for multiple-correct, all-correct, invalid, or dropped questions where a mock is designed to emulate the applicable official rule.
+- Display a clear practice/simulation disclaimer.
+
+For future NEET years, load the relevant published configuration instead of silently keeping the 2026 pattern.
+
+## 4.10 IMAT assessment runner
+
+For an IMAT 2026/27-compatible practice configuration:
+
+- 60 questions.
+- Five options per standard MCQ.
+- 100-minute full-length duration.
+- Section distribution: 4 reading/knowledge, 5 logical reasoning/problem solving, 23 Biology, 15 Chemistry, and 13 Physics/Mathematics.
+- +1.5 correct, -0.4 incorrect, 0 unanswered.
+- Show section progress and remaining time.
+- Support question navigation and review.
+- Preserve the combined Physics/Mathematics exam allocation while tracking Physics and Mathematics topics separately for study analytics.
+- Save answers server-side.
+- Score on the backend.
+- Provide detailed explanations after the configured result-release point.
+- Show raw score out of 90 and a clearly labeled percentage of the maximum raw score.
+
+Do not use the previous year's section distribution without verifying the active MUR decree.
+
+## 4.11 Common assessment-runner behavior
+
+- Server creates the attempt and records the authoritative start time.
+- Server calculates the deadline.
+- Client countdown is only a visual display.
+- Answers are saved periodically and on navigation where practical.
+- UI shows whether an answer save was confirmed.
+- Attempt can recover after refresh or temporary network interruption.
+- Submission is idempotent.
+- The server validates the learner's enrollment and assessment eligibility.
+- The server rejects submissions outside the configured time policy.
+- The answer key remains hidden until release.
+- The server finalizes the attempt once.
+- The server calculates the authoritative score.
+- Accessibility settings and approved accommodations are applied by a trusted process.
+- A network-loss policy is shown to the user before the assessment starts.
+
+## 4.12 Scoring engine
+
+Use separate policy handlers or rule configurations for NEET-UG and IMAT.
+
+Suggested conceptual interface:
+
+```ts
+type ExamCode = "NEET_UG" | "IMAT";
+
+interface ScoringPolicy {
+  examCode: ExamCode;
+  examYear: number;
+  correctMarks: number;
+  incorrectMarks: number;
+  unansweredMarks: number;
+  scoringPolicyVersion: string;
+  supportsQuestionAdjudication: boolean;
+}
+
+interface QuestionAdjudication {
+  status:
+    | "STANDARD"
+    | "MULTIPLE_CORRECT"
+    | "ALL_OPTIONS_CORRECT"
+    | "INVALID_OR_DROPPED";
+  validOptionIds: string[];
+  effectivePolicy: string;
+}
 ```
 
-For the normal single-correct case:
+This is illustrative, not a complete scoring implementation.
+
+Scoring requirements:
+
+- Calculate marks on the trusted backend.
+- Never accept a final score from browser input.
+- Store the scoring policy version used.
+- Store the question version and adjudication used for each assessment.
+- Support question-level invalidation / regrading.
+- Support score recalculation with an audit trail.
+- Keep raw score, percentage of maximum, and any scaled/band score as distinct fields.
+- Never claim an official scaled score without a verified official conversion method.
+- Do not compare raw marks between NEET-UG and IMAT as if they were the same scale.
+
+## 4.13 Score release and solution review
+
+Requirements:
+
+- Configure immediate or scheduled score release.
+- Configure when explanations become visible.
+- Show selected answer, correct answer, marks awarded, and rationale.
+- Show the question's exam, year, topic, and source classification.
+- Show section/subsection results.
+- Preserve the original scoring snapshot.
+- Support faculty correction and authorized regrading.
+- Record reason, actor, timestamp, previous result, and new result.
+
+## 4.14 Performance analytics
+
+### NEET-UG analytics
+
+- Overall score out of the configured maximum.
+- Physics, Chemistry, and Biology accuracy.
+- Botany/Zoology breakdown if the curriculum and question mappings support it.
+- Chapter/topic accuracy.
+- Correct, incorrect, and unanswered counts.
+- Time allocation indicators.
+- Score progression across comparable NEET configurations.
+- Topics selected for revision.
+
+### IMAT analytics
+
+- Raw score out of the configured maximum.
+- Reading/knowledge performance.
+- Logical reasoning/problem-solving performance.
+- Biology performance.
+- Chemistry performance.
+- Physics/Mathematics performance.
+- Separate Physics and Mathematics study-topic analytics.
+- Correct, incorrect, and blank counts.
+- Time allocation indicators.
+- Score progression across comparable IMAT configurations.
+
+### Analytics safeguards
+
+- Show sample size with every topic-accuracy metric.
+- Do not mark a topic as weak based on one or two questions.
+- Distinguish no attempts from low performance.
+- Compare only tests with compatible exam and scoring versions.
+- Clearly label practice scores and projections.
+- Do not guarantee rank or admission.
+- Do not combine the two examination tracks into one misleading performance score.
+
+## 4.15 Revision recommendations
+
+Recommendations may be based on:
+
+- Recent topic accuracy.
+- Number of attempted questions.
+- Recency of revision.
+- Repeated errors.
+- Unattempted syllabus topics.
+- Faculty-assigned priorities.
+
+Every recommendation should state why the topic is suggested, for example:
+
+> "Revise Chemical Equilibrium: accuracy is below your configured target across 18 attempted questions."
+
+Avoid unexplainable AI-generated advice that presents uncertain predictions as facts.
+
+## 4.16 AI-assisted question generator
+
+Purpose: help faculty and academic reviewers draft exam-specific practice questions.
+
+Workflow:
+
+1. Faculty selects NEET-UG or IMAT.
+2. Faculty selects the exam year / syllabus version.
+3. Faculty selects subject/section, chapter/topic, difficulty, question type, language, and count.
+4. Backend verifies permissions and request limits.
+5. AI provider generates draft content.
+6. Backend validates structured output.
+7. System checks option count, duplicate options, answer-key references, missing explanation, topic mapping, and unsupported markup.
+8. Faculty reviews scientific/academic correctness.
+9. Faculty edits, approves, or rejects each question.
+10. Approved questions can be published into the question bank.
+
+Exam-specific prompt constraints:
+
+- NEET-UG prompts should follow the selected NEET syllabus, four-option question format, and appropriate depth.
+- IMAT prompts should follow the selected IMAT syllabus and section, five-option format, and relevant reasoning/reading/science question style.
+- Do not ask the model to create an IMAT "English grammar section" as a substitute for the official reading/knowledge category.
+- Do not set Option A or any other position as the correct answer by default.
+- Do not claim question quality merely because output is valid JSON.
+
+## 4.17 AI study assistant
+
+A student-facing AI study assistant may:
+
+- Explain a concept in the context of the selected exam track.
+- Summarize approved study resources.
+- Create revision checklists.
+- Explain a question after its answer-release policy allows it.
+- Generate practice prompts from approved curriculum material.
+- Point to relevant syllabus topics and resource citations.
+
+Safety and quality rules:
+
+- Ground responses in approved content where possible.
+- Cite the source resource, syllabus node, or faculty-approved notes used.
+- State uncertainty and avoid inventing official exam rules.
+- Do not expose answer keys for active assessments.
+- Do not treat model output as medical advice.
+- Do not send unnecessary personal or assessment data to an external model provider.
+- Allow the assistant to be disabled by an institution.
+- Log only the information needed for service quality and security, with a defined retention policy.
+
+## 4.18 Calendar and announcements
+
+Requirements:
+
+- Academic calendar events for lectures, tests, deadlines, and revision sessions.
+- Announcement audience by exam track, course, batch, or role.
+- Pin important notices.
+- Show publication and expiry dates.
+- Use the institution's configured timezone.
+- Record publisher and edit history.
+- Allow acknowledgement where needed.
+
+## 4.19 Community and discussion (post-MVP)
+
+Optional features:
+
+- Question discussion threads.
+- Nested replies.
+- Faculty answers.
+- Moderation and reporting.
+- Pinning/locking.
+- Rate limits and spam controls.
+- Audit trail for moderation actions.
+
+Do not let community features delay assessment reliability.
+
+## 4.20 Notification system (later phase)
+
+Potential channels:
+
+- In-app notifications.
+- Email notifications.
+- Push notifications, if a suitable application client is introduced.
+- SMS or WhatsApp only through compliant, approved providers and consent/communication rules.
+
+Use a notification outbox so important events are not lost when a provider is temporarily unavailable. Avoid sending assessment answers or sensitive personal information in notification text.
+
+## 4.21 Subscription and payment management (later phase)
+
+Possible business models:
+
+- Direct aspirant subscription.
+- Institute-sponsored access.
+- Institute licence / batch-based plans.
+- Freemium topic practice with paid test series.
+
+Do not build payment features before the pricing and customer model are validated. If added, use a reputable payment provider, server-side verification, webhook signature validation, idempotent payment events, refunds, and clear subscription status.
+
+---
+
+# 5. User Interface and Screen Inventory
+
+## 5.1 Shared screens
+
+- Landing page and product explanation.
+- Sign up / login / reset password.
+- Exam-track selection.
+- Profile and preferences.
+- Help and support.
+- Privacy and account settings.
+
+## 5.2 Student screens
+
+- Student home.
+- NEET-UG dashboard.
+- IMAT dashboard.
+- Exam-year / syllabus version selector.
+- Subject/section browser.
+- Chapter/topic view.
+- Resource library and reader.
+- Topic practice.
+- Mock test list.
+- Assessment instructions.
+- Timed assessment runner.
+- Submission confirmation.
+- Results and solutions.
+- Performance analytics.
+- Revision planner.
+- Calendar and announcements.
+- AI study assistant.
+
+## 5.3 Faculty screens
+
+- Faculty dashboard.
+- Assigned exam tracks and batches.
+- Curriculum browser.
+- Resource upload and editing.
+- Question bank.
+- Question editor.
+- AI question generator.
+- Draft/review/approval queue.
+- Assessment builder.
+- Test scheduling.
+- Student and batch performance.
+- Announcements.
+
+## 5.4 Institute administrator screens
+
+- Institute overview.
+- Student and faculty management.
+- Invitations and enrollment.
+- Academic years and batches.
+- Courses and exam-track assignment.
+- Faculty assignment.
+- Resource governance.
+- Assessment governance.
+- Calendar and announcements.
+- Reports and exports.
+- Audit log.
+- Institute settings.
+
+## 5.5 Platform administration screens
+
+- Institute directory.
+- Institute activation/suspension.
+- Global NEET/IMAT exam template administration.
+- Exam-year source verification and publication.
+- Global content governance (if licensed).
+- Platform monitoring.
+- Support access governance.
+- Platform audit events.
+
+---
+
+# 6. Content Governance and Academic Quality
+
+## 6.1 Content states
+
+Recommended resource and question states:
 
 ```text
-raw_score = (correct_count * 4) - (incorrect_count * 1)
+DRAFT
+  -> SUBMITTED_FOR_REVIEW
+  -> APPROVED
+  -> PUBLISHED
+  -> ARCHIVED / WITHDRAWN
 ```
 
-Unanswered questions add zero. The total possible marks in the 2026 baseline is 720.
+Not every state transition should be available to every role.
 
-## 10.2 Special question adjudication
+## 6.2 Question quality checklist
 
-The 2026 NTA bulletin also describes how questions found to have multiple correct options, all correct options, or no correct option/a dropped question are treated. The practice platform should support a controlled question-resolution workflow instead of assuming every item always has one permanent key.
+Before publication, reviewers should confirm:
 
-Support an adjudication state such as:
+- The question belongs to the chosen exam track.
+- The exam-year syllabus mapping is valid.
+- The topic and section are correct.
+- Option count matches the intended format.
+- Only the intended answer choice(s) are keyed.
+- The answer key is correct.
+- The explanation is understandable and accurate.
+- The question is not ambiguous.
+- Images/diagrams are legible and properly licensed.
+- Difficulty is reasonable for the intended practice purpose.
+- The source or author is recorded.
+- The wording does not improperly reproduce copyrighted material.
 
-- `NORMAL_SINGLE_KEY` — one correct option.
-- `MULTIPLE_ACCEPTED_KEYS` — more than one answer is accepted after review.
-- `ALL_OPTIONS_ACCEPTED` — all options are accepted for the applicable policy.
-- `DROPPED_OR_INVALID` — the item is invalidated and the configured scoring profile determines its treatment.
+## 6.3 Versioning
 
-For a NEET-UG 2026-aligned scoring profile, encode the applicable bulletin policy for these cases and test it separately. A question correction after attempts have been submitted must trigger a versioned rescore operation with a reason and an audit record. Preserve both the original and recalculated score snapshots.
+- Do not overwrite a published question in a way that changes a completed attempt.
+- Create a new question version for corrections.
+- Preserve the answer key and explanation used in historic attempts.
+- Regrading is an explicit, audited operation.
+- Publish new exam-year syllabus versions without destroying old mappings.
 
-## 10.3 Server-authoritative assessment lifecycle
+---
+
+# 7. Security and Authorization Architecture
+
+## 7.1 Core security principles
+
+- Least privilege.
+- Deny by default.
+- Server-side authorization.
+- Database-enforced row-level isolation.
+- Tenant isolation.
+- No trusted role assignment from user-editable metadata.
+- No client-authoritative scoring.
+- Private content storage.
+- Short-lived access links.
+- Auditable privileged actions.
+
+## 7.2 Authentication and role escalation
+
+The original design's proposed pattern of taking a role from `auth.users.raw_user_meta_data` is not safe for authorization. Supabase documents that user-editable metadata must not be trusted for authorization or RLS decisions.
+
+Correct design:
+
+- Public sign-up creates a basic student/pending account.
+- Faculty and administrator accounts are invited or approved through trusted workflows.
+- Privileged roles are stored in a protected membership/permissions model.
+- The backend validates membership and permissions on each protected action.
+- RLS policies independently enforce database access.
+- Role changes create audit events.
+- Service-role credentials are never exposed to the browser.
+
+## 7.3 Institution and learner access boundaries
+
+A student may be an independent learner or an institute-enrolled learner. A student may also prepare for both exam tracks.
+
+Access checks must validate:
+
+- Authenticated profile.
+- Selected exam-track entitlement.
+- Institution membership, when content is institution-scoped.
+- Course/batch enrollment, when content is batch-scoped.
+- Resource or assessment publication status.
+- Applicable exam-year / syllabus version.
+- Attempt count and availability window.
+- Faculty subject/batch assignment.
+
+Frontend filters are for usability, not security.
+
+## 7.4 RLS checklist
+
+For each protected table:
+
+- Enable RLS.
+- Define SELECT policy.
+- Define INSERT policy.
+- Define UPDATE policy.
+- Define DELETE policy or explicitly deny deletion.
+- Check tenant ownership.
+- Check trusted membership role.
+- Check student enrollment or faculty assignment as appropriate.
+- Check relationships via secure joins or carefully designed helper functions.
+- Test with real student, faculty, institute-admin, and platform-admin identities.
+- Test direct requests and manipulated record IDs.
+
+If using `SECURITY DEFINER` helpers:
+
+- Use the narrowest possible privileges.
+- Fix a safe `search_path`.
+- Revoke unnecessary execution grants.
+- Review the code for authorization bypasses.
+- Avoid recursive RLS patterns.
+
+## 7.5 Data and API security
+
+- Validate all request payloads.
+- Use parameterized queries or a safe database client.
+- Rate-limit authentication, AI, uploads, and high-cost APIs.
+- Use safe CORS configuration.
+- Use secure headers.
+- Avoid exposing internal error details.
+- Keep secrets in server-side secret storage.
+- Validate upload MIME type, size, and file ownership.
+- Log request IDs, but not tokens or secrets.
+- Review dependency vulnerabilities.
+- Rotate compromised secrets promptly.
+
+---
+
+# 8. Content Protection and Assessment Integrity
+
+## 8.1 Realistic browser security limits
+
+A browser-based React application cannot guarantee prevention of screenshots, photographs, screen recordings, external capture software, or manual copying.
+
+Blocking keyboard shortcuts, right-click, developer tools, or the browser's `getDisplayMedia` API does not control the user's operating system. Hiding the screen on tab blur may also create accessibility and usability problems.
+
+Therefore, the platform must not promise "bank-grade DRM", "screenshot-proof", or "screen-recording-proof" protection.
+
+## 8.2 Practical content-protection measures
+
+- Private storage buckets.
+- Server-authorized content access.
+- Short-lived signed URLs.
+- Dynamic watermarks on selected materials.
+- Download restrictions where license terms permit.
+- Access logging for sensitive content.
+- Rate limiting and suspicious-activity signals.
+- Assessment availability windows.
+- Question/option randomization where appropriate.
+- Server-side time and submission enforcement.
+- Answer-key isolation.
+- Controlled user access revocation.
+
+These controls deter casual redistribution and reduce unauthorized access; they do not make copying impossible.
+
+## 8.3 Assessment integrity
+
+- Server creates each attempt.
+- Server stores start and deadline timestamps.
+- Server validates every answer save.
+- Server validates assessment access.
+- Server finalizes once.
+- Server computes the score.
+- Server retains question and scoring versions.
+- Any regrade is audited.
+- Suspicious activity may be flagged for review, not automatically treated as proof of misconduct.
+
+---
+
+# 9. Recommended Technology Stack
+
+The original stack is appropriate for an MVP and can be retained with clearer service boundaries.
+
+| Layer | Recommended technology | Responsibility |
+|---|---|---|
+| Frontend | React + TypeScript | Learner, faculty, and admin UI |
+| Build tooling | Vite | Local development and production build |
+| Styling | Tailwind CSS | Responsive design system |
+| Charts | Recharts | Exam-specific performance views |
+| Backend | Node.js + Express | Trusted API and domain services |
+| Database | PostgreSQL through Supabase | Relational data, constraints, transactions |
+| Authentication | Supabase Auth | Login and session management |
+| Authorization | PostgreSQL RLS + backend checks | Learner / institute / role access |
+| File storage | Supabase Storage | Private notes, PDFs, images, video assets |
+| AI | Provider adapter; Groq can be an initial provider if verified | Question drafting and study assistance |
+| Validation | Zod or equivalent | API and AI output schemas |
+| Unit/integration tests | Vitest/Jest + Supertest | Business logic and API tests |
+| Browser E2E tests | Playwright | Student/faculty/admin workflows |
+| Monitoring | Structured logs and error/metrics service | Operational health |
+
+Pin and verify package versions at implementation time. Do not assume a model name, endpoint, or provider fallback remains available indefinitely.
+
+## 9.1 Architecture style
+
+Use a **modular monolith** first. It is easier to develop, deploy, test, and debug than a premature microservices system. Separate modules by domain and split them later only if real traffic, team size, or reliability requirements justify it.
+
+## 9.2 High-level architecture
+
+```mermaid
+flowchart TB
+    USERS["NEET / IMAT Aspirants, Faculty, Institute Admin"]
+    UI["React + TypeScript Frontend"]
+    API["Node.js / Express API"]
+    AUTH["Supabase Auth"]
+    GUARD["Trusted Membership + Permission Checks"]
+    MODULES["Modular Domain Services"]
+    DB[("PostgreSQL + RLS")]
+    FILES["Private Supabase Storage"]
+    AI["AI Provider Adapter"]
+    LLM["Configured LLM Provider"]
+    OBS["Logs, Metrics, Alerts"]
+
+    USERS --> UI
+    UI --> API
+    API --> AUTH
+    API --> GUARD
+    GUARD --> MODULES
+    MODULES --> DB
+    MODULES --> FILES
+    MODULES --> AI
+    AI --> LLM
+    API --> OBS
+    MODULES --> OBS
+```
+
+## 9.3 Backend architecture and domain bounded contexts
+
+The backend is structured as a **Modular Monolith** in `apps/api/src/` organized into cohesive Domain Bounded Contexts (Vertical Slices), preventing unbounded micro-folder sprawl:
+
+```text
+apps/api/src/
+  server.ts                           # HTTP Process entry point
+  app.ts                              # Express app composition & middleware pipeline
+  worker.ts                           # Asynchronous job worker (AI generation, timeout sweeps)
+
+  config/
+    env.ts                            # Zod-validated environment variables
+    cors.ts
+    constants.ts
+
+  middleware/
+    authenticate.ts                   # Supabase Bearer JWT verification
+    resolve-membership.ts             # Active institute RBAC injection
+    require-permission.ts             # Granular permission check
+    require-exam-access.ts            # Enforces NEET / IMAT track entitlement
+    validate-request.ts               # Request payload Zod validation
+    rate-limit.ts
+    error-handler.ts
+
+  domains/                            # Domain-Driven Bounded Contexts
+    identity/                         # Profiles, auth credentials, memberships
+    tenancy/                          # Multi-tenant institutions, batches, enrollments
+    academics/                        # Official syllabus tree, chapters, topics
+    examination/                      # Exam tracks, blueprint versions, adapters
+    content-bank/                     # Questions, revisions, confidential answer keys, reviews
+    assessments/                      # Test runner runtime, autosave sync, attempt lifecycle
+    learning/                         # Study plans, student progress, AI study tutor
+    communication/                    # Announcements, calendar events, discussions
+    platform/                         # Audit logs, health checks, system metrics
+
+  infrastructure/                     # Low-level external integration adapters
+    database/                         # User-scoped & admin service-role Supabase clients
+    storage/                          # Supabase private storage S3 & signed URLs
+    ai/                               # LLM provider clients (Groq / OpenAI fallback)
+    queue/                            # Background job queuing
+
+  jobs/                               # Asynchronous job handlers
+    ai-question-gen.job.ts
+    attempt-timeout.job.ts
+    notification-dispatch.job.ts
+
+  shared/                             # Domain-agnostic utilities (errors, result, pagination)
+```
+
+Authoritative scoring algorithms (+4/-1 with NTA dropped-question adjudication for NEET-UG; +1.5/-0.4 for IMAT) are encapsulated within the isolated, deterministic workspace package `@medprepos/exam-engine`.
+
+## 9.4 Frontend architecture and domain feature slices
+
+The frontend is structured in `apps/web/src/` using a **Vertical Feature-Slice Architecture** combined with composed role pages, strictly avoiding role-duplication and exam-runner forks:
+
+```text
+apps/web/src/
+  app/                                # Application shell & routing composition
+    App.tsx
+    main.tsx
+    router/                           # Route tables, role guards, track guards
+    providers/                        # AuthProvider, QueryClientProvider, ThemeProvider
+    layouts/                          # PublicLayout, StudentLayout, FacultyLayout, AdminLayout
+
+  features/                           # Self-contained domain capability slices
+    exam-selection/                   # Dual-track switcher (NEET-UG vs IMAT vs both)
+    curriculum/                       # Unified syllabus navigator & topic tree
+    resources/                        # PDF document viewer, video player, DPP reader
+    practice/                         # Topic question drill runner & scratchpad
+    assessments/                      # Unified exam runner, question palette, autosave sync
+    analytics/                        # Performance radars, subject breakdown, error analysis
+
+  pages/                              # Composed views per Role Portal (Route targets)
+    student/                          # Dashboard, SyllabusView, DrillPage, ExamLobby, Results
+    faculty/                          # Dashboard, QuestionAuthoring, Reviews, AssessmentSetup
+    institute-admin/                  # Batches, CohortEnrollments, FacultyAssignments, Reports
+    platform-admin/                   # Institutions, BlueprintVerification, AuditLogs
+
+  shared/                             # Genuinely reusable cross-cutting components & hooks
+    components/                       # Buttons, modals, forms, data tables, math renderers
+    hooks/                            # useDebounce, useCountdown, useAutosave
+    utils/                            # Formatters, date helpers, LaTeX helpers
+```
+
+> **Crucial Rule:** NEET-UG and IMAT use a **unified assessment runner** driven dynamically by the server-authoritative exam blueprint (`question_count`, `option_count: 4 | 5`, `duration_minutes`, `sections`). Do not create separate `neet-runner` and `imat-runner` components.
+
+---
+
+# 10. Database Design
+
+## 10.1 Database design principles
+
+- Use UUID primary keys for application entities.
+- Use foreign keys and uniqueness constraints.
+- Use `timestamptz` for timestamps.
+- Use exact numeric types or integer values for marks; do not use floating-point arithmetic for authoritative scoring.
+- Keep published exam configurations versioned.
+- Keep questions and answer keys versioned.
+- Snapshot the assessment configuration used by each attempt.
+- Make the assessment and scoring history reproducible.
+- Use explicit eligibility/enrollment relationships.
+- Add `institution_id` to institute-owned rows.
+- Separate platform-managed shared content from institute-owned content with explicit access policies.
+- Index real query patterns, not every possible column.
+
+## 10.2 Main entity groups
+
+### Identity and institutional access
+
+- `profiles`
+- `institutions`
+- `institution_memberships`
+- `invitations`
+- `platform_roles` (if platform-level roles are used)
+
+### Exam track and cycle
+
+- `exam_tracks` — only `NEET_UG` and `IMAT`.
+- `exam_versions` — annual/cycle-specific rules.
+- `exam_sections`
+- `exam_scoring_policies`
+- `exam_language_options`
+- `exam_source_documents`
+- `exam_configuration_reviews`
+
+### Learner access and academic organization
+
+- `learner_exam_access`
+- `academic_years`
+- `courses`
+- `batches`
+- `student_enrollments`
+- `faculty_assignments`
+
+### Curriculum
+
+- `syllabus_versions`
+- `syllabus_nodes`
+- `syllabus_node_relationships`
+- `student_topic_progress`
+- `study_plans`
+- `study_plan_items`
+
+### Resources
+
+- `resources`
+- `resource_files`
+- `resource_eligibility`
+- `resource_revisions`
+
+### Question bank
+
+- `questions`
+- `question_versions`
+- `question_options`
+- `question_assets`
+- `question_syllabus_mappings`
+- `question_reviews`
+- `question_sources`
+- `question_adjudications`
+
+### Assessments and results
+
+- `assessments`
+- `assessment_versions`
+- `assessment_sections`
+- `assessment_questions`
+- `assessment_eligibility`
+- `assessment_attempts`
+- `attempt_answers`
+- `attempt_events`
+- `score_results`
+- `regrade_events`
+
+### Operations
+
+- `announcements`
+- `calendar_events`
+- `notification_outbox`
+- `audit_logs`
+- `ai_generation_jobs`
+- `ai_generation_reviews`
+
+## 10.3 Conceptual ER diagram
+
+```mermaid
+erDiagram
+    PROFILES ||--o{ INSTITUTION_MEMBERSHIPS : joins
+    INSTITUTIONS ||--o{ INSTITUTION_MEMBERSHIPS : has
+    PROFILES ||--o{ LEARNER_EXAM_ACCESS : selects
+    EXAM_TRACKS ||--o{ EXAM_VERSIONS : versions
+    EXAM_VERSIONS ||--o{ EXAM_SECTIONS : defines
+    EXAM_VERSIONS ||--o{ SYLLABUS_VERSIONS : maps
+    SYLLABUS_VERSIONS ||--o{ SYLLABUS_NODES : contains
+    INSTITUTIONS ||--o{ COURSES : owns
+    COURSES ||--o{ BATCHES : groups
+    BATCHES ||--o{ STUDENT_ENROLLMENTS : contains
+    PROFILES ||--o{ STUDENT_ENROLLMENTS : enrolls
+    PROFILES ||--o{ FACULTY_ASSIGNMENTS : assigned
+    INSTITUTIONS ||--o{ RESOURCES : owns
+    RESOURCES ||--o{ RESOURCE_FILES : contains
+    INSTITUTIONS ||--o{ QUESTIONS : owns
+    QUESTIONS ||--o{ QUESTION_VERSIONS : versions
+    QUESTION_VERSIONS ||--o{ QUESTION_OPTIONS : contains
+    QUESTION_VERSIONS }o--o{ SYLLABUS_NODES : maps
+    INSTITUTIONS ||--o{ ASSESSMENTS : owns
+    ASSESSMENTS ||--o{ ASSESSMENT_VERSIONS : versions
+    ASSESSMENT_VERSIONS ||--o{ ASSESSMENT_QUESTIONS : includes
+    QUESTION_VERSIONS ||--o{ ASSESSMENT_QUESTIONS : selected
+    ASSESSMENT_VERSIONS ||--o{ ASSESSMENT_ATTEMPTS : attempted
+    PROFILES ||--o{ ASSESSMENT_ATTEMPTS : starts
+    ASSESSMENT_ATTEMPTS ||--o{ ATTEMPT_ANSWERS : records
+    ASSESSMENT_ATTEMPTS ||--o| SCORE_RESULTS : produces
+    INSTITUTIONS ||--o{ AUDIT_LOGS : records
+```
+
+This is a conceptual diagram. The final migration set must define the actual columns, composite constraints, indexes, delete behavior, and RLS policies.
+
+## 10.4 Important table definitions
+
+### `exam_tracks`
+
+Seed only two active product tracks:
+
+| `code` | Display name |
+|---|---|
+| `NEET_UG` | NEET-UG |
+| `IMAT` | IMAT |
+
+No UCAT, MCAT, or generic exam track should be exposed in this product scope.
+
+### `exam_versions`
+
+Suggested fields:
+
+- `id`
+- `exam_track_id`
+- `exam_year`
+- `academic_cycle`
+- `version_number`
+- `status` (`DRAFT`, `UNDER_REVIEW`, `VERIFIED`, `PUBLISHED`, `RETIRED`)
+- `official_source_url`
+- `source_published_at`
+- `reviewed_by`
+- `reviewed_at`
+- `created_at`
+
+Unique constraint: track + year/cycle + version number.
+
+### `exam_sections`
+
+Suggested fields:
+
+- `id`
+- `exam_version_id`
+- `code`
+- `name`
+- `display_order`
+- `question_count`
+- `duration_seconds` (nullable if only overall timing applies)
+- `option_count`
+- `language_code`
+- `scoring_policy_id`
+
+For the IMAT 2026 reference, the section counts are 4, 5, 23, 15, and 13. For NEET-UG 2026, the subject counts are 45, 45, and 90. These are versioned data, not application constants.
+
+### `exam_scoring_policies`
+
+Suggested fields:
+
+- `id`
+- `exam_version_id`
+- `policy_code`
+- `correct_marks`
+- `incorrect_marks`
+- `unanswered_marks`
+- `maximum_raw_score`
+- `policy_json`
+- `created_at`
+
+Use `numeric` or scaled integer units for precise mark arithmetic.
+
+NEET question adjudication rules should be stored separately from the ordinary correct/incorrect/blank mapping so multiple-correct and dropped-question cases can be represented explicitly.
+
+### `learner_exam_access`
+
+Suggested fields:
+
+- `id`
+- `profile_id`
+- `exam_track_id`
+- `exam_version_id` (optional until cycle selection)
+- `access_source` (`PERSONAL`, `INSTITUTION`, `PROMOTIONAL`)
+- `institution_id` (nullable for an independent learner)
+- `status`
+- `valid_from`
+- `valid_until`
+- `created_at`
+
+This supports independent aspirants and institute-sponsored access without mixing exam tracks.
+
+### `profiles`
+
+Suggested fields:
+
+- `id` referencing Supabase Auth user ID
+- `full_name`
+- `phone` only if needed
+- `avatar_path`
+- `preferred_interface_language`
+- `created_at`
+- `updated_at`
+
+Do not store an authoritative admin/faculty role in user-editable metadata.
+
+### `institutions`
+
+Suggested fields:
+
+- `id`
+- `name`
+- `slug`
+- `status`
+- `timezone`
+- `settings_json`
+- `created_at`
+- `updated_at`
+
+### `institution_memberships`
+
+Suggested fields:
+
+- `id`
+- `institution_id`
+- `profile_id`
+- `role`
+- `status`
+- `invited_by`
+- `joined_at`
+- `created_at`
+- `updated_at`
+
+Roles may include `INSTITUTE_ADMIN`, `FACULTY`, and `STUDENT`. These values must be written only by authorized server-side workflows.
+
+### `courses`, `batches`, and `student_enrollments`
+
+A course must be associated with one exam track and a compatible exam version or curriculum version. A batch belongs to an institution and course. Student enrollment records should preserve transfer and withdrawal history rather than silently overwriting previous batch assignment.
+
+### `syllabus_versions` and `syllabus_nodes`
+
+Suggested node attributes:
+
+- `id`
+- `syllabus_version_id`
+- `parent_node_id`
+- `node_type` (`SUBJECT`, `SECTION`, `CHAPTER`, `TOPIC`, `SKILL`)
+- `code`
+- `name`
+- `description`
+- `display_order`
+- `source_reference`
+- `is_active`
+
+The taxonomy must support both exam tracks. Do not force IMAT's reading/reasoning areas into a Biology/Chemistry/Physics-only schema.
+
+### `resources`
+
+Suggested fields:
+
+- `id`
+- `content_scope` (`PLATFORM`, `INSTITUTION`)
+- `institution_id` (required for institution-owned content)
+- `exam_version_id`
+- `course_id`
+- `title`
+- `description`
+- `resource_type`
+- `language_code`
+- `license_status`
+- `status`
+- `created_by`
+- `reviewed_by`
+- `published_at`
+- `created_at`
+- `updated_at`
+
+Use explicit resource eligibility mappings for batches and learner access. Do not rely on frontend filtering.
+
+### `questions` and `question_versions`
+
+Separate stable question identity from a particular version.
+
+`question_versions` should store:
+
+- `question_id`
+- `version_number`
+- `exam_version_id`
+- `section_id`
+- `question_type`
+- `question_text`
+- `language_code`
+- `difficulty`
+- `explanation`
+- `source_reference`
+- `review_status`
+- `created_by`
+- `reviewed_by`
+- `approved_at`
+- `created_at`
+
+`question_options` should store:
+
+- `id`
+- `question_version_id`
+- `option_key`
+- `option_text`
+- `display_order`
+- `is_correct` (not exposed to student-facing queries before release)
+
+Question types and answer representations should be extensible, but only supported question types may be published for the relevant exam version.
+
+### `question_adjudications`
+
+Suggested fields:
+
+- `id`
+- `question_version_id`
+- `exam_version_id`
+- `adjudication_type`
+- `valid_option_ids`
+- `scoring_effect_json`
+- `reason`
+- `approved_by`
+- `approved_at`
+
+This is especially important for NEET-style question challenges and the official 2026 handling of multiple-correct, all-correct, and dropped/invalid questions.
+
+### `assessments` and `assessment_versions`
+
+An assessment version must snapshot:
+
+- Exam track and exam version.
+- Syllabus version.
+- Section/question distribution.
+- Duration and any section timing.
+- Question versions.
+- Option ordering or randomization seed where required.
+- Scoring policy version.
+- Availability window.
+- Attempt limit and retake policy.
+- Result-release policy.
+- Explanation-release policy.
+- Approved accommodation settings where applicable.
+
+Published versions must not be silently edited after learners have started attempts.
+
+### `assessment_attempts`
+
+Suggested fields:
+
+- `id`
+- `assessment_version_id`
+- `profile_id`
+- `institution_id` (nullable for independent learner)
+- `status`
+- `started_at`
+- `deadline_at`
+- `submitted_at`
+- `finalized_at`
+- `idempotency_key`
+- `created_at`
+- `updated_at`
+
+### `attempt_answers`
+
+Suggested fields:
+
+- `id`
+- `attempt_id`
+- `question_version_id`
+- `selected_response_json`
+- `saved_at`
+- `finalized_at`
+
+Correctness and marks awarded must be calculated by the trusted server. The browser must not submit authoritative `is_correct` or `marks_awarded` values.
+
+### `score_results`
+
+Suggested fields:
+
+- `id`
+- `attempt_id`
+- `scoring_policy_version`
+- `raw_score`
+- `maximum_raw_score`
+- `percentage_of_maximum`
+- `correct_count`
+- `incorrect_count`
+- `unanswered_count`
+- `section_breakdown_json`
+- `finalized_at`
+
+Keep any scaled/band score in separate fields with an explicit conversion method and source. Do not fabricate official scaled scores.
+
+### `audit_logs`
+
+Suggested fields:
+
+- `id`
+- `institution_id`
+- `actor_profile_id`
+- `action`
+- `entity_type`
+- `entity_id`
+- `metadata_json`
+- `request_id`
+- `created_at`
+
+Logs should not store passwords, access tokens, complete government identifiers, or unnecessary personal content. Ordinary application roles must not be able to update or delete historical audit records.
+
+## 10.5 Indexing strategy
+
+Potential indexes, to be confirmed against real query plans:
+
+```sql
+CREATE INDEX idx_learner_exam_access_profile
+  ON learner_exam_access(profile_id, status, exam_track_id);
+
+CREATE INDEX idx_exam_versions_track_year
+  ON exam_versions(exam_track_id, exam_year, status);
+
+CREATE INDEX idx_syllabus_nodes_parent
+  ON syllabus_nodes(syllabus_version_id, parent_node_id, display_order);
+
+CREATE INDEX idx_resources_exam_status
+  ON resources(exam_version_id, status);
+
+CREATE INDEX idx_questions_exam_status
+  ON questions(exam_version_id, status);
+
+CREATE INDEX idx_attempts_profile_started
+  ON assessment_attempts(profile_id, started_at DESC);
+
+CREATE INDEX idx_attempt_answers_attempt
+  ON attempt_answers(attempt_id);
+
+CREATE INDEX idx_audit_institution_created
+  ON audit_logs(institution_id, created_at DESC);
+```
+
+Add indexes to foreign-key columns and common filter columns only after considering the access patterns and write overhead.
+
+---
+
+# 11. API Design
+
+The following endpoints are proposed examples. They do not assert that the endpoints have already been implemented.
+
+## 11.1 Account and exam selection
+
+```text
+GET    /api/me
+GET    /api/me/exam-access
+POST   /api/me/exam-access
+PATCH  /api/me/exam-access/:accessId
+DELETE /api/me/exam-access/:accessId
+```
+
+## 11.2 Exam configuration and curriculum
+
+```text
+GET    /api/exam-tracks
+GET    /api/exam-tracks/:examCode/versions
+GET    /api/exam-versions/:versionId
+GET    /api/exam-versions/:versionId/curriculum
+GET    /api/syllabus-nodes/:nodeId
+```
+
+Only `NEET_UG` and `IMAT` are valid product exam codes.
+
+## 11.3 Learning resources
+
+```text
+GET    /api/resources
+GET    /api/resources/:resourceId
+POST   /api/resources
+POST   /api/resources/:resourceId/files
+POST   /api/resources/:resourceId/submit-review
+POST   /api/resources/:resourceId/publish
+```
+
+## 11.4 Question bank and AI
+
+```text
+GET    /api/questions
+POST   /api/questions
+POST   /api/questions/:questionId/versions
+POST   /api/question-versions/:versionId/review
+POST   /api/question-versions/:versionId/approve
+POST   /api/ai/question-drafts
+GET    /api/ai/question-drafts/:draftId
+POST   /api/ai/question-drafts/:draftId/submit-for-review
+```
+
+AI generation endpoints must be authorized, rate-limited, validated, and cost-controlled. They must never directly publish questions.
+
+## 11.5 Assessments
+
+```text
+GET    /api/assessments
+POST   /api/assessments
+POST   /api/assessments/:assessmentId/versions
+POST   /api/assessment-versions/:versionId/publish
+POST   /api/assessment-versions/:versionId/attempts
+```
+
+## 11.6 Attempts and results
+
+```text
+GET    /api/attempts/:attemptId
+PUT    /api/attempts/:attemptId/answers/:questionVersionId
+POST   /api/attempts/:attemptId/submit
+GET    /api/attempts/:attemptId/result
+POST   /api/attempts/:attemptId/request-review
+```
+
+Every endpoint must derive the authenticated user and permitted exam/institution access from trusted session and membership data. Do not trust an arbitrary `profile_id`, role, score, answer key, or `institution_id` supplied by the browser.
+
+---
+
+# 12. Assessment Lifecycle and Failure Handling
+
+## 12.1 Attempt lifecycle
 
 ```mermaid
 stateDiagram-v2
     [*] --> CREATED
-    CREATED --> IN_PROGRESS: Server starts attempt
+    CREATED --> IN_PROGRESS: Server creates attempt
+    IN_PROGRESS --> IN_PROGRESS: Answer saved
     IN_PROGRESS --> SUBMITTED: Student submits
     IN_PROGRESS --> TIMED_OUT: Server deadline reached
-    IN_PROGRESS --> ABANDONED: Allowed policy/admin action
-    SUBMITTED --> SCORED: Server evaluates answers
-    TIMED_OUT --> SCORED: Server evaluates saved answers
-    SCORED --> RESULT_RELEASED: Release policy permits
-    RESULT_RELEASED --> [*]
+    IN_PROGRESS --> ABANDONED: Allowed policy
+    SUBMITTED --> FINALIZED: Server scores transactionally
+    TIMED_OUT --> FINALIZED: Server scores transactionally
+    FINALIZED --> REGRADING: Authorized correction
+    REGRADING --> FINALIZED: New audited result
 ```
 
-The browser countdown is a display aid. The server's `started_at` and `deadline_at` are authoritative.
+## 12.2 Network interruption
 
-## 10.4 Starting an attempt
+- Keep the current response visible while the save is pending.
+- Display `Saving`, `Saved`, or `Not saved` state.
+- Retry safe saves using an idempotency strategy.
+- Reconcile the latest response state with the server after reconnect.
+- Do not show "Saved" before server confirmation.
+- Apply the configured late/reconnection policy consistently.
 
-The backend must validate:
+## 12.3 Refresh, tab closure, or browser restart
 
-1. User is authenticated and active.
-2. User has Student role.
-3. Student has an active enrolment in a cohort targeted by the assessment.
-4. Assessment is published and currently available.
-5. Attempt limit has not been exceeded.
-6. No conflicting active attempt exists, where the policy disallows one.
-7. The assessment version and question revisions are still valid.
+- Fetch the active attempt from the backend.
+- Restore answers saved by the server.
+- Recalculate remaining time from `deadline_at`.
+- Do not trust local-storage timers.
+- Do not allow local answer keys or score values to override server state.
 
-The server creates the attempt and returns only the permitted question presentation payload.
+## 12.4 Duplicate submission
 
-## 10.5 Answer saving
+- Finalization must be idempotent.
+- A repeated valid request should return the already finalized result.
+- Repeated requests must not create duplicate score records.
 
-- Each answer is associated with an attempt and a specific assessment-question row.
-- Use an idempotency key or deterministic upsert strategy to handle repeated network requests.
-- Enforce one answer record per question per attempt unless the design explicitly stores an event history plus current response.
-- Validate that the submitted option belongs to the exact question revision being attempted.
-- Do not accept marks, correctness flags, or totals from the browser.
-- Store the last server-confirmed answer state and timestamp.
-- If an answer request arrives after the deadline, reject it or apply a documented grace/recovery rule; do not silently accept it.
+## 12.5 Server restart
 
-## 10.6 Submission and scoring
+- Attempt state must live in durable storage.
+- Resume using saved answers and the server deadline.
+- Determine expiry on the server after restart.
 
-On submission:
+## 12.6 Question correction
 
-1. Verify attempt ownership.
-2. Verify attempt state and server time.
-3. Lock or atomically transition the attempt so duplicate submission cannot score twice.
-4. Load question revisions and answer keys from a protected server-side location.
-5. Calculate score using the versioned scoring profile and any approved item adjudications.
-6. Persist answer outcomes, score, counts, completion state, and timestamps in one transaction where possible.
-7. Return a submission receipt and result-release state.
-8. Make the scoring operation idempotent.
-
-Never trust a payload such as `{"score":720,"accuracy":100}` sent by the client. The client submits answer selections; the server computes the result.
-
-## 10.7 Answer-key protection
-
-- Correct-answer information must not be included in the API response used by an active student attempt.
-- Do not expose `is_correct`, answer-key JSON, or hidden explanation fields through a student-readable table/view.
-- Keep answer keys in a non-exposed schema or a backend-only data path.
-- Review PostgREST/Supabase exposed schemas and column privileges.
-- Test with a real Student access token and direct API requests, not just the frontend.
-- Release answers only after the configured assessment result-release condition is met.
-
-## 10.8 Attempt recovery and network loss
-
-MVP requirements:
-
-- Show online/offline state.
-- Retry safe answer-save requests with idempotency.
-- Keep a small in-memory or local pending queue only for unsent answer changes, with clear disclosure and safe handling of shared devices.
-- On reconnect, reconcile pending answers with server state and reject stale writes when conflicts occur.
-- Offer resume only if the assessment policy permits it and the server confirms the attempt remains active.
-- Do not promise full offline assessment or guaranteed submission without a separate offline design, device-security analysis, and conflict-recovery testing.
+- Preserve the original question version.
+- Record an adjudication or regrade event.
+- Recalculate only through an authorized process.
+- Preserve the previous score and new score.
+- Notify affected learners when required by policy.
 
 ---
 
-# 11. AI Features and Academic Quality Controls
+# 13. AI Architecture and Quality Controls
 
-AI is a supporting service, not an authority for academic correctness.
+## 13.1 Provider abstraction
 
-## 11.1 AI capabilities by release
+```ts
+interface AIQuestionProvider {
+  generateDraft(input: QuestionDraftRequest): Promise<unknown>;
+}
 
-### Phase 2A: Faculty AI question-drafting assistant
-
-Inputs:
-
-- Exam blueprint/version.
-- Subject, chapter, and topic.
-- Desired question count and difficulty mix.
-- Approved reference material or faculty instructions.
-- Question type supported by the active exam profile.
-- Language.
-
-Outputs:
-
-- Draft question statement.
-- Four options for the NEET MVP.
-- Proposed correct answer.
-- Explanation.
-- Syllabus/topic mapping.
-- Reference/source note when grounded source material is available.
-- Optional draft diagram description or SVG asset.
-- Model/provider metadata for audit and evaluation.
-
-### Phase 2B: Student academic tutor
-
-The student tutor should answer questions from approved institute materials using retrieval-augmented generation (RAG).
-
-Requirements:
-
-- Retrieve only approved resources available to the student's cohort.
-- Enforce cohort authorization before retrieval.
-- Provide source titles, chapter/topic, and relevant references with answers where practical.
-- State when the source material does not answer the question.
-- Avoid inventing a source or pretending that unsupported information came from the institute.
-- Avoid diagnosis, treatment recommendations, or other medical advice; this is an exam-preparation tutor.
-- Do not retrieve other students' profiles, attempts, or documents.
-
-### Student support FAQ assistant
-
-A separate FAQ assistant may answer operational questions from approved institute policy, such as class schedules, enrolment steps, or assessment rules. It should call narrowly scoped backend functions for a student's own permitted status rather than receiving broad database access.
-
-## 11.2 Question generation workflow
-
-```mermaid
-flowchart TD
-    A[Faculty chooses exam, subject, topic and constraints] --> B[Backend verifies faculty permission]
-    B --> C[Retrieve approved reference material]
-    C --> D[AI provider adapter generates draft]
-    D --> E[Schema and rule validation]
-    E --> F{Validation passed?}
-    F -- No --> G[Save failure and return validation feedback]
-    F -- Yes --> H[Duplicate and quality checks]
-    H --> I[Faculty review queue]
-    I --> J{Faculty approves?}
-    J -- No --> K[Reject or edit draft]
-    J -- Yes --> L[Create immutable approved question revision]
-    L --> M[Question can be selected for an assessment]
+interface QuestionDraftRequest {
+  examCode: "NEET_UG" | "IMAT";
+  examVersionId: string;
+  sectionId: string;
+  syllabusNodeId: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  questionType: string;
+  count: number;
+  languageCode: string;
+}
 ```
 
-## 11.3 Mandatory controls
+The AI provider is configurable. The platform must not couple assessment scoring or core academic data to one model vendor.
 
-- AI output remains a draft until faculty approval.
-- Validate all outputs against a strict JSON schema.
-- Confirm the exact number of options and supported question type.
-- Validate that the proposed answer refers to an existing option.
-- Check for missing explanations, repeated options, malformed markup, and duplicate questions.
-- Run a content-quality check for ambiguity and multiple plausible answers; this check is advisory and does not replace faculty review.
-- Require faculty to inspect scientific correctness, calculations, diagrams, answer keys, and explanations.
-- Record model provider, model identifier, generation timestamp, prompt/template version, reference material IDs, and reviewer decision.
-- Limit request size and apply rate limits and usage budgets.
-- Handle provider timeouts, quota errors, and model unavailability gracefully.
-- Use a provider adapter so model IDs can be changed without rewriting business logic.
-- Re-evaluate model quality when changing providers or model versions.
-- Treat uploaded documents and retrieved content as untrusted input; they may contain prompt-injection instructions.
-- Do not send student identity, admission documents, or unnecessary learner-performance records to a third-party model.
-- Confirm the provider's current data-processing and retention terms before sending institute content.
+## 13.2 Validation layers
 
-## 11.4 Generated diagrams
+### Structural validation
 
-- AI-generated SVGs are drafts, not verified teaching material.
-- Sanitize SVG content before rendering or storing it.
-- Prevent script execution, external resource loading, and unsafe embedded content.
-- Faculty must inspect scientific labels, orientation, scale, and annotations.
-- Prefer licensed faculty-created diagrams or trusted educational assets where they are more reliable.
-- An image question must never default to Option A as its correct answer. The faculty member must explicitly verify the answer key.
+- Required fields exist.
+- Question type is permitted.
+- Correct number of options is present.
+- Option IDs are unique.
+- Correct answer references a valid option.
+- Explanation exists if required.
+- Exam section and syllabus IDs exist.
+- Language is permitted for the selected track/version.
+- No unexpected executable markup is present.
 
-## 11.5 Model fallback
+### Academic review
 
-Do not permanently hardcode a model sequence such as a specific model ID from a vendor. Model availability, pricing, and support may change.
+A qualified faculty member must evaluate:
 
-Use configuration such as:
+- Factual correctness.
+- Correct answer.
+- Explanation quality.
+- Ambiguity.
+- Syllabus alignment.
+- Difficulty.
+- Relevance to NEET-UG or IMAT.
+- Diagram correctness.
+- Question uniqueness and quality.
 
-```text
-AI_PROVIDER=groq
-AI_MODEL=<approved-model-id>
-AI_FALLBACK_PROVIDER=<optional-provider>
-AI_FALLBACK_MODEL=<approved-fallback-id>
-AI_TIMEOUT_MS=<configured-value>
-AI_MAX_RETRIES=<configured-value>
-```
+Schema validation does not prove academic correctness.
 
-A fallback model must pass the same schema checks and academic evaluation suite. A successful HTTP response does not mean the generated content is correct.
+## 13.3 AI quality evaluation
 
----
+Maintain a reviewed evaluation set and measure:
 
-# 12. High-Level System Architecture
+- Correct answer rate from expert review.
+- Ambiguity rate.
+- Explanation correctness.
+- Syllabus alignment.
+- Difficulty alignment.
+- Duplicate rate.
+- Invalid output rate.
+- Faculty edit/reject rate.
+- Cost and latency.
 
-## 12.1 Logical architecture
+Do not publish accuracy percentages until measured against a sufficiently reviewed evaluation set.
 
-```mermaid
-flowchart TB
-    subgraph Users[Users]
-        ST[Student]
-        FC[Faculty]
-        AD[Administrator]
-    end
+## 13.4 Student AI assistant safeguards
 
-    subgraph Frontend[React + TypeScript Web Application]
-        UI[Responsive UI and Router]
-        AUTH[Authenticated Session and UI Permission Guards]
-        STUDY[Curriculum and Resource Modules]
-        TEST[Assessment Runner]
-        ANALYTICS[Student and Faculty Analytics]
-        ADMIN[Administration and Audit Views]
-    end
-
-    subgraph Backend[Node.js + Express API]
-        API[API Gateway and Authentication Middleware]
-        AUTHZ[Authorization and Cohort Policy Checks]
-        CONTENT[Content and Enrollment Services]
-        ATTEMPT[Attempt Lifecycle Service]
-        SCORE[Server-side Scoring Service]
-        AI[AI Orchestration and Validation Service]
-        AUDIT[Audit and Notification Service]
-    end
-
-    subgraph Supabase[Supabase Managed Platform]
-        SAuth[Supabase Auth]
-        PG[(PostgreSQL)]
-        RLS[Row Level Security]
-        STORAGE[Private Object Storage]
-    end
-
-    subgraph External[External Services]
-        LLM[Approved LLM Provider]
-        EMAIL[Optional Email/SMS Provider]
-        MON[Monitoring and Error Reporting]
-    end
-
-    ST --> UI
-    FC --> UI
-    AD --> UI
-    UI --> AUTH
-    AUTH <--> SAuth
-    UI --> API
-    API --> AUTHZ
-    AUTHZ --> CONTENT
-    AUTHZ --> ATTEMPT
-    ATTEMPT --> SCORE
-    CONTENT <--> PG
-    CONTENT <--> STORAGE
-    ATTEMPT <--> PG
-    SCORE <--> PG
-    AI <--> LLM
-    AI --> PG
-    AUDIT --> PG
-    AUDIT --> EMAIL
-    API --> MON
-    PG --- RLS
-```
-
-## 12.2 Trust boundaries
-
-- The browser is an untrusted client.
-- Supabase publishable/anonymous credentials may be present in the browser only when protected by RLS and appropriate API configuration.
-- Supabase service-role credentials and database secrets must remain server-side.
-- The backend authenticates requests and performs authorization checks for every sensitive operation.
-- The database enforces RLS as a second authorization layer for user-scoped data.
-- The scoring service retrieves answer keys only through protected server-side access.
-- External AI providers receive only the minimum required prompt context.
-
-## 12.3 Primary data flow
-
-- The frontend authenticates with Supabase Auth.
-- The frontend sends a user access token with protected API requests.
-- The backend validates the token and resolves the user's current role and enrolment/assignment context.
-- The backend or Supabase Data API accesses only rows permitted by RLS.
-- Sensitive actions such as role changes, attempt scoring, question-key access, and document review use narrow server/database operations.
-- File delivery is authorized before a short-lived access URL or authenticated download is issued.
+- Ground answers in approved course material where possible.
+- Link the relevant resource or syllabus topic.
+- Distinguish an official exam rule from a general study explanation.
+- State uncertainty.
+- Do not reveal active assessment answer keys.
+- Do not make admission or rank guarantees.
+- Do not provide medical diagnosis or treatment advice.
+- Do not send unnecessary personal data to the provider.
+- Apply institution and exam-track access filters to retrieved content.
 
 ---
 
-# 13. Low-Level Application Architecture
+# 14. Analytics, Reports, and Learner Guidance
 
-## 13.1 Frontend module structure
+## 14.1 NEET-UG report
 
-Suggested structure:
+- Overall score out of the selected version's maximum.
+- Physics, Chemistry, Biology performance.
+- Botany/Zoology split, where mapped.
+- Chapter/topic accuracy.
+- Correct / incorrect / unanswered counts.
+- Time allocation by subject and question, when reliable.
+- Trend across comparable NEET tests.
+- Revision list.
 
-```text
-src/
-  app/
-    App.tsx
-    router.tsx
-    providers/
-  components/
-    layout/
-    navigation/
-    forms/
-    feedback/
-    accessibility/
-  features/
-    auth/
-    dashboard/
-    profile/
-    enrollment/
-    cohorts/
-    curriculum/
-    resources/
-    question-bank/
-    assessments/
-    assessment-runner/
-    results/
-    analytics/
-    announcements/
-    calendar/
-    admin/
-    faculty/
-    ai-assistant/          # Phase 2
-  hooks/
-  lib/
-    api-client.ts
-    supabase-client.ts
-    permissions.ts
-    validation/
-  styles/
-  types/
-```
+## 14.2 IMAT report
 
-Frontend permission checks improve navigation and user experience but are not security controls. Every sensitive operation must be enforced by the backend and/or database.
+- Raw score out of the selected version's maximum.
+- Reading/knowledge section.
+- Logical reasoning/problem solving.
+- Biology.
+- Chemistry.
+- Physics/Mathematics.
+- Separate Physics/Math topic analytics.
+- Correct / incorrect / blank counts.
+- Time allocation.
+- Trend across comparable IMAT tests.
+- Revision list.
 
-## 13.2 Backend module structure
+## 14.3 Cross-track view for dual aspirants
 
-Suggested structure:
+A user preparing for both examinations can see:
 
-```text
-server/
-  src/
-    app.ts
-    server.ts
-    config/
-    middleware/
-      authenticate.ts
-      authorize.ts
-      rate-limit.ts
-      request-id.ts
-      error-handler.ts
-    modules/
-      users/
-      enrollments/
-      cohorts/
-      curriculum/
-      resources/
-      questions/
-      assessments/
-      attempts/
-      scoring/
-      analytics/
-      announcements/
-      audit/
-      ai/                   # Phase 2
-    services/
-    repositories/
-    schemas/
-    jobs/
-    utils/
-  tests/
-```
+- Separate NEET-UG and IMAT progress cards.
+- Separate test histories.
+- Separate study plans.
+- Separate revision lists.
+- Shared calendar items only when explicitly assigned to both.
 
-## 13.3 Architectural responsibilities
-
-| Component | Responsibility |
-|---|---|
-| React frontend | Display state, collect user input, provide accessible workflows. |
-| Authentication middleware | Validate user token/session and resolve identity. |
-| Authorization layer | Check role, enrolment, cohort, faculty assignment, and resource ownership. |
-| Repository/data layer | Execute validated database queries and transactions. |
-| Assessment service | Start, resume, save, submit, and finalize attempts. |
-| Scoring service | Compute scores from protected answer keys and scoring profiles. |
-| AI orchestration service | Generate drafts, validate outputs, and manage provider failures. |
-| Audit service | Record security-sensitive and operational events. |
-| PostgreSQL | Store normalized relational data, constraints, and durable state. |
-| Private storage | Store protected resource and optional document binaries. |
-
-## 13.4 State management
-
-- Use server-state caching for API data and clear cache invalidation after mutations.
-- Keep the active assessment's unsaved client state minimal and synchronized to the server.
-- Do not store answer keys, privileged roles, or secret credentials in frontend state.
-- Avoid putting large PDF/video binaries into local storage or Base64 database columns.
-- Define cache expiry and logout clearing behaviour for shared devices.
+Do not merge raw scores, use a shared rank estimate, or compare a NEET percentage with an IMAT raw mark as if the underlying exams were equivalent.
 
 ---
 
-# 14. Technology Stack
+# 15. Privacy, Data Governance, and Accessibility
 
-## 14.1 Recommended stack
+## 15.1 Data minimization
 
-| Layer | Technology | Usage |
-|---|---|---|
-| Frontend | React + TypeScript | Component-based responsive web application. |
-| Build tooling | Vite | Development server and production bundling. |
-| Styling | Tailwind CSS | Consistent responsive styling and design tokens. |
-| Routing | React Router or an equivalent maintained router | Role-aware application routes. |
-| Server-state management | TanStack Query or equivalent | Fetching, caching, retry, and invalidation. |
-| Charts | Recharts | Student and faculty performance visualizations. |
-| Backend | Node.js + Express + TypeScript | Authenticated REST APIs and business workflows. |
-| Request validation | Zod or equivalent schema validator | Validate request and provider response shapes. |
-| Database | Supabase PostgreSQL | Relational data, constraints, transactions, and RLS. |
-| Authentication | Supabase Auth | User authentication and session lifecycle. |
-| Object storage | Supabase Storage, private buckets | Learning resources and optional documents. |
-| AI provider | Provider adapter; Groq may be an initial provider | Faculty drafting and approved-resource tutor. |
-| Testing | Vitest/Jest, Playwright, API integration tests | Unit, integration, and end-to-end coverage. |
-| Load testing | k6 or equivalent | Concurrent assessment and API validation. |
-| Source control/CI | GitHub and CI pipeline or equivalent | Review, tests, migrations, and deployment gates. |
+The platform may process names, contact details, study activity, exam attempts, academic results, and optional documents.
 
-## 14.2 Version policy
+Collect only what is required for:
 
-- Select maintained, security-supported versions at implementation time.
-- Pin versions in the package lockfile.
-- Apply dependency updates through reviewed pull requests.
-- Run vulnerability scanning as part of CI.
-- Avoid relying on an unmaintained library for authentication, PDF handling, sanitization, or assessment security.
-- Review breaking changes before major upgrades.
+- Account access.
+- Course or institution enrollment.
+- Academic delivery.
+- Test and result management.
+- Support and security.
+- Billing, if later introduced.
 
-## 14.3 Supabase usage policy
+Avoid collecting government identity documents, marksheets, or disability documents unless a clearly defined institutional process requires them. The platform is not an official examination registration authority.
 
-- Use Supabase Auth for user identity.
-- Use PostgreSQL RLS for row-level data isolation.
-- Use private Storage buckets for protected documents and resources.
-- Use migrations as the source of truth for schema changes.
-- Keep service-role credentials on the server only.
-- Use database functions for transactional data operations only when their privileges and execution scope are carefully controlled.
-- Do not assume that enabling RLS alone makes every query safe; test policies and function privileges.
+## 15.2 Privacy requirements
+
+- Publish a clear privacy notice.
+- Document purposes for each type of personal data.
+- Define the institution/platform responsibilities for processing.
+- Restrict who can view academic records.
+- Define data retention and deletion schedules.
+- Support appropriate user correction and request workflows.
+- Protect data in transit and at rest through the deployment/provider configuration.
+- Review data processors and third-party AI provider terms.
+- Maintain a breach and incident response plan.
+- Apply age-appropriate safeguards and parental-consent requirements where relevant.
+- Obtain legal advice on the applicable Indian and other jurisdictional obligations.
+
+The Digital Personal Data Protection Act, 2023 and DPDP Rules, 2025 are relevant to an India-focused platform. The commencement notification phases provisions over time. The project must assess the provisions actually in force at the time of deployment and must not claim legal compliance merely because technical controls are present.
+
+## 15.3 Accessibility
+
+- Responsive support for common mobile and desktop screen sizes.
+- Keyboard-accessible navigation.
+- Screen-reader labels.
+- Visible focus states.
+- Sufficient contrast.
+- Text alternatives for diagrams.
+- Captions/transcripts for video where available.
+- Text resizing and zoom support.
+- Reduced-motion settings.
+- Accessible validation errors.
+- Configurable assessment time accommodations through an authorized policy.
+- Do not use color alone to communicate question status.
+
+For NEET-UG, the 2026 NTA bulletin includes a specific compensatory-time provision for eligible PwD/PwBD candidates with physical writing limitations. The app's practice accommodations should be configurable and reviewed for each exam year. It must not claim to grant official exam entitlement.
+
+## 15.4 Data retention
+
+Define separate retention periods for:
+
+- Account profile.
+- Assessment attempts and results.
+- Uploaded resources.
+- Optional verification documents.
+- Support tickets.
+- AI prompts and outputs.
+- Audit logs.
+- Payment records, if introduced.
+
+Do not keep sensitive documents forever merely because storage is available.
 
 ---
 
-# 15. Database Design and Data Dictionary
-
-## 15.1 Database design rules
-
-1. Use UUID primary keys for core entities unless a documented reason requires another key.
-2. Use foreign keys and unique constraints to preserve relationships.
-3. Store UTC timestamps as `TIMESTAMPTZ`.
-4. Use explicit status fields with constrained values.
-5. Store files in object storage, not as Base64 blobs in relational tables.
-6. Separate logical questions from immutable question revisions.
-7. Separate assessment definitions from assessment versions and student attempts.
-8. Preserve historical context for enrolments, published content, and attempts.
-9. Keep answer keys outside student-readable schemas/views/API payloads.
-10. Add indexes based on measured queries and query plans.
-11. Record all important corrections and administrative changes.
-12. Add tenant/institute identifiers only when the single-institute boundary and later multi-institute requirements are clearly defined; do not claim multi-tenant isolation until it is implemented and tested.
-
-## 15.2 Core identity and institute tables
-
-### `profiles`
-
-Stores non-authentication profile information.
-
-- `id` UUID PK, references the authentication user ID.
-- `full_name` TEXT NOT NULL.
-- `phone` TEXT NULL, if collected and needed.
-- `avatar_path` TEXT NULL.
-- `locale` TEXT DEFAULT `en`.
-- `status` TEXT NOT NULL.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-### `role_assignments`
-
-Stores trusted role grants. This is not populated from user-editable signup metadata.
-
-- `id` UUID PK.
-- `profile_id` UUID FK to `profiles.id`.
-- `role` constrained to `STUDENT`, `FACULTY`, `ADMIN`.
-- `status` constrained to `ACTIVE`, `REVOKED`.
-- `assigned_by` UUID FK to `profiles.id`.
-- `assigned_at`, `revoked_at` TIMESTAMPTZ.
-- Optional reason/reference field.
-
-Constraint: one active assignment per user and role unless multi-role behaviour is explicitly required. A user should not be able to create or modify their own role assignment.
-
-### `students`
-
-- `id` UUID PK.
-- `profile_id` UUID UNIQUE FK to `profiles.id`.
-- `student_code` TEXT UNIQUE within institute, if used.
-- `admission_status` TEXT.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-### `faculty`
-
-- `id` UUID PK.
-- `profile_id` UUID UNIQUE FK to `profiles.id`.
-- `designation` TEXT NULL.
-- `employment_status` TEXT.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-### `academic_years`
-
-- `id` UUID PK.
-- `name` TEXT.
-- `starts_on`, `ends_on` DATE.
-- `status` TEXT.
-
-### `programs`
-
-- `id` UUID PK.
-- `name` TEXT, for example NEET-UG Long-Term or Repeater.
-- `exam_id` UUID FK to `exam_definitions.id`.
-- `description` TEXT.
-- `status` TEXT.
-
-### `cohorts`
-
-- `id` UUID PK.
-- `program_id` UUID FK to `programs.id`.
-- `academic_year_id` UUID FK to `academic_years.id`.
-- `name` TEXT.
-- `starts_on`, `ends_on` DATE.
-- `capacity` INTEGER NULL.
-- `status` TEXT.
-
-### `student_enrollments`
-
-Supports current and historical enrolments.
-
-- `id` UUID PK.
-- `student_id` UUID FK to `students.id`.
-- `cohort_id` UUID FK to `cohorts.id`.
-- `status` constrained to `PENDING`, `ACTIVE`, `COMPLETED`, `TRANSFERRED`, `WITHDRAWN`.
-- `starts_at`, `ends_at` TIMESTAMPTZ.
-- `approved_by` UUID FK to `profiles.id`.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-Constraint: prevent conflicting active enrolments according to institute policy. Preserve old enrolment rows after a transfer.
-
-### `faculty_assignments`
-
-- `id` UUID PK.
-- `faculty_id` UUID FK to `faculty.id`.
-- `cohort_id` UUID FK to `cohorts.id`.
-- `subject_id` UUID FK to `subjects.id`.
-- `starts_at`, `ends_at` TIMESTAMPTZ.
-- `status` TEXT.
-
-## 15.3 Exam and curriculum tables
-
-### `exam_definitions`
-
-- `id` UUID PK.
-- `code` TEXT UNIQUE, e.g. `NEET_UG`.
-- `name` TEXT.
-- `authority_name` TEXT.
-- `official_website` TEXT.
-- `status` TEXT.
-
-### `exam_blueprints`
-
-An immutable or versioned configuration for a specific exam cycle.
-
-- `id` UUID PK.
-- `exam_id` UUID FK to `exam_definitions.id`.
-- `exam_year` INTEGER.
-- `version` INTEGER.
-- `source_url` TEXT.
-- `source_published_at` DATE NULL.
-- `verified_at` TIMESTAMPTZ.
-- `verified_by` UUID FK to `profiles.id`.
-- `status` constrained to `DRAFT`, `VERIFIED`, `ACTIVE`, `ARCHIVED`.
-- `notes` TEXT.
-
-Unique constraint: `(exam_id, exam_year, version)`.
-
-### `exam_sections`
-
-Optional sections/subsections within a blueprint. For NEET, this may represent Physics, Chemistry, and Biology.
-
-- `id` UUID PK.
-- `blueprint_id` UUID FK to `exam_blueprints.id`.
-- `name` TEXT.
-- `display_order` INTEGER.
-- `question_count` INTEGER NULL.
-- `duration_seconds` INTEGER NULL.
-- `max_marks` NUMERIC NULL.
-
-### `scoring_profiles`
-
-- `id` UUID PK.
-- `blueprint_id` UUID FK to `exam_blueprints.id`.
-- `name` TEXT.
-- `correct_marks` NUMERIC.
-- `incorrect_marks` NUMERIC.
-- `unanswered_marks` NUMERIC.
-- `partial_marking_config` JSONB NULL.
-- `invalid_item_policy` JSONB.
-- `status` TEXT.
-
-The JSON configuration must be validated against a documented schema. Avoid arbitrary executable scoring expressions.
-
-### `subjects`
-
-- `id` UUID PK.
-- `code` TEXT UNIQUE.
-- `name` TEXT.
-- `description` TEXT NULL.
-
-### `blueprint_subjects`
-
-- `blueprint_id` UUID FK to `exam_blueprints.id`.
-- `subject_id` UUID FK to `subjects.id`.
-- `section_id` UUID FK to `exam_sections.id` NULL.
-- `display_order` INTEGER.
-- Composite PK or unique constraint on the blueprint/subject mapping.
-
-### `chapters`
-
-- `id` UUID PK.
-- `subject_id` UUID FK to `subjects.id`.
-- `name` TEXT.
-- `display_order` INTEGER.
-- `status` TEXT.
-
-### `topics`
-
-- `id` UUID PK.
-- `chapter_id` UUID FK to `chapters.id`.
-- `name` TEXT.
-- `display_order` INTEGER.
-- `status` TEXT.
-
-### `blueprint_topics`
-
-Maps the currently approved topics to a particular exam blueprint and preserves year-specific syllabus coverage.
-
-- `blueprint_id` UUID FK to `exam_blueprints.id`.
-- `topic_id` UUID FK to `topics.id`.
-- `inclusion_status` TEXT, e.g. `INCLUDED`, `EXCLUDED`, `REVIEW_REQUIRED`.
-- `source_reference` TEXT NULL.
-- Composite unique constraint on `(blueprint_id, topic_id)`.
-
-## 15.4 Resource tables
-
-### `resources`
-
-- `id` UUID PK.
-- `title` TEXT NOT NULL.
-- `description` TEXT NULL.
-- `resource_type` constrained to `NOTE`, `PDF`, `BOOK_REFERENCE`, `DPP`, `PYQ`, `VIDEO`, `IMAGE`, `LINK`.
-- `subject_id`, `chapter_id`, `topic_id` nullable FKs.
-- `blueprint_id` UUID FK to `exam_blueprints.id` NULL.
-- `created_by` UUID FK to `profiles.id`.
-- `status` constrained to `DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `ARCHIVED`, `REJECTED`.
-- `created_at`, `updated_at`, `published_at` TIMESTAMPTZ.
-
-### `resource_files`
-
-- `id` UUID PK.
-- `resource_id` UUID FK to `resources.id`.
-- `bucket_id` TEXT.
-- `storage_path` TEXT NOT NULL.
-- `file_name` TEXT NOT NULL.
-- `mime_type` TEXT NOT NULL.
-- `file_size_bytes` BIGINT NOT NULL.
-- `checksum_sha256` TEXT NULL.
-- `scan_status` TEXT.
-- `created_at` TIMESTAMPTZ.
-
-### `resource_cohort_access`
-
-- `resource_id` UUID FK to `resources.id`.
-- `cohort_id` UUID FK to `cohorts.id`.
-- Composite PK `(resource_id, cohort_id)`.
-
-An explicit `ALL_ACTIVE_COHORTS`/institute-wide policy may be represented in a separate visibility field if needed. Do not use a magic string in `cohort_id`.
-
-## 15.5 Question bank and assessment tables
-
-### `question_bank_items`
-
-Represents the logical identity of a question.
-
-- `id` UUID PK.
-- `subject_id`, `chapter_id`, `topic_id` FKs.
-- `created_by` UUID FK to `profiles.id`.
-- `current_revision_id` UUID NULL.
-- `created_at`, `archived_at` TIMESTAMPTZ.
-
-### `question_revisions`
-
-- `id` UUID PK.
-- `question_item_id` UUID FK to `question_bank_items.id`.
-- `revision_number` INTEGER.
-- `question_text` TEXT.
-- `question_type` constrained for MVP to `SINGLE_SELECT_MCQ`.
-- `explanation` TEXT NULL.
-- `difficulty_label` TEXT NULL.
-- `diagram_storage_path` TEXT NULL.
-- `diagram_alt_text` TEXT NULL.
-- `source_reference` TEXT NULL.
-- `rights_status` TEXT.
-- `approval_status` constrained to `DRAFT`, `IN_REVIEW`, `APPROVED`, `REJECTED`, `PUBLISHED`, `ARCHIVED`.
-- `created_by`, `reviewed_by` UUID references.
-- `reviewed_at`, `created_at` TIMESTAMPTZ.
-
-Unique constraint: `(question_item_id, revision_number)`.
-
-### `question_revision_options`
-
-Stores options for a specific question revision.
-
-- `id` UUID PK.
-- `question_revision_id` UUID FK to `question_revisions.id`.
-- `option_label` TEXT, e.g. A, B, C, D.
-- `option_text` TEXT.
-- `display_order` INTEGER.
-- Unique `(question_revision_id, option_label)` and `(question_revision_id, display_order)`.
-
-For the NEET-UG 2026 MVP, the published revision must have exactly four options. Correctness must not be exposed to student clients.
-
-### `assessment_definitions`
-
-- `id` UUID PK.
-- `title` TEXT.
-- `description` TEXT NULL.
-- `assessment_type` constrained to `DPP`, `CHAPTER_TEST`, `SUBJECT_TEST`, `MOCK_TEST`, `REVISION_TEST`, `PYQ_PRACTICE`.
-- `blueprint_id` UUID FK to `exam_blueprints.id`.
-- `created_by` UUID FK to `profiles.id`.
-- `status` TEXT.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-### `assessment_versions`
-
-- `id` UUID PK.
-- `assessment_id` UUID FK to `assessment_definitions.id`.
-- `version_number` INTEGER.
-- `duration_seconds` INTEGER.
-- `scoring_profile_id` UUID FK to `scoring_profiles.id`.
-- `available_from`, `available_until` TIMESTAMPTZ NULL.
-- `attempt_limit` INTEGER NULL.
-- `navigation_policy` JSONB.
-- `result_release_policy` JSONB.
-- `status` constrained to `DRAFT`, `PUBLISHED`, `CLOSED`, `ARCHIVED`.
-- `published_by` UUID FK to `profiles.id`.
-- `published_at` TIMESTAMPTZ.
-
-Unique `(assessment_id, version_number)`.
-
-### `assessment_cohort_access`
-
-- `assessment_version_id` UUID FK to `assessment_versions.id`.
-- `cohort_id` UUID FK to `cohorts.id`.
-- Composite PK.
-
-### `assessment_questions`
-
-- `id` UUID PK.
-- `assessment_version_id` UUID FK to `assessment_versions.id`.
-- `question_revision_id` UUID FK to `question_revisions.id`.
-- `question_order` INTEGER.
-- `marks_override` NUMERIC NULL.
-- `negative_marks_override` NUMERIC NULL.
-- Unique `(assessment_version_id, question_order)`.
-- Unique `(assessment_version_id, question_revision_id)` unless repeated-item behaviour is intentionally supported.
-
-The selected question revision and any per-item scoring override are frozen when the assessment version is published.
-
-### `question_answer_keys` — protected data
-
-The answer key should be kept in a schema not exposed to student Data API access or through a protected backend service.
-
-- `question_revision_id` UUID PK/FK to `question_revisions.id`.
-- `accepted_option_ids` UUID array or normalized child rows.
-- `resolution_type` TEXT.
-- `reviewed_by` UUID.
-- `updated_at` TIMESTAMPTZ.
-
-Do not return this table or its correctness fields to an active student attempt. If using Supabase, verify the exposed-schema configuration, privileges, and RLS behaviour. A separate non-exposed schema or strictly restricted server-side repository is preferred.
-
-## 15.6 Attempt and scoring tables
-
-### `attempts`
-
-- `id` UUID PK.
-- `assessment_version_id` UUID FK to `assessment_versions.id`.
-- `student_id` UUID FK to `students.id`.
-- `enrollment_id` UUID FK to `student_enrollments.id`.
-- `attempt_number` INTEGER.
-- `status` constrained to `IN_PROGRESS`, `SUBMITTED`, `TIMED_OUT`, `ABANDONED`, `SCORED`, `RESULT_RELEASED`.
-- `started_at` TIMESTAMPTZ NOT NULL.
-- `deadline_at` TIMESTAMPTZ NOT NULL.
-- `submitted_at` TIMESTAMPTZ NULL.
-- `scored_at` TIMESTAMPTZ NULL.
-- `raw_score` NUMERIC NULL.
-- `maximum_score` NUMERIC NULL.
-- `correct_count`, `incorrect_count`, `unanswered_count` INTEGER NULL.
-- `scoring_snapshot` JSONB NULL, containing the effective scoring profile version and adjudication identifiers, not answer-key secrets.
-- `idempotency_key` TEXT.
-- `created_at`, `updated_at` TIMESTAMPTZ.
-
-Constraints:
-
-- Unique `(assessment_version_id, student_id, attempt_number)`.
-- Enforce at most one active attempt per student/assessment when policy requires it, using an appropriate partial unique index.
-- Check `deadline_at > started_at`.
-- Do not trust client-supplied score fields.
-
-### `attempt_answers`
-
-- `id` UUID PK.
-- `attempt_id` UUID FK to `attempts.id`.
-- `assessment_question_id` UUID FK to `assessment_questions.id`.
-- `question_revision_id` UUID FK to `question_revisions.id`.
-- `selected_option_id` UUID NULL FK to `question_revision_options.id`.
-- `answer_status` constrained to `ANSWERED`, `UNANSWERED`, `MARKED_FOR_REVIEW` as appropriate.
-- `saved_at` TIMESTAMPTZ.
-- `evaluated_is_correct` BOOLEAN NULL, written by the scoring service only.
-- `marks_awarded` NUMERIC NULL, written by the scoring service only.
-
-Constraint: unique `(attempt_id, assessment_question_id)`.
-
-Add a composite integrity constraint or equivalent transaction validation so `selected_option_id` belongs to the exact `question_revision_id` associated with the assessment question. A foreign key to an arbitrary option row is not sufficient by itself.
-
-### `attempt_events`
-
-Append-only operational event history for assessment lifecycle actions.
-
-- `id` UUID PK.
-- `attempt_id` UUID FK.
-- `event_type` TEXT.
-- `server_recorded_at` TIMESTAMPTZ.
-- `request_id` TEXT NULL.
-- `metadata` JSONB restricted to non-secret operational fields.
-
-Do not collect unnecessary keystroke, webcam, or device-surveillance data.
-
-### `score_adjustments`
-
-- `id` UUID PK.
-- `attempt_id` UUID FK.
-- `old_score` NUMERIC.
-- `new_score` NUMERIC.
-- `reason` TEXT NOT NULL.
-- `adjusted_by` UUID FK to `profiles.id` or trusted system identity.
-- `created_at` TIMESTAMPTZ.
-- `adjudication_reference` TEXT NULL.
-
-A score correction must not silently overwrite history.
-
-## 15.7 Progress, announcements, calendar, and AI tables
-
-### `student_topic_progress`
-
-- `id` UUID PK.
-- `student_id` UUID FK.
-- `topic_id` UUID FK.
-- `status` TEXT, e.g. `NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`.
-- `completed_at` TIMESTAMPTZ NULL.
-- `updated_at` TIMESTAMPTZ.
-- Unique `(student_id, topic_id)` or a blueprint-aware unique key if syllabus versions need independent progress.
-
-### `announcements`
-
-- `id` UUID PK.
-- `title`, `body` TEXT.
-- `audience_type` TEXT.
-- `created_by` UUID FK.
-- `priority` TEXT.
-- `published_at`, `expires_at` TIMESTAMPTZ NULL.
-- `status` TEXT.
-
-### `announcement_cohorts`
-
-- `announcement_id` UUID FK.
-- `cohort_id` UUID FK.
-- Composite PK.
-
-### `calendar_events`
-
-- `id` UUID PK.
-- `title`, `description` TEXT.
-- `event_type` TEXT.
-- `starts_at`, `ends_at` TIMESTAMPTZ.
-- `created_by` UUID FK.
-- `visibility` TEXT.
-- `status` TEXT.
-
-### `calendar_event_cohorts`
-
-- `event_id` UUID FK.
-- `cohort_id` UUID FK.
-- Composite PK.
-
-### `ai_generation_jobs` — Phase 2
-
-- `id` UUID PK.
-- `requested_by` UUID FK.
-- `exam_blueprint_id` UUID FK.
-- `subject_id`, `chapter_id`, `topic_id` FKs.
-- `provider` TEXT.
-- `model_id` TEXT.
-- `prompt_template_version` TEXT.
-- `status` TEXT.
-- `input_metadata` JSONB with no unnecessary personal data.
-- `error_code` TEXT NULL.
-- `created_at`, `completed_at` TIMESTAMPTZ.
-
-### `ai_question_drafts` — Phase 2
-
-- `id` UUID PK.
-- `generation_job_id` UUID FK.
-- `draft_payload` JSONB validated against a versioned schema.
-- `validation_status` TEXT.
-- `review_status` TEXT.
-- `reviewed_by` UUID NULL.
-- `reviewed_at` TIMESTAMPTZ NULL.
-- `published_question_revision_id` UUID NULL.
-
-### `ai_reference_sources` — Phase 2
-
-- `id` UUID PK.
-- `generation_job_id` UUID FK.
-- `resource_id` UUID FK or approved source identifier.
-- `source_locator` TEXT NULL.
-- `excerpt_hash` TEXT NULL.
-- `created_at` TIMESTAMPTZ.
-
-## 15.8 Optional and future tables
-
-Only add these when the corresponding feature is approved:
-
-- `student_documents` and `document_reviews` for optional institute document verification.
-- `discussion_threads`, `discussion_replies`, and `moderation_actions` for a moderated community.
-- `notification_jobs` and `notification_deliveries` for outbound notification services.
-- `payment_orders` and `payment_webhook_events` only if payment integration is added. Use a compliant payment provider; do not store card credentials.
-- `organizations` and `organization_memberships` only when a multi-institute SaaS product is actually scoped. Then every tenant-owned table, storage path, API, and background job must enforce tenant isolation.
-
-## 15.9 Required constraints and indexes
-
-Suggested indexes, subject to `EXPLAIN ANALYZE` and actual workload:
-
-```sql
--- Curriculum
-CREATE INDEX IF NOT EXISTS idx_chapters_subject_order
-  ON public.chapters(subject_id, display_order);
-
-CREATE INDEX IF NOT EXISTS idx_topics_chapter_order
-  ON public.topics(chapter_id, display_order);
-
--- Cohort and student lookup
-CREATE INDEX IF NOT EXISTS idx_enrollments_student_status
-  ON public.student_enrollments(student_id, status);
-
-CREATE INDEX IF NOT EXISTS idx_enrollments_cohort_status
-  ON public.student_enrollments(cohort_id, status);
-
--- Resources and cohort access
-CREATE INDEX IF NOT EXISTS idx_resources_status_type
-  ON public.resources(status, resource_type);
-
-CREATE INDEX IF NOT EXISTS idx_resource_cohort_access_cohort
-  ON public.resource_cohort_access(cohort_id, resource_id);
-
--- Assessment and attempts
-CREATE INDEX IF NOT EXISTS idx_assessment_versions_status_window
-  ON public.assessment_versions(status, available_from, available_until);
-
-CREATE INDEX IF NOT EXISTS idx_attempts_student_started
-  ON public.attempts(student_id, started_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_attempts_assessment_status
-  ON public.attempts(assessment_version_id, status);
-
-CREATE INDEX IF NOT EXISTS idx_attempt_answers_attempt
-  ON public.attempt_answers(attempt_id);
-
-CREATE INDEX IF NOT EXISTS idx_attempt_events_attempt_time
-  ON public.attempt_events(attempt_id, server_recorded_at);
-```
-
-Do not add every possible index pre-emptively. Extra indexes increase write cost and storage use. Measure representative queries.
+# 16. Performance, Reliability, and Operational Requirements
+
+## 16.1 Performance targets
+
+Initial targets to validate in staging under agreed pilot load:
+
+- Common API read operations: p95 target under 500 ms, excluding external provider and large file transfer latency.
+- Answer-save API: p95 target under 500 ms under the agreed assessment concurrency.
+- Dashboard loads: paginate and aggregate server-side.
+- Large reports: use asynchronous generation if necessary.
+- Files: stream appropriately and use safe caching.
+- Avoid fetching all questions or all attempts into the browser.
+
+These are proposed test targets, not measured performance claims.
+
+## 16.2 Reliability
+
+- Separate development, test, staging, and production environments.
+- Use database backups and test restoration.
+- Define recovery point objective (RPO) and recovery time objective (RTO).
+- Use bounded retries and backoff for transient provider errors.
+- Do not retry non-idempotent actions without idempotency protection.
+- Keep assessment state durable.
+- Display understandable outage messages.
+- Monitor answer-save and scoring failures.
+- Maintain a rollback plan for releases and migrations.
+
+## 16.3 Monitoring
+
+Monitor:
+
+- API error rate.
+- API latency.
+- Database query and connection health.
+- Authentication failures.
+- Storage errors.
+- AI provider latency, error rate, and cost.
+- Assessment answer-save failures.
+- Submission and scoring failures.
+- Notification failures.
+- Backup failures.
+
+A health badge must reflect an actual check. Do not show fabricated database ping values or constant "healthy" indicators.
+
+## 16.4 Deployment pipeline
+
+1. Lint and type-check.
+2. Run unit tests.
+3. Run integration tests against a disposable test database.
+4. Run RLS/security tests.
+5. Run migrations in staging.
+6. Build frontend and backend.
+7. Run end-to-end smoke tests.
+8. Obtain release approval.
+9. Deploy production.
+10. Monitor and retain rollback capability.
 
 ---
 
-# 16. Entity Relationship Diagram
-
-The diagram below shows the main MVP relationships. It is a logical overview, not a complete rendering of every optional table or every composite constraint.
-
-```mermaid
-erDiagram
-    AUTH_USERS ||--|| PROFILES : identity
-    PROFILES ||--o{ ROLE_ASSIGNMENTS : has
-    PROFILES ||--o| STUDENTS : student_profile
-    PROFILES ||--o| FACULTY : faculty_profile
-
-    ACADEMIC_YEARS ||--o{ COHORTS : schedules
-    PROGRAMS ||--o{ COHORTS : contains
-    EXAM_DEFINITIONS ||--o{ PROGRAMS : targets
-    STUDENTS ||--o{ STUDENT_ENROLLMENTS : enrols
-    COHORTS ||--o{ STUDENT_ENROLLMENTS : includes
-    FACULTY ||--o{ FACULTY_ASSIGNMENTS : assigned
-    COHORTS ||--o{ FACULTY_ASSIGNMENTS : staffed
-    SUBJECTS ||--o{ FACULTY_ASSIGNMENTS : teaches
-
-    EXAM_DEFINITIONS ||--o{ EXAM_BLUEPRINTS : versions
-    EXAM_BLUEPRINTS ||--o{ EXAM_SECTIONS : contains
-    EXAM_BLUEPRINTS ||--o{ SCORING_PROFILES : defines
-    EXAM_BLUEPRINTS ||--o{ BLUEPRINT_SUBJECTS : maps
-    SUBJECTS ||--o{ BLUEPRINT_SUBJECTS : included
-    SUBJECTS ||--o{ CHAPTERS : contains
-    CHAPTERS ||--o{ TOPICS : contains
-    EXAM_BLUEPRINTS ||--o{ BLUEPRINT_TOPICS : includes
-    TOPICS ||--o{ BLUEPRINT_TOPICS : mapped
-
-    RESOURCES ||--o{ RESOURCE_FILES : stores
-    RESOURCES ||--o{ RESOURCE_COHORT_ACCESS : targets
-    COHORTS ||--o{ RESOURCE_COHORT_ACCESS : receives
-
-    QUESTION_BANK_ITEMS ||--o{ QUESTION_REVISIONS : versions
-    QUESTION_REVISIONS ||--o{ QUESTION_REVISION_OPTIONS : offers
-    QUESTION_REVISIONS ||--o| QUESTION_ANSWER_KEYS : keyed
-    SUBJECTS ||--o{ QUESTION_BANK_ITEMS : categorizes
-    CHAPTERS ||--o{ QUESTION_BANK_ITEMS : groups
-    TOPICS ||--o{ QUESTION_BANK_ITEMS : tags
-
-    ASSESSMENT_DEFINITIONS ||--o{ ASSESSMENT_VERSIONS : versions
-    ASSESSMENT_VERSIONS ||--o{ ASSESSMENT_QUESTIONS : contains
-    QUESTION_REVISIONS ||--o{ ASSESSMENT_QUESTIONS : selected
-    ASSESSMENT_VERSIONS ||--o{ ASSESSMENT_COHORT_ACCESS : targets
-    COHORTS ||--o{ ASSESSMENT_COHORT_ACCESS : receives
-    SCORING_PROFILES ||--o{ ASSESSMENT_VERSIONS : scores
-
-    STUDENTS ||--o{ ATTEMPTS : takes
-    STUDENT_ENROLLMENTS ||--o{ ATTEMPTS : context
-    ASSESSMENT_VERSIONS ||--o{ ATTEMPTS : attempted
-    ATTEMPTS ||--o{ ATTEMPT_ANSWERS : records
-    ASSESSMENT_QUESTIONS ||--o{ ATTEMPT_ANSWERS : answered
-    ATTEMPTS ||--o{ ATTEMPT_EVENTS : logs
-    ATTEMPTS ||--o{ SCORE_ADJUSTMENTS : adjusted
-
-    STUDENTS ||--o{ STUDENT_TOPIC_PROGRESS : progresses
-    TOPICS ||--o{ STUDENT_TOPIC_PROGRESS : tracked
-    ANNOUNCEMENTS ||--o{ ANNOUNCEMENT_COHORTS : targets
-    COHORTS ||--o{ ANNOUNCEMENT_COHORTS : receives
-    CALENDAR_EVENTS ||--o{ CALENDAR_EVENT_COHORTS : targets
-    COHORTS ||--o{ CALENDAR_EVENT_COHORTS : receives
-```
-
----
-
-# 17. Authorization and Row-Level Security Design
-
-## 17.1 General rule
-
-Authorization must be enforced at the server and database layers. Hiding a button or route in React is not authorization.
-
-## 17.2 Access matrix
-
-| Data/action | Student | Faculty | Admin |
-|---|---|---|---|
-| Read own profile | Yes | Yes | Yes |
-| Update own allowed profile fields | Yes | Yes | Yes |
-| Read other student private profile | No | Only assigned cohort fields needed for teaching | Institute scope |
-| Read published resources | Enrolled cohort only | Assigned scope | Institute scope |
-| Upload resources | No | Assigned scope | Yes |
-| Publish resources | No | If explicitly granted | Yes |
-| Read question drafts | No | Assigned/review scope | Yes |
-| Create questions | No | Assigned subjects | Yes |
-| Approve AI questions | No | Assigned reviewer role | Yes |
-| Read active assessment question payload | Own active attempt only | Assessment authoring scope, not student answer keys | Administrative scope as defined |
-| Read answer keys during active attempt | No | Only author/reviewer workflow when required | Restricted audit workflow |
-| Start and submit own attempt | Yes | No, except a separate test account | No, except a separate test account |
-| Read own results | Yes, after release | Assigned cohort | Institute scope |
-| Read another student's results | No | Assigned cohort, purpose-limited | Institute scope |
-| Change user role | No | No | Yes, audited |
-| Manage cohorts | No | No | Yes |
-| Read audit logs | No | Limited own activity if needed | Yes |
-
-## 17.3 RLS policy requirements
-
-- Enable RLS on every table reachable through the Supabase Data API that contains protected records.
-- Define explicit policies for `SELECT`, `INSERT`, `UPDATE`, and `DELETE`; do not assume one policy protects all operations.
-- Use `auth.uid()` or trusted role/enrolment lookup logic.
-- Check that the student has an active enrolment before returning cohort content.
-- Check faculty assignments before allowing access to assigned cohort records.
-- Restrict updates to permitted columns where necessary.
-- Keep answer-key data in a non-exposed schema or protected backend-only path.
-- Protect `storage.objects` with policies that validate bucket, object path, owner, and cohort access.
-- Test both permitted and denied access for every role.
-
-## 17.4 Supabase-specific precautions
-
-- Supabase documents that `raw_user_meta_data` can be changed by an authenticated user and is not suitable for authorization data. Do not assign role privileges from this field.
-- `raw_app_meta_data` is not user-editable in the same way, but claims can remain stale until the JWT is refreshed. For critical actions, check current trusted database state.
-- The service-role key bypasses RLS. Keep it on the backend only and wrap any use in narrow, audited operations.
-- Prefer `SECURITY INVOKER` functions.
-- If a `SECURITY DEFINER` function is required, set `search_path = ''`, schema-qualify every object, verify row ownership in the function body, and revoke execution from `PUBLIC`/`anon` unless explicitly required.
-- Do not place a privileged function in an exposed schema without a reviewed reason.
-
-## 17.5 RLS test cases
-
-For each protected table and storage bucket, test:
-
-- Anonymous request is denied.
-- Student A cannot read Student B's profile, attempt, answers, or documents.
-- Student in Cohort A cannot read Cohort B's unpublished resources or assessments.
-- Faculty assigned to Cohort A cannot access Cohort B's private student records.
-- Faculty cannot grant themselves Admin role.
-- Student cannot read question answer keys through REST, RPC, views, joins, or storage metadata.
-- Suspended user cannot use an old token to perform a protected write after the suspension policy takes effect.
-- Admin access is limited to the institute scope.
-- Expired or revoked enrolment no longer provides access to protected cohort resources.
-
----
-
-# 18. Backend API Contract
-
-All routes below are illustrative versioned API endpoints. Implementations may differ, but security and behaviour must remain equivalent.
-
-## 18.1 Authentication and profile
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/v1/me` | Return the authenticated profile and permitted role summary. |
-| PATCH | `/api/v1/me` | Update permitted profile fields only. |
-| POST | `/api/v1/admin/users/invitations` | Create an authorized staff/student invitation. |
-| PATCH | `/api/v1/admin/users/:userId/status` | Suspend/reactivate a user. |
-| POST | `/api/v1/admin/users/:userId/roles` | Grant a role through trusted Admin-only logic. |
-
-## 18.2 Enrolment and cohorts
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/v1/me/enrollments` | List the current user's enrolments. |
-| POST | `/api/v1/admin/enrollments` | Create/approve an enrolment. |
-| PATCH | `/api/v1/admin/enrollments/:id/transfer` | Transfer a student with an effective date and audit entry. |
-| GET | `/api/v1/cohorts/:id/summary` | Return an authorized cohort summary. |
-
-## 18.3 Curriculum and resources
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/v1/curriculum` | Return the active approved curriculum for the user's exam/cohort. |
-| GET | `/api/v1/resources` | List resources the user is permitted to discover. |
-| POST | `/api/v1/resources` | Create a resource draft. |
-| POST | `/api/v1/resources/:id/files` | Request an authorized upload flow. |
-| POST | `/api/v1/resources/:id/publish` | Publish after permission and review checks. |
-| POST | `/api/v1/resources/:id/access` | Request a protected download/view authorization. |
-
-## 18.4 Question bank and assessment
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/v1/questions` | Search questions within faculty permission scope. |
-| POST | `/api/v1/questions` | Create a question draft. |
-| POST | `/api/v1/questions/:id/revisions` | Create a new immutable revision. |
-| POST | `/api/v1/questions/:revisionId/review` | Record reviewer decision. |
-| POST | `/api/v1/assessments` | Create an assessment definition/version. |
-| POST | `/api/v1/assessments/:id/publish` | Publish an immutable assessment version. |
-| GET | `/api/v1/assessments` | List published assessments for the authenticated user. |
-
-## 18.5 Attempt lifecycle
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/v1/assessments/:versionId/attempts` | Validate eligibility and start a server-timed attempt. |
-| GET | `/api/v1/attempts/:attemptId` | Return the user's permitted attempt state. |
-| GET | `/api/v1/attempts/:attemptId/questions` | Return sanitized questions and options, never answer keys. |
-| PUT | `/api/v1/attempts/:attemptId/answers/:assessmentQuestionId` | Save an answer with idempotency and deadline validation. |
-| POST | `/api/v1/attempts/:attemptId/submit` | Submit and trigger server-side scoring. |
-| GET | `/api/v1/attempts/:attemptId/result` | Return result only when release policy permits. |
-
-## 18.6 AI endpoints — Phase 2
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/v1/ai/question-drafts` | Create an AI generation job after faculty authorization. |
-| GET | `/api/v1/ai/question-drafts/:jobId` | Return generation state and validated draft. |
-| POST | `/api/v1/ai/question-drafts/:draftId/review` | Approve/reject/edit through faculty workflow. |
-| POST | `/api/v1/ai/tutor/query` | Answer from approved, cohort-authorized learning resources. |
-
-## 18.7 API requirements
-
-- Require authentication for protected endpoints.
-- Validate body, query, and path parameters.
-- Authorize on every request and every referenced object.
-- Use pagination and bounded page sizes.
-- Rate-limit authentication, AI, upload, and attempt endpoints.
-- Use idempotency for attempt creation, answer saves, and submission.
-- Return consistent errors without exposing stack traces, database internals, or secrets.
-- Include request/correlation IDs for tracing.
-- Do not include answer-key fields in active question responses.
-- Use HTTPS only in deployed environments.
-
----
-
-# 19. Security Architecture
-
-## 19.1 Security objectives
-
-- Confidentiality of student, institute, and answer-key data.
-- Integrity of enrolment, assessment content, answers, scores, and audit records.
-- Availability of learning and assessment functions during expected institute usage.
-- Traceability of privileged actions.
-- Least-privilege access for all roles and external services.
-
-## 19.2 Authentication and authorization controls
-
-- Use a maintained authentication provider.
-- Enforce administrator MFA where available.
-- Prevent self-assignment of privileged roles.
-- Validate user status and permissions server-side.
-- Use session expiry, refresh, and revocation policies.
-- Protect password reset and invitation flows against account enumeration and token leakage.
-- Use exact CORS allowlists in production.
-- Apply CSRF protections if cookie-based authentication is used.
-- Do not place secrets in browser bundles or source control.
-
-## 19.3 Database and API controls
-
-- RLS on user-scoped tables and storage objects.
-- Column-level access restrictions where a row contains fields with different visibility.
-- Protected answer-key schema/path.
-- Parameterized queries.
-- Input validation and output encoding.
-- Safe handling of HTML/Markdown/MathJax or other rich question content.
-- Rate limits and abuse detection.
-- Safe error handling.
-- Audit logs for sensitive changes.
-- Dependency and secret scanning in CI.
-
-## 19.4 Content protection and realistic anti-piracy controls
-
-A browser cannot reliably stop every screenshot, operating-system capture, external recorder, or use of a second device. Keyboard shortcuts, context-menu blocking, CSS selection controls, JavaScript monkey-patching, blur detection, and forced fullscreen are bypassable and must not be described as bank-grade DRM.
-
-Use the following realistic controls instead:
-
-1. Private object storage.
-2. Authenticated, expiring access authorization.
-3. Per-user visible watermarking for appropriate resources.
-4. Optional subtle resource/session trace IDs where legally and ethically appropriate.
-5. Rate-limited resource access and unusual-download monitoring.
-6. Resource access logs with a defined retention period.
-7. Clear terms of use and rights notices.
-8. Revocation of future access when enrolment ends or an account is suspended.
-
-Watermarks deter casual redistribution and may help trace a leak; they do not prove who created a copy in every circumstance. Avoid covert tracking or collecting unnecessary device fingerprints.
-
-## 19.5 File upload security
-
-- Allowlist MIME types and extensions.
-- Set maximum size per file type.
-- Generate storage object names server-side.
-- Keep uploaded files private until reviewed.
-- Scan files for malware where the deployment supports it.
-- Prevent HTML/SVG uploads from executing as active content.
-- Sanitize SVG and rich text before rendering.
-- Store uploads outside the public web root and serve through controlled paths.
-- Log upload, review, and deletion events.
-
-## 19.6 Security assurance standard
-
-Use the [OWASP Application Security Verification Standard (ASVS)](https://asvs.owasp.org/) as a structured security verification checklist. Select a practical assurance level for the product and document exceptions. Conduct independent penetration testing before wider production adoption.
-
----
-
-# 20. Privacy, Documents, and Data Governance
-
-## 20.1 Data minimization
-
-Collect only information required to provide the institute's learning services. A learning platform does not automatically need every document an examination candidate may hold.
-
-Default profile data should be limited to operational needs such as:
-
-- Name.
-- Login identifier.
-- Contact information if required by the institute.
-- Cohort/enrolment record.
-- Learning/assessment records.
-
-Do not collect medical fitness records by default. Do not collect government ID copies unless a documented and lawful institute process genuinely requires them.
-
-## 20.2 Data classification
-
-| Data class | Examples | Required handling |
-|---|---|---|
-| Public | Published course description, public help page | May be publicly accessible after review. |
-| Internal | Course schedules, internal announcements | Authenticated access as configured. |
-| Personal | Name, phone, enrolment, test results | Role- and purpose-restricted access. |
-| Sensitive/high-impact operational records | Identity documents, optional disability/medical documents, payment evidence | Collect only where justified; private storage, narrow access, audit, retention/deletion controls. |
-| Secrets | Passwords, tokens, API keys, service-role keys | Never log or expose; managed secret storage. |
-
-## 20.3 Storage and retention
-
-- Use private storage buckets for personal documents and paid/restricted learning resources.
-- Generate short-lived download URLs only after permission checks.
-- Keep document metadata and binary object access separately controlled.
-- Define retention periods for profile data, documents, attempts, audit logs, and AI generation records.
-- Support correction and deletion workflows subject to applicable legal and institutional retention requirements.
-- Keep backups protected under the same confidentiality expectations.
-- Avoid using personal data for AI training or unrelated analytics.
-
-## 20.4 Indian data protection review
-
-The Digital Personal Data Protection Rules, 2025 were published in the Gazette of India on 13 November 2025 with phased commencement. The Gazette states that Rules 3, 5–16, 22, and 23 commence eighteen months after publication, while Rule 4 commences after one year; the detailed commencement schedule must be read rule by rule. The product team should verify the Act, rules, commencement notifications, and any amendments applicable at the time of launch.
-
-This document is an engineering specification, not legal advice. Before processing real students' personal data, the institute should obtain appropriate legal review, prepare clear privacy notices, document purposes and retention, establish grievance/contact handling, and confirm processor/vendor arrangements.
-
-Official source: [Gazette of India — Digital Personal Data Protection Rules, 2025](https://www.meity.gov.in/static/uploads/2025/11/53450e6e5dc0bfa85ebd78686cadad39.pdf).
-
----
-
-# 21. Content Rights and Academic Integrity
-
-- The institute must own or have permission to upload, store, display, and distribute every resource and question.
-- Public availability on the internet does not automatically grant redistribution rights.
-- Previous-year questions must be used in a manner permitted by applicable rights and source terms.
-- Record source and rights metadata for imported or generated learning content.
-- Do not copy protected commercial coaching content into the platform without authorization.
-- AI-generated content must be reviewed for factual accuracy and unintended copying or close paraphrase.
-- Keep a process for reporting an incorrect or rights-infringing resource.
-- Remove or restrict disputed content while it is reviewed.
-- Maintain an audit trail of publication and withdrawal decisions.
-
----
-
-# 22. Non-Functional Requirements
-
-Targets below are **proposed pilot acceptance targets**, not measured performance claims. They must be verified in a representative deployment and adjusted using the institute's real peak concurrency and budget.
-
-## 22.1 Performance
-
-| ID | Proposed target | Verification |
-|---|---|---|
-| NFR-PERF-001 | Common authenticated read APIs: p95 response time at or below 500 ms under the agreed pilot load, excluding external provider time. | Load test and server tracing. |
-| NFR-PERF-002 | Answer-save API: p95 acknowledgement at or below 1 second under agreed pilot load. | Concurrent answer-save test. |
-| NFR-PERF-003 | Score a 180-question attempt within 2 seconds at p95 after accepted submission, excluding external dependencies. | Scoring benchmark. |
-| NFR-PERF-004 | Initial dashboard usable within 3 seconds on the agreed test device/network profile. | Browser performance test. |
-| NFR-PERF-005 | No unbounded list endpoints or unpaginated large exports. | API contract and database review. |
-
-## 22.2 Concurrency and capacity
-
-- Initial load-test scenario: at least 100 concurrent student sessions, unless pilot enrollment requires a higher target.
-- Test a realistic peak at which students begin the same scheduled mock at nearly the same time.
-- Test answer autosave bursts, concurrent submissions, analytics reads, and admin activity during a mock.
-- Confirm database connection-pool behaviour and query latency.
-- Maintain agreed capacity headroom and document the tested maximum.
-- Re-run load tests after major schema, scoring, or infrastructure changes.
-
-## 22.3 Availability and reliability
-
-- Define a pilot availability target with the institute and hosting provider before launch.
-- Target graceful degradation when AI or notification providers are unavailable; core learning and assessment functions must not depend on AI availability.
-- Display stale/cached data clearly.
-- Do not silently replace real student records with seed/demo data during outages.
-- Record application errors, failed jobs, and database failures.
-- Provide operational alerts for critical incidents.
-
-## 22.4 Data integrity
-
-- Use transactions for attempt finalization and score persistence.
-- Make submission idempotent.
-- Use unique constraints to prevent duplicate answers and duplicate attempt creation where policy disallows them.
-- Keep immutable published assessment/question revisions.
-- Preserve original scoring snapshots after a correction.
-- Use migrations and schema constraints as the source of truth.
-
-## 22.5 Maintainability
-
-- Use TypeScript across frontend and backend where practical.
-- Separate UI, domain services, repositories, and provider integrations.
-- Validate API inputs and external AI responses.
-- Maintain automated tests and architecture notes.
-- Keep exam-year rules in data/configuration rather than frontend constants.
-- Add structured logs and correlation IDs.
-- Use code review and required CI checks.
-
-## 22.6 Portability and extensibility
-
-- Keep exam blueprints independent of frontend layouts.
-- Keep model-provider integration behind an adapter.
-- Keep storage paths independent from display URLs.
-- Use database migrations that can be reviewed and rolled forward safely.
-- Do not claim multi-institute support until tenant isolation has been tested across every data and storage path.
-
----
-
-# 23. User Experience, Accessibility, and Localization
-
-## 23.1 Interface principles
-
-- Mobile-first responsive design without locking the interface to a fixed aspect ratio.
-- Clear navigation for Student, Faculty, and Admin.
-- Consistent loading, empty, error, and success states.
-- Clear labels for draft, published, closed, and archived content.
-- Avoid excessive animations during assessments.
-- Show autosave/network status clearly.
-- Use charts only when they communicate an actionable pattern.
-- Provide accessible alternatives to color-only status indicators.
-
-## 23.2 Accessibility target
-
-Target WCAG 2.2 AA for the product's key user journeys. This is a target that must be tested; it is not a claim of conformance until a suitable audit verifies it.
-
-Minimum implementation requirements:
-
-- Semantic HTML and accessible labels.
-- Full keyboard navigation.
-- Visible focus indicators.
-- Sufficient color contrast.
-- Text resizing and browser zoom support.
-- Screen-reader accessible question controls and navigation.
-- Text alternatives for diagrams and instructional images.
-- Captions/transcripts for videos where available.
-- Reduced-motion support.
-- Avoid information communicated only through color or animation.
-- Clear validation messages and error recovery.
-- Assessment accommodations controlled by the institute's documented policy.
-
-Reference: [W3C Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/).
-
-## 23.3 Localization
-
-- Keep UI strings externalized rather than hardcoded in components.
-- English is the initial interface language.
-- Hindi may be added after translation review.
-- Support Unicode content and localized date/time display.
-- Store exam content language as metadata.
-- Academic translations must be reviewed by qualified faculty; automatic translation must not silently change a scientific meaning, formula, or answer key.
-
-## 23.4 Assessment usability
-
-- Provide readable question text and diagrams.
-- Maintain consistent option spacing and selection feedback.
-- Provide a clear question palette and review marker.
-- Make it clear whether an answer is saved or pending.
-- Avoid unnecessary visual distractions.
-- Do not treat fullscreen or browser blur as proof of misconduct.
-- Explain the practice assessment's duration, marking policy, and result-release timing before starting.
-
----
-
-# 24. Reliability, Monitoring, Backup, and Recovery
-
-## 24.1 Monitoring
-
-Monitor at least:
-
-- API request rate, latency, and error rate.
-- Authentication failures and abnormal sign-in activity.
-- Database availability, slow queries, connection saturation, and storage usage.
-- Assessment start, answer-save, submission, timeout, and scoring failures.
-- AI provider latency, error rate, and usage/cost where AI is enabled.
-- File upload failures and malware scan status.
-- Background job failures.
-- Audit log write failures.
-
-Do not log access tokens, passwords, full signed URLs, answer keys, or unnecessary personal data.
-
-## 24.2 Backups
-
-- Define database backup frequency and retention with the hosting plan.
-- Verify whether point-in-time recovery is available for the selected plan.
-- Back up storage metadata and understand the provider's object-recovery options.
-- Keep migration files and infrastructure configuration in source control.
-- Protect backups with restricted access.
-
-## 24.3 Recovery objectives
-
-Proposed initial pilot objectives for business discussion:
-
-- **RPO (Recovery Point Objective):** up to 24 hours of data loss, unless the institute requires a stricter target.
-- **RTO (Recovery Time Objective):** restore critical learning/assessment service within 8 hours, subject to the selected hosting and support plan.
-
-These are proposed targets, not provider guarantees. The team must test an actual backup restore and document the measured recovery time before production approval.
-
-## 24.4 Outage behaviour
-
-- AI outage must not block non-AI content or assessment workflows.
-- Notification-provider outage must not block an assessment.
-- Database outage must not result in false confirmation that an answer was saved.
-- The UI must distinguish saved answers from pending unsaved changes.
-- Do not switch to a default seed dataset in production when the cloud service is unavailable.
-- Use a tested recovery process rather than an unverified local-storage fallback for critical student records.
-
----
-
-# 25. Testing and Verification Strategy
-
-## 25.1 Testing layers
-
-### Unit tests
-
-- Scoring functions for correct, incorrect, unanswered, multiple accepted keys, all-options-accepted, and dropped-item policies.
+# 17. Testing and Acceptance Criteria
+
+A test suite passing is evidence only for the test cases it covers. It does not independently prove security, scalability, academic correctness, or production readiness.
+
+## 17.1 Unit tests
+
+- NEET-UG ordinary scoring.
+- NEET-UG multiple-correct adjudication.
+- NEET-UG all-options-correct handling.
+- NEET-UG invalid/dropped-question handling.
+- IMAT +1.5 / -0.4 / 0 scoring.
+- Maximum score calculations.
+- Option-count validation.
+- Exam version selection.
+- Section distribution validation.
+- Attempt deadline calculation.
 - Attempt state transitions.
-- Deadline calculations and timezone boundaries.
-- Cohort and role permission functions.
-- Input validation schemas.
-- Analytics calculations.
-- AI output schema validators.
+- Eligibility checks.
+- Analytics aggregation.
 
-### Integration tests
+## 17.2 Required scoring test vectors
 
-- Supabase Auth/profile provisioning.
-- RLS policy evaluation using Student, Faculty, Admin, and anonymous identities.
-- Resource upload and signed access.
-- Assessment version publication.
-- Answer save, submit, timeout, and scoring transaction.
-- Audit log insertion.
-- AI provider timeout and invalid JSON handling.
+### NEET-UG 2026 ordinary scoring
 
-### End-to-end tests
+For a 10-question practice test with 7 correct, 2 incorrect, and 1 unanswered:
 
-- Student enrolment and login.
-- Student opens only assigned resources.
-- Faculty creates and publishes an approved assessment.
-- Student takes an assessment and resumes after a refresh/network interruption when permitted.
-- Server submits a timed-out attempt.
-- Student receives result only after release.
-- Admin transfers a student and audit log is created.
+`7 × 4 + 2 × (-1) + 1 × 0 = 26`
 
-### Security tests
+### IMAT 2026/27 ordinary scoring
 
-- Student cannot read another student's records.
-- Student cannot access answer keys via table queries, API responses, RPC, views, or object metadata.
-- Student cannot modify score, deadline, role, or cohort through request tampering.
-- Faculty cannot modify records outside assigned scope.
-- Student cannot self-promote using signup metadata.
-- Service-role secrets are not present in frontend bundles or logs.
-- File upload rejects unsupported types and unsafe content.
-- Rate limits apply to sensitive APIs.
-- Session revocation works for suspended accounts.
+For a 10-question practice test with 6 correct, 3 incorrect, and 1 unanswered:
 
-### Performance and resilience tests
+`6 × 1.5 + 3 × (-0.4) + 1 × 0 = 7.8`
 
-- At least 100 concurrent users in the initial pilot scenario, or higher if the institute's peak requires it.
-- Simultaneous mock start.
-- Burst answer saves.
-- Concurrent submissions.
-- Repeated/idempotent submit calls.
-- Network loss and reconnect.
-- Database latency and connection saturation.
-- Restore from backup.
+These examples validate raw scoring mechanics only. They are not official predicted scores or admission thresholds.
 
-### Accessibility tests
+## 17.3 Integration tests
+
+- Authenticated user selects NEET.
+- Authenticated user selects IMAT.
+- User selects both and data remains separated.
+- Institution member accesses institute-owned resources.
+- Independent learner accesses only personally entitled and platform-public content.
+- Student cannot access another student's attempt.
+- Faculty cannot access an unassigned batch.
+- Cross-institution data is denied.
+- Student cannot retrieve answer keys before release.
+- AI draft requires human approval.
+- Question publication uses the right exam/version.
+- Answer saves persist after refresh.
+- Final submission creates one score result.
+- Regrading records an audit event.
+
+## 17.4 Exam-specific integration tests
+
+### NEET-UG
+
+- 180-question full-length configuration.
+- Physics = 45, Chemistry = 45, Biology = 90 for the 2026 version.
+- Four-option single-answer MCQ.
+- 180-minute full-length timer.
+- +4/-1/0 normal scoring.
+- Multiple-correct question adjudication.
+- All-options-correct adjudication.
+- Invalid/dropped-question adjudication.
+- Configured language version displayed correctly.
+- Practice assessment clearly distinguished from official pen-and-paper test.
+
+### IMAT
+
+- 60-question full-length configuration.
+- Five options per standard MCQ.
+- 100-minute timer.
+- 4/5/23/15/13 section allocation for the 2026/27 version.
+- +1.5/-0.4/0 scoring.
+- Reading/knowledge and logical reasoning sections remain distinct.
+- Physics/Mathematics combined question allocation is preserved.
+- English question content and explanations.
+- Historical question version remains reproducible.
+
+## 17.5 Security tests
+
+- User cannot change their role through editable metadata.
+- Student cannot change their `profile_id` in API calls to read another user's data.
+- Student cannot read another institution's resources.
+- Student cannot access an unassigned assessment by changing the UUID.
+- Faculty cannot edit another institution's content.
+- Client-submitted score is ignored/rejected.
+- Answer key is not returned by student endpoints.
+- Expired signed URL cannot be used after its validity window.
+- Suspended membership loses protected access.
+- Service-role and AI keys are never delivered to the browser.
+
+## 17.6 Reliability tests
+
+- Browser refresh during a test.
+- Temporary network interruption.
+- Repeated answer save.
+- Duplicate submission.
+- Submission at the deadline.
+- Submission after the deadline.
+- Concurrent tabs.
+- Server restart during an active attempt.
+- Question correction and regrading.
+- Database restore from backup.
+
+## 17.7 Accessibility tests
 
 - Keyboard-only navigation.
-- Screen-reader review of login, curriculum, assessment, and results.
-- Contrast and zoom checks.
-- Touch target and mobile layout checks.
-- Motion and focus behaviour.
+- Screen-reader labels.
+- Focus management.
+- Color contrast.
+- Text resize and zoom.
+- Reduced motion.
+- Accessible timer/status communication.
+- Approved extended-time settings.
 
-### AI evaluation tests — Phase 2
+## 17.8 Release gates
 
-- JSON/schema validity.
-- Correct number of options.
-- Answer-key references exist.
-- Duplicate question detection.
-- Syllabus/topic relevance.
-- Explanation quality.
-- Scientific accuracy against a faculty-validated evaluation set.
-- Hallucination and prompt-injection resistance.
-- Provider failover behaviour.
+Do not approve a production release until:
 
-## 25.2 NEET scoring acceptance examples
-
-For a normal 2026-aligned single-correct test:
-
-| Correct | Incorrect | Unanswered | Expected raw score |
-|---:|---:|---:|---:|
-| 10 | 0 | 0 | 40 |
-| 8 | 2 | 0 | 30 |
-| 8 | 0 | 2 | 32 |
-| 0 | 10 | 0 | -10 |
-| 0 | 0 | 10 | 0 |
-
-Also test:
-
-- Student attempts all questions and submits twice; only one final scoring result is created.
-- Answer save arrives after deadline; server applies the defined rejection/grace policy.
-- A question revision changes after an assessment is published; the existing assessment still references the old revision.
-- A question is invalidated after attempts; a controlled rescore is run and all affected attempt changes are auditable.
-
-## 25.3 Evidence required for test completion
-
-For each release, retain:
-
-- Test command and commit hash.
-- Unit and integration test reports.
-- End-to-end test report.
-- RLS test report for every role.
-- Load-test results and tested concurrency.
-- Security scan and penetration-test findings, where performed.
-- Accessibility findings.
-- Backup-restore evidence.
-- Known issue and risk register.
-
-A reported 100% pass rate in an earlier document is not independently verified by this specification. Existing test claims should be accepted only after reviewing the actual test code, CI logs, environment, and coverage. Passing functional tests does not by itself establish production readiness.
+- No unresolved critical/high security issues remain.
+- RLS and tenant isolation tests pass.
+- NEET and IMAT scoring test vectors pass.
+- Exam configurations have academic review.
+- AI drafts cannot auto-publish.
+- Assessment recovery and duplicate-submission tests pass.
+- Backup restoration is tested.
+- Monitoring and incident response are active.
+- Privacy and legal review appropriate to the deployment has been completed.
 
 ---
 
-# 26. Deployment and Environment Strategy
+# 18. Development Roadmap
 
-## 26.1 Environments
+## Phase 0 — Product validation and specification
 
-Maintain separate environments:
+**Goal:** Confirm learner problems and the first delivery scope.
 
-- Local development.
-- Automated test/CI.
-- Staging/pre-production.
-- Production.
+Tasks:
 
-Do not use real student records in development or test unless explicitly approved and protected. Use synthetic test data.
+- Interview NEET aspirants.
+- Interview IMAT aspirants, including learners preparing in English for Italian university admissions.
+- Interview a small number of coaching institutes or tutors.
+- Validate independent learner and institute-enrolled workflows.
+- Confirm the first NEET and IMAT exam-year baselines.
+- Review content licensing and ownership.
+- Define MVP acceptance criteria.
+- Prototype core student flows.
 
-## 26.2 Environment configuration
+Deliverable: validated product scope, user journeys, and examination configuration baseline.
 
-Example variable names (values must be kept in a secret manager or deployment environment):
+## Phase 1 — Secure learner foundation
 
-```text
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-API_BASE_URL=
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-DATABASE_URL=
-AI_PROVIDER=
-AI_MODEL=
-AI_API_KEY=
-CORS_ALLOWED_ORIGINS=
-APP_ENV=
-LOG_LEVEL=
-```
+**Goal:** Build a reliable platform foundation.
 
-Rules:
+Build:
 
-- `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, and `AI_API_KEY` must never be exposed in browser bundles.
-- Only the publishable/anonymous key intended for browser use may be included in frontend configuration, and only with correct RLS policies.
-- Do not commit `.env` files containing secrets.
-- Rotate secrets after suspected exposure.
-- Keep different credentials for each environment.
-
-## 26.3 CI/CD release gates
-
-A production deployment should require:
-
-1. Code review approval.
-2. Type checking and linting.
-3. Unit and integration test success.
-4. RLS/security test success.
-5. Database migration review.
-6. Dependency vulnerability scan.
-7. Frontend build success.
-8. Staging smoke test.
-9. Backup or rollback plan.
-10. Release notes and monitored deployment.
-
-## 26.4 Database migrations
-
-- Use migration files for schema changes.
-- Never make untracked production-only schema edits.
-- Review destructive changes and data backfills.
-- Test migrations on a staging copy.
-- Preserve compatibility during rolling deployments where frontend/backend versions may overlap.
-- Document rollback or forward-fix steps.
-
----
-
-# 27. Implementation Roadmap
-
-## Phase 0 — Discovery and foundation
-
-**Goal:** Confirm the pilot institute's actual workflow and produce an approved baseline.
-
-Deliverables:
-
-- Interview administrator, faculty, students, and operations staff.
-- Map existing enrolment, resource, and test workflows.
-- Confirm the first cohort structure and faculty responsibilities.
-- Confirm legal and content rights requirements.
-- Verify the currently applicable official NEET syllabus and examination information.
-- Establish UX wireframes and design tokens.
-- Create repository, CI, environments, and database migrations.
-- Approve threat model, permission matrix, and data classification.
+- Authentication and profiles.
+- Exam-track selection.
+- Independent learner access.
+- Institute membership and invitations.
+- NEET/IMAT exam version model.
+- Separate syllabus trees.
+- Course, batch, and enrollment management.
+- Basic student dashboard.
+- Resource upload and private delivery.
+- Basic faculty/admin screens.
+- RLS and security tests.
 
 Exit criteria:
 
-- Product scope approved by the institute.
-- NEET blueprint source is documented and approved.
-- Role and access model reviewed.
-- Core data model and migrations reviewed.
+- Students can select NEET, IMAT, or both.
+- Data and access are separated by track.
+- Students see only eligible resources.
+- Institution boundaries are enforced.
+- Roles cannot be escalated by the browser.
 
-## Phase 1 — Secure core LMS MVP
+## Phase 2 — Question bank and assessment engine
 
-**Goal:** Deliver a usable learning and assessment platform without AI dependency.
+**Goal:** Deliver accurate exam-pattern practice.
 
-Deliverables:
+Build:
 
-- Authentication and profile management.
-- Trusted role assignment.
-- Student registration approval and enrolment.
-- Academic year, programme, and cohort management.
-- NEET curriculum hierarchy and blueprint versioning.
-- Faculty assignment management.
-- Private resource upload, review, and delivery.
-- Manual question-bank authoring and revision history.
-- Assessment builder and publication workflow.
+- Versioned question bank.
+- Question review and approval.
+- NEET-UG assessment configuration.
+- IMAT assessment configuration.
+- Assessment builder and scheduling.
 - Timed assessment runner.
-- Backend answer saving and scoring.
-- Result release and student performance dashboard.
-- Basic faculty and administrator dashboards.
-- Announcements and audit logs.
+- Server-backed autosave.
+- Server deadline enforcement.
+- Server-side scoring.
+- Result and solution review.
+- Basic exam-specific analytics.
 
 Exit criteria:
 
-- Student/faculty/admin access tests pass.
-- Student cannot read answer keys.
-- Assessment score is calculated only by the backend.
-- Attempt submission is idempotent.
-- Basic load and recovery tests pass.
-- Pilot users can complete core workflows without staff workarounds.
+- NEET test configuration follows the selected official year.
+- IMAT test configuration follows the selected official year.
+- Separate scoring test suites pass.
+- Attempts are recoverable and finalization is idempotent.
+- Historical attempts remain reproducible.
 
-## Phase 2 — AI and academic intelligence
+## Phase 3 — AI and revision intelligence
 
-**Goal:** Reduce faculty effort while improving student feedback.
+**Goal:** Improve faculty and learner productivity.
 
-Deliverables:
+Build:
 
-- AI provider adapter and generation-job queue.
-- Faculty AI MCQ drafting assistant.
-- Schema validation, duplicate checks, and reviewer workflow.
-- Approved-resource RAG academic tutor.
-- Student support FAQ assistant, if operationally useful.
-- Better chapter/topic analytics.
-- Scheduled announcements and calendar improvements.
-- Optional document management only after data-minimization and legal review.
+- AI question drafting with separate NEET/IMAT prompts.
+- Structured output validation.
+- Faculty approval workflow.
+- AI evaluation dataset and quality reporting.
+- Student AI study assistant grounded in approved resources.
+- Topic-level weakness detection.
+- Transparent revision recommendations.
+- Study plan support.
 
 Exit criteria:
 
-- AI drafts cannot be published without faculty approval.
-- Academic evaluation set meets a faculty-approved acceptance threshold.
-- Provider outage does not affect core LMS functions.
-- AI data handling is reviewed and documented.
+- AI drafts cannot publish without human approval.
+- Model/provider failure does not corrupt academic records.
+- Student AI does not expose active answer keys.
+- Recommendations show their underlying evidence.
 
-## Phase 3 — Expansion
+## Phase 4 — Pilot and operational hardening
 
-**Goal:** Expand only after the NEET pilot proves operational value.
+**Goal:** Validate the system with real aspirants and at least one participating institute if available.
 
-Possible deliverables:
+Build/refine:
 
-- Additional exam blueprints (IMAT, UCAT, MCAT) with independent academic validation.
-- Moderated student discussion forum.
-- Optional payment gateway integration.
-- Additional localization.
-- More advanced reporting.
-- Carefully designed offline learning packages.
-- Multi-institute architecture and tenancy isolation, if business demand is demonstrated.
+- Accessibility.
+- Notification delivery.
+- Performance optimization.
+- Backup and disaster recovery.
+- Security assessment.
+- Support workflows.
+- Content governance.
+- User onboarding.
+- Operational monitoring.
+- Pilot feedback and product iteration.
 
-Every new exam requires its own blueprint, scoring tests, syllabus mapping, academic review, and official source verification.
+Exit criteria:
 
----
+- Critical student workflows are reliable.
+- Security and privacy controls have been reviewed.
+- Measured performance meets the agreed pilot targets.
+- Support and recovery processes are documented.
 
-# 28. Risks and Mitigations
+## Phase 5 — Growth and monetization
 
-| Risk | Impact | Mitigation | Priority |
-|---|---|---|---|
-| User-controlled role assignment | Unauthorized Admin/Faculty access | Trusted role table and server-side assignment only | Critical |
-| Frontend-authoritative scoring | Manipulated scores and invalid results | Server-side scoring and protected answer keys | Critical |
-| Incorrect RLS policies | Cross-student or cross-cohort data exposure | Per-role RLS tests and negative access tests | Critical |
-| AI-generated academic errors | Students learn incorrect information | Faculty review and evaluation suite | High |
-| Unverified exam pattern | Wrong timing, syllabus, or scoring | Versioned blueprint sourced from current official bulletin | High |
-| Overstated DRM | False security expectations | Watermarking, private storage, access logging, honest limitations | High |
-| Excessive document collection | Privacy and compliance risk | Data minimization and optional document module | High |
-| Large simultaneous test load | Slow or failed assessment | Load testing, query optimization, connection limits | High |
-| Network interruptions | Lost answers or incomplete attempts | Idempotent saves, server state, recovery tests | High |
-| Question revision changes history | Incorrect old results | Immutable revisions and assessment snapshots | High |
-| Unlicensed learning content | Legal and takedown risk | Rights review and source metadata | High |
-| External AI outage | Faculty workflow interruption | Provider adapter and manual fallback | Medium |
-| Multi-exam scope creep | Delayed MVP and inaccurate formats | NEET-first roadmap | High |
-| Admin impersonation misuse | Privacy breach and untraceable actions | Read-only support preview with reason and audit | High |
-| Backup not restorable | Permanent loss of important records | Scheduled restore drills | High |
+Build only when validated:
 
----
+- Student subscription plans.
+- Institute plans.
+- Payment integration.
+- Advanced reporting.
+- Multiple institute onboarding.
+- Community discussions.
+- Native mobile client if justified.
+- Additional content partnerships.
 
-# 29. Success Metrics and Pilot Evaluation
-
-Collect a baseline before the pilot. Do not invent improvement percentages after launch.
-
-## 29.1 Product adoption
-
-- Weekly active students.
-- Percentage of enrolled students who sign in.
-- Assessment participation rate.
-- Resource views by subject/chapter.
-- Percentage of faculty using the assessment builder.
-
-## 29.2 Operational efficiency
-
-- Median faculty time to create and publish a test.
-- Time required to assign a new student to the correct cohort.
-- Number of cohort-access mistakes reported.
-- Time required to publish an updated resource.
-- Support tickets per active student.
-
-## 29.3 Learning support
-
-- Assessment completion rate.
-- Score trend by assessment type and syllabus area.
-- Repeat errors by topic.
-- Resource usage before/after practice tests.
-- Faculty-reported usefulness of weak-topic analysis.
-
-Learning outcome improvements must be interpreted carefully. Differences may reflect cohort mix, teaching quality, study time, assessment difficulty, and other factors. Do not attribute all score movement to the application.
-
-## 29.4 Reliability and safety
-
-- Assessment start success rate.
-- Answer-save success rate.
-- Submission and scoring error rate.
-- Duplicate or conflicting attempt count.
-- Unauthorized access attempts blocked.
-- Critical security findings open/closed.
-- Backup restore success.
-- AI question rejection/correction rate after faculty review, once AI is enabled.
-
-## 29.5 Pilot evaluation
-
-At the end of the pilot:
-
-1. Compare the measured workflow with the baseline.
-2. Interview students, faculty, and administrators.
-3. Review incidents and support requests.
-4. Verify that the system reduced rather than shifted manual work.
-5. Decide which features should be improved, removed, or expanded.
-6. Do not add another exam track until the NEET workflow is stable and the next exam's official format has been reviewed.
+**No other examination track is in this roadmap.** Future expansion beyond NEET-UG and IMAT would require a separate product-scope decision.
 
 ---
 
-# 30. Definition of Done and Production Exit Criteria
+# 19. MVP Definition
 
-A feature is not complete merely because its screen renders. It is complete when its functional behaviour, permissions, failure states, accessibility, and tests are covered.
+## 19.1 Must-have MVP
 
-## 30.1 MVP production checklist
+- User registration/login.
+- NEET-UG and IMAT track selection.
+- Separate student dashboards.
+- Exam-year configuration baseline.
+- Separate syllabus trees.
+- Student profile and progress.
+- Resource library.
+- Faculty-managed question bank.
+- Four-option NEET-UG question support.
+- Five-option IMAT question support.
+- NEET-UG scoring configuration.
+- IMAT scoring configuration.
+- Topic-wise and full-length tests.
+- Timed assessment runner.
+- Server-side answer save and scoring.
+- Result review.
+- Basic analytics.
+- Faculty/admin management.
+- RLS and access-control tests.
 
-### Product and academic
+## 19.2 Should-have
 
-- [ ] Initial institute and target user workflows approved.
-- [ ] Applicable NEET-UG syllabus and exam blueprint source recorded.
-- [ ] Subject, chapter, and topic mapping approved by faculty.
-- [ ] Assessment rules reviewed for the applicable exam year.
-- [ ] Content ownership/permission process documented.
+- AI question drafting with approval.
+- Academic calendar.
+- Announcements.
+- Study plan and topic revision states.
+- Printable NEET OMR practice sheet.
+- Better IMAT section/time analytics.
+- Multilingual NEET content where reviewed translations are available.
 
-### Authentication and authorization
+## 19.3 Later
 
-- [ ] Public signup cannot assign privileged roles.
-- [ ] Admin role assignment requires trusted authorization.
-- [ ] Student, Faculty, and Admin permissions are tested at API/database level.
-- [ ] RLS tests include positive and negative cases.
-- [ ] Suspended/revoked users lose access according to policy.
-- [ ] Service-role and database secrets are not exposed to the browser.
+- Student AI study assistant.
+- Advanced recommendation engine.
+- Subscription and payment system.
+- Community discussions.
+- Notification integrations.
+- Advanced institute reporting.
+- Multiple institute self-service onboarding.
+- Optional document verification only if justified.
 
-### Assessment integrity
+## 19.4 Explicitly excluded from MVP
 
-- [ ] Correct answer keys are unavailable to an active student attempt.
-- [ ] Server creates attempt start/deadline timestamps.
-- [ ] Server validates answer ownership and deadline.
-- [ ] Answer writes are idempotent.
-- [ ] Submission is idempotent and transactional.
-- [ ] Score is calculated on the server.
-- [ ] Score adjustment is versioned and audited.
-- [ ] Published question and assessment revisions are immutable.
-- [ ] Timeout and network-recovery tests pass.
-
-### Resource and privacy protection
-
-- [ ] Restricted resources are in private storage.
-- [ ] Access is checked before issuing a file authorization.
-- [ ] Upload validation and scan workflow are implemented.
-- [ ] Retention and deletion policy is documented.
-- [ ] Optional document collection has a defined purpose and limited access.
-- [ ] Privacy notice and consent/notice workflow has been reviewed.
-
-### Reliability and operations
-
-- [ ] Agreed concurrency load test passes.
-- [ ] Error monitoring and alerting are configured.
-- [ ] Backup restore test passes.
-- [ ] Recovery objectives and operational owner are documented.
-- [ ] Production migrations are reviewed and reproducible.
-- [ ] Runbook covers common failures.
-
-### User experience
-
-- [ ] Key user journeys work on target mobile and desktop browsers.
-- [ ] Keyboard and screen-reader checks are completed.
-- [ ] Assessment states are clear and understandable.
-- [ ] Network and save status are visible.
-- [ ] WCAG 2.2 AA target has been assessed; no unsupported conformance claim is made.
-
-### Release governance
-
-- [ ] Automated tests and security checks pass.
-- [ ] Known issues are documented and accepted by the owner.
-- [ ] Support contact and incident escalation process exist.
-- [ ] User training and release notes are prepared.
-- [ ] Institute owner accepts the pilot release.
-
-## 30.2 What production-ready means here
-
-The platform may be described as production-ready for the defined pilot only after the above criteria have passed with evidence from the intended deployment environment. A successful local demo, feature checklist, or unit-test pass rate is not enough.
+- UCAT, MCAT, and other examinations.
+- Official NTA/MUR registration or counselling.
+- Admission guarantee or rank guarantee.
+- Unverified official-score conversion.
+- Unreviewed AI publishing.
+- Screenshot-proof DRM claims.
+- Full offline official exam simulation.
+- Unnecessary government identity document collection.
+- Premature microservices.
 
 ---
 
-# 31. Assumptions and Decisions to Revisit
+# 20. Pilot Success Metrics
 
-The following items require confirmation with the pilot institute. They do not prevent defining the product direction, but they affect configuration and delivery effort.
+Measure the product's real learning and operational value.
 
-| Item | Current assumption | Revisit when |
-|---|---|---|
-| Institute size | One institute and an initial pilot cohort | Actual enrolment and peak concurrency are known. |
-| Cohort model | Students belong to an active cohort at a time; history is retained | Institute permits concurrent programmes or cross-cohort access. |
-| Registration | Invitation or admin-approved student registration | Institute chooses open self-registration. |
-| Staff accounts | Admin-provisioned | Faculty invitation workflow is agreed. |
-| NEET blueprint | 2026 official bulletin is a reference fixture | Official next-cycle bulletin/syllabus is published and reviewed. |
-| Result release | Institute-configured | Faculty requests instant or delayed solutions. |
-| Resource access | Cohort-based | Institute requires paid subscriptions or finer permissions. |
-| Payments | Out of MVP | Commercial model requires fee collection. |
-| Documents | Out of MVP unless justified | Institute documents a lawful necessity and retention rule. |
-| AI provider | Provider adapter; initial provider selected after terms review | Model quality, latency, cost, and data terms are evaluated. |
-| Language | English initially | Hindi or other supported language is prioritized. |
-| Offline mode | Not in MVP | User research demonstrates a need and safe synchronization is designed. |
-| Multi-institute SaaS | Future possibility, not current product commitment | Business owner validates demand and tenancy economics. |
-
----
-
-# 32. Glossary
-
-| Term | Meaning |
+| Metric | What it measures |
 |---|---|
-| LMS | Learning Management System. |
-| NEET-UG | National Eligibility-cum-Entrance Test for undergraduate medical education in India. |
-| NTA | National Testing Agency. |
-| NMC | National Medical Commission. |
-| DPP | Daily Practice Problems. |
-| PYQ | Previous Year Questions. |
-| Cohort/Batch | A group of students following a defined programme or schedule. |
-| Exam blueprint | Versioned definition of an exam cycle's subjects/sections, question counts, timing, and scoring policies. |
-| Question revision | An immutable version of a question and its associated content. |
-| Assessment version | An immutable published configuration of an assessment and its selected question revisions. |
-| Attempt | One student's execution of a specific assessment version. |
-| RLS | Row-Level Security; database rules restricting which rows a database user can access. |
-| RBAC | Role-Based Access Control. |
-| ABAC | Attribute-Based Access Control; permissions depend on attributes such as cohort membership or assignment. |
-| RAG | Retrieval-Augmented Generation; an AI system retrieves approved source material before generating an answer. |
-| DRM | Digital Rights Management. In this project, the preferred description is realistic content protection and anti-piracy deterrence, not perfect browser-level prevention. |
-| RPO | Recovery Point Objective; the acceptable amount of data loss measured in time. |
-| RTO | Recovery Time Objective; the acceptable time to restore service. |
+| Learners selecting and activating an exam track | Onboarding clarity |
+| Learner weekly active usage by track | Engagement |
+| Study-topic completion | Curriculum usefulness |
+| Mock test completion rate | Assessment usability |
+| Answer-save failure rate | Assessment reliability |
+| Duplicate/inconsistent attempt rate | Attempt integrity |
+| Faculty time to prepare a test | Authoring efficiency |
+| Percentage of AI drafts accepted after review | AI usefulness, not correctness by itself |
+| Question correction/rejection rate | Academic quality |
+| Topic-level analytics usefulness | Revision support |
+| Support requests per active learner | Usability and operations |
+| Cross-track access test results | Security correctness |
+
+Set numerical targets only after pilot baseline measurement. Do not present invented targets as evidence of impact.
 
 ---
 
-# 33. Official and Technical References
+# 21. Risks and Mitigations
 
-The following sources support the examination, security, privacy, and accessibility decisions in this document. Official rules can change; the owner must verify the source again when activating a new examination cycle or making a compliance decision.
+| Risk | Impact | Mitigation |
+|---|---|---|
+| NEET pattern changes | Incorrect practice tests | Year-versioned configuration and official-source review |
+| IMAT pattern changes | Incorrect practice tests | MUR decree verification for every cycle |
+| NEET dropped/multiple-correct question handling is simplified | Incorrect mock scores | Explicit adjudication policies and test vectors |
+| IMAT content is mapped to the wrong section | Misleading analytics | Exam-specific taxonomy and faculty review |
+| User role escalation | Unauthorized access | Trusted membership records, RLS, server checks |
+| Cross-student or cross-institute data leakage | Serious privacy incident | Tenant-aware schema and security testing |
+| AI answer-key error | Academic harm | Mandatory faculty review and audit |
+| Forged browser score | Assessment fraud | Server-authoritative scoring |
+| Network loss during an assessment | Lost work / inconsistent result | Server-backed autosave and recovery |
+| Content copyright infringement | Legal exposure | Source/permission records and content governance |
+| Screenshot copying | Content leakage | Realistic access control and watermark deterrence |
+| Personal data breach | Legal and reputational impact | Data minimization and incident response |
+| Provider outage | Interrupted service | Bounded retries and graceful degradation |
+| Feature overload | Delayed delivery | NEET/IMAT MVP and phased roadmap |
 
-## 33.1 NEET-UG and examination format
+---
 
-1. **National Testing Agency — NEET-UG 2026 Information Bulletin.** Official source for the 2026 subject structure, question count, duration, marking rules, special question handling, and pen-and-paper mode.  
-   https://cdnbbsr.s3waas.gov.in/s37bc1ec1d9c3426357e69acd5bf320061/uploads/2026/02/202602231394640855.pdf
-2. **NTA NEET-UG official website.** Use for current notices, future-year information bulletins, syllabus documents, and updates.  
+# 22. Decisions Required Before Production
+
+Record these decisions with an owner and date:
+
+1. Will the first release support both independent aspirants and institute-enrolled aspirants, or begin with one acquisition route?
+2. Which exact NEET-UG year is the launch baseline?
+3. Which exact IMAT academic year is the launch baseline?
+4. Who verifies and approves annual exam configuration updates?
+5. Will students taking both tracks have one combined account with separate exam profiles?
+6. Which NEET languages will be available at launch?
+7. Who reviews translated scientific content?
+8. Will mock tests be online-only initially, or include printable NEET OMR practice?
+9. Which content is platform-owned, institute-owned, or licensed from external publishers?
+10. Who may approve and publish questions?
+11. When are answers and explanations released?
+12. What is the network reconnection and late-submission policy?
+13. What accessibility accommodations can be configured by the institute?
+14. What learner and peak concurrent test-taker volumes should be used for pilot load testing?
+15. What data is essential for account and learning workflows?
+16. What retention periods apply to attempts, resources, logs, and optional documents?
+17. Will subscriptions or institute billing be included after the pilot?
+
+Do not silently assume answers.
+
+---
+
+# 23. Official References and Verification Notes
+
+The following sources were checked when preparing this version. Exam-specific statements in this document use the 2026 published materials as a reference baseline.
+
+## 23.1 NEET-UG official sources
+
+1. **NTA — NEET-UG official portal**  
    https://neet.nta.nic.in/
-3. **UCAT Consortium — Test Format and Scoring.** Evidence that UCAT uses separately timed sections, scaled scores, Situational Judgement bands, and no negative marking for incorrect responses.  
-   https://www.ucat.ac.uk/about-ucat/test-format-and-scoring/
-4. **AAMC — How is the MCAT Exam Scored?** Evidence that MCAT uses section-scaled scores and does not impose an additional penalty for wrong answers.  
-   https://students-residents.aamc.org/mcat-scores/how-mcat-exam-scored
 
-## 33.2 Supabase and PostgreSQL security
+2. **NTA — NEET-UG 2026 Information Bulletin**  
+   https://cdnbbsr.s3waas.gov.in/s37bc1ec1d9c3426357e69acd5bf320061/uploads/2026/02/202602231394640855.pdf
 
-5. **Supabase — Row Level Security.** Guidance on `auth.uid()`, user-editable `raw_user_meta_data`, trusted `raw_app_meta_data`, and policy design.  
-   https://supabase.com/docs/guides/database/postgres/row-level-security
-6. **Supabase — Database Functions.** Guidance on `SECURITY INVOKER`/`SECURITY DEFINER`, empty `search_path`, schema qualification, and execution grants.  
-   https://supabase.com/docs/guides/database/functions
-7. **Supabase — Storage Access Control.** Guidance on policies for `storage.objects` and service-key bypass considerations.  
-   https://supabase.com/docs/guides/storage/security/access-control
-8. **Supabase — Storage Buckets.** Explanation of private bucket access and time-limited signed URLs.  
-   https://supabase.com/docs/guides/storage/buckets/fundamentals
+   Relevant 2026 bulletin material includes:
+   - Examination scheme and syllabus reference.
+   - 180 compulsory questions and 180 minutes.
+   - Physics 45, Chemistry 45, Biology 90.
+   - Four-option MCQ pattern.
+   - +4/-1/0 normal marking.
+   - Multiple-correct, all-options-correct, and dropped/invalid question treatment.
+   - Pen-and-paper mode.
+   - Listed paper languages.
+   - Accessibility / compensatory time guidance.
 
-## 33.3 Security verification
+3. **NTA — NEET-UG 2026 syllabus page**  
+   https://neet.nta.nic.in/document/syllabus-for-neet-ug-2026-examination/
 
-9. **OWASP Application Security Verification Standard (ASVS).** Structured security requirements for application design, implementation, and verification.  
-   https://asvs.owasp.org/
-10. **OWASP Web Security Testing Guide.** Guidance for building a security testing process and reviewing authentication, authorization, session management, data protection, and related controls.  
-    https://owasp.org/www-project-web-security-testing-guide/
+4. **NTA — NEET-UG 2026 document archive**  
+   https://neet.nta.nic.in/documents/page/4/
 
-## 33.4 Privacy and accessibility
+## 23.2 IMAT official sources
 
-11. **Government of India, Gazette of India — Digital Personal Data Protection Rules, 2025.** Official notification dated 13 November 2025 with phased commencement provisions.  
-    https://www.meity.gov.in/static/uploads/2025/11/53450e6e5dc0bfa85ebd78686cadad39.pdf
-12. **W3C — Web Content Accessibility Guidelines (WCAG) 2.2.** Accessibility requirements for web content and user journeys.  
-    https://www.w3.org/TR/WCAG22/
+5. **MUR — Ministerial Decree No. 1005 of 6 August 2026**  
+   https://www.mur.gov.it/it/atti-e-normativa/decreto-ministeriale-n-1005-del-06-08-2026
+
+   This decree defines the 2026/2027 English-language admission test modalities and contents and links its annexes.
+
+6. **MUR — Official 2026 accesso programmato portal**  
+   https://accessoprogrammato.mur.gov.it/2026/
+
+7. **MUR — Official IMAT 2026 information, calendar, and published test paper**  
+   https://accessoprogrammato.mur.gov.it/2026/index.php?pag=IMT
+
+8. **MUR — Published IMAT 2026 question paper**  
+   https://accessoprogrammato.mur.gov.it/compiti/CompitoInglese2026.pdf
+
+   The published paper contains 60 numbered questions. Its section headings and question numbering support the 2026 allocation of 4 reading/knowledge, 5 logical reasoning, 23 Biology, 15 Chemistry, and 13 Physics/Mathematics questions. The MUR portal states that the published version has option A as the correct answer for all questions.
+
+The official MUR decree is the authoritative source for the applicable annual rules. Do not use a coaching website or an old test-preparation page as a substitute for a new annual decree.
+
+## 23.3 Security sources
+
+9. **Supabase — Auth users and metadata**  
+   https://supabase.com/docs/guides/auth/users
+
+10. **Supabase — Row Level Security**  
+    https://supabase.com/docs/guides/database/postgres/row-level-security
+
+11. **Supabase — Storage access control**  
+    https://supabase.com/docs/guides/storage/security/access-control
+
+## 23.4 Privacy sources
+
+12. **India Code — Digital Personal Data Protection Act, 2023**  
+    https://www.indiacode.nic.in/bitstream/123456789/22037/1/a2023-22.pdf
+
+13. **MeitY — Digital Personal Data Protection Rules, 2025**  
+    https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa
+
+14. **Government of India — DPDP Act commencement notification**  
+    https://egazette.gov.in/WriteReadData/2025/267647.pdf
+
+The DPDP Act and Rules have phased commencement provisions. Legal applicability must be assessed at deployment time. This specification is not legal advice or a compliance certification.
 
 ---
 
-# 34. Change Log
+# 24. Final Engineering Recommendation
 
-## Version 2.0 — 4 November 2026
+The correct project is:
 
-This revision finalizes and corrects the product direction based on the original project overview and current official/technical references.
+> **A specialized dual-track preparation platform for NEET-UG and IMAT aspirants, with independent learner and institute-enabled workflows. It provides the appropriate syllabus for each exam year, reviewed resources and questions, exam-specific practice and mock tests, reliable backend scoring, detailed performance analytics, and carefully governed AI study support.**
 
-Major changes:
+The core design decisions are:
 
-1. Narrowed initial delivery to a single-institute NEET-UG LMS; other exams are future independently configured tracks.
-2. Corrected the curriculum from a universal seven-subject structure to a NEET-UG Physics, Chemistry, and Biology structure, with year-specific syllabus mapping.
-3. Documented the official NEET-UG 2026 reference format and clarified that the 2026 official examination was pen-and-paper; the browser runner is for institute practice/mock tests.
-4. Removed any claim that browser JavaScript can guarantee screenshot or screen-recording prevention.
-5. Replaced the original `raw_user_meta_data` role-assignment approach with trusted server-side role assignment.
-6. Made backend/database scoring authoritative and added protected answer-key requirements.
-7. Added immutable question and assessment versioning, answer integrity constraints, idempotent submissions, and controlled score corrections.
-8. Made faculty approval mandatory for AI-generated questions and added validation, provenance, prompt-injection, and provider-failure controls.
-9. Replaced unrestricted administrator impersonation with a read-only, reasoned, audited support-preview concept.
-10. Reworked document collection to be optional and data-minimized; medical fitness documents are not required by default.
-11. Added a more complete relational model for enrolments, cohorts, exam blueprints, scoring profiles, resources, questions, assessment attempts, analytics, announcements, and audit events.
-12. Added API boundaries, RLS testing, privacy, accessibility, performance targets, backup/recovery, testing evidence, roadmap, risk register, and production exit criteria.
-13. Removed unsupported claims that passing feature tests alone proves production readiness.
+1. The product supports **NEET-UG and IMAT only**.
+2. The aspirant is the primary user; faculty and coaching institutes are supporting users.
+3. A learner may prepare for NEET-UG, IMAT, or both.
+4. Each examination has its own year-versioned syllabus, section structure, option count, test duration, scoring, language, and assessment behavior.
+5. NEET-UG and IMAT results and analytics remain separate.
+6. Exam rules are verified against the current NTA/NMC bulletin or MUR decree before a new cycle is activated.
+7. The browser is not trusted for roles, eligibility, deadlines, answer keys, or scores.
+8. Every AI-generated academic item remains a draft until human review and approval.
+9. Content protection is described honestly as access control and piracy deterrence.
+10. Privacy, accessibility, recovery, and testing are built into the product rather than treated as late additions.
 
-## Version 1.0 — Original concept
-
-The earlier project overview described a broader multi-exam medical LMS with seven subjects, dual AI systems, advanced browser anti-capture controls, batch isolation, assessment analytics, document verification, community features, and operational administration. Those ideas are retained where appropriate but reorganized, narrowed, and corrected in this specification.
+**Final verdict:** This is a feasible and worthwhile software engineering project. It has a clearer product identity when positioned specifically around NEET-UG and IMAT rather than as a general medical-exam LMS. Its success will depend on exam accuracy, trustworthy scoring, useful revision feedback, content quality, and reliable student workflows—not simply on the number of features.
 
 ---
 
-**End of document.**
+# 25. Document Maintenance and Change Control
+
+Whenever this specification changes:
+
+- Increment the document version.
+- Record the date and reason.
+- Identify affected exam configurations, database migrations, APIs, and tests.
+- Re-check official NTA/NMC or MUR sources for exam changes.
+- Obtain academic review for syllabus and question changes.
+- Preserve historical question, syllabus, assessment, and scoring versions.
+- Keep proposed requirements separate from implemented features.
+- Record open decisions rather than silently filling gaps.
+
+
