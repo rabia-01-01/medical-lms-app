@@ -1,4 +1,4 @@
-import { QuestionDraftRequest } from '../types';
+import { QuestionDraftRequest } from "../types";
 
 /**
  * IMAT Prompt Engineering:
@@ -34,14 +34,14 @@ CRITICAL EXAMINATION RULES FOR IMAT:
 
   const groundingText = request.referenceMaterial
     ? `\nREFERENCE GROUNDING MATERIAL:\n"""\n${request.referenceMaterial}\n"""\n`
-    : '';
+    : "";
 
   const userPrompt = `Generate ${count} original, high-quality IMAT practice question(s) according to the following specifications:
 
 - Exam Track: IMAT (${examYear})
 - Section / Subject: ${request.subject}
 - Topic: ${request.topic}
-${request.subtopic ? `- Subtopic: ${request.subtopic}\n` : ''}- Difficulty Level: ${request.difficulty}
+${request.subtopic ? `- Subtopic: ${request.subtopic}\n` : ""}- Difficulty Level: ${request.difficulty}
 - Language: en (English only)
 ${groundingText}
 REQUIREMENTS:
@@ -60,7 +60,7 @@ OUTPUT SCHEMA (JSON root object):
       "difficulty": "${request.difficulty}",
       "subject": "${request.subject}",
       "topic": "${request.topic}",
-      ${request.subtopic ? `"subtopic": "${request.subtopic}",` : ''}
+      ${request.subtopic ? `"subtopic": "${request.subtopic}",` : ""}
       "options": [
         { "optionKey": "A", "optionText": "Option text A", "isCorrect": false },
         { "optionKey": "B", "optionText": "Option text B", "isCorrect": false },
@@ -77,4 +77,3 @@ OUTPUT SCHEMA (JSON root object):
 
   return { systemPrompt, userPrompt };
 }
-

@@ -1,4 +1,4 @@
-import { QuestionDraftRequest, GeneratedQuestionBatch } from './types';
+import { QuestionDraftRequest, GeneratedQuestionBatch } from "./types";
 
 /**
  * Reusable AI Question Provider Interface
@@ -15,4 +15,3 @@ export interface AIQuestionProvider {
    */
   generateDraftQuestions(request: QuestionDraftRequest): Promise<GeneratedQuestionBatch>;
 }
-

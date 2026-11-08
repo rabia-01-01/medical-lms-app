@@ -18,10 +18,41 @@
     "optionsCount": 4
   },
   "sections": [
-    { "code": "NEET_PHYSICS", "name": "Physics", "displayOrder": 1, "questionCount": 45, "optionCount": 4 },
-    { "code": "NEET_CHEMISTRY", "name": "Chemistry", "displayOrder": 2, "questionCount": 45, "optionCount": 4 },
-    { "code": "NEET_BIOLOGY", "name": "Biology (Botany & Zoology)", "displayOrder": 3, "questionCount": 90, "optionCount": 4 }
+    {
+      "code": "NEET_PHYSICS",
+      "name": "Physics",
+      "displayOrder": 1,
+      "questionCount": 45,
+      "optionCount": 4
+    },
+    {
+      "code": "NEET_CHEMISTRY",
+      "name": "Chemistry",
+      "displayOrder": 2,
+      "questionCount": 45,
+      "optionCount": 4
+    },
+    {
+      "code": "NEET_BIOLOGY",
+      "name": "Biology (Botany & Zoology)",
+      "displayOrder": 3,
+      "questionCount": 90,
+      "optionCount": 4
+    }
   ],
-  "languages": ["English", "Hindi", "Assamese", "Bengali", "Gujarati", "Kannada", "Malayalam", "Marathi", "Odia", "Punjabi", "Tamil", "Telugu", "Urdu"]
+  "languages": [
+    "English",
+    "Hindi",
+    "Assamese",
+    "Bengali",
+    "Gujarati",
+    "Kannada",
+    "Malayalam",
+    "Marathi",
+    "Odia",
+    "Punjabi",
+    "Tamil",
+    "Telugu",
+    "Urdu"
+  ]
 }
-

@@ -10,6 +10,8 @@
     "dev:api": "turbo run dev --filter=@medprep/api",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:exam-conformance": "turbo run test --filter=@medprep/exam-engine",

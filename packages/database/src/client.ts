@@ -6,7 +6,11 @@ export type { SupabaseClient };
 /**
  * Creates a client scoped to a user's JWT (for respecting RLS)
  */
-export function createSupabaseUserClient(supabaseUrl: string, anonKey: string, accessToken?: string): SupabaseClient<Database> {
+export function createSupabaseUserClient(
+  supabaseUrl: string,
+  anonKey: string,
+  accessToken?: string,
+): SupabaseClient<Database> {
   return createClient<Database>(supabaseUrl, anonKey, {
     auth: {
       persistSession: false,
@@ -22,7 +26,10 @@ export function createSupabaseUserClient(supabaseUrl: string, anonKey: string, a
  * Creates an admin client using the service-role key (Bypasses RLS).
  * CAUTION: Only use in trusted backend environments for administrative tasks.
  */
-export function createSupabaseAdminClient(supabaseUrl: string, serviceRoleKey: string): SupabaseClient<Database> {
+export function createSupabaseAdminClient(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+): SupabaseClient<Database> {
   return createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {
       persistSession: false,
@@ -30,4 +37,3 @@ export function createSupabaseAdminClient(supabaseUrl: string, serviceRoleKey: s
     },
   });
 }
-

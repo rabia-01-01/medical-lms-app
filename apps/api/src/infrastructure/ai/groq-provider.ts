@@ -1,20 +1,20 @@
-import Groq from 'groq-sdk';
-import { env } from '../../config/env';
-import { logger } from '../logging/logger';
-import { AIQuestionProvider } from './ai-provider.interface';
-import { buildNeetUGPrompt } from './prompts/neet-ug.prompt';
-import { buildImatPrompt } from './prompts/imat.prompt';
-import { validateGeneratedQuestions } from './schemas/question-generation.schema';
-import { shuffleQuestionOptions } from './utils/shuffle-options';
+import Groq from "groq-sdk";
+import { env } from "../../config/env";
+import { logger } from "../logging/logger";
+import { AIQuestionProvider } from "./ai-provider.interface";
+import { buildNeetUGPrompt } from "./prompts/neet-ug.prompt";
+import { buildImatPrompt } from "./prompts/imat.prompt";
+import { validateGeneratedQuestions } from "./schemas/question-generation.schema";
+import { shuffleQuestionOptions } from "./utils/shuffle-options";
 import {
   AIProviderConfig,
   GeneratedQuestionBatch,
   QuestionDraftRequest,
   TokenUsage,
-} from './types';
+} from "./types";
 
 export class GroqQuestionProvider implements AIQuestionProvider {
-  public readonly providerName = 'GROQ';
+  public readonly providerName = "GROQ";
   private readonly client: Groq;
   private readonly config: AIProviderConfig;
 
@@ -41,9 +41,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
   async generateDraftQuestions(request: QuestionDraftRequest): Promise<GeneratedQuestionBatch> {
     const startTime = Date.now();
     const prompt =
-      request.examCode === 'NEET_UG'
-        ? buildNeetUGPrompt(request)
-        : buildImatPrompt(request);
+      request.examCode === "NEET_UG" ? buildNeetUGPrompt(request) : buildImatPrompt(request);
 
     logger.info(
       {
@@ -55,7 +53,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
         count: request.count,
         primaryModel: this.config.model,
       },
-      'Initiating AI draft question generation'
+      "Initiating AI draft question generation",
     );
 
     let rawJsonText: string;
@@ -64,7 +62,11 @@ export class GroqQuestionProvider implements AIQuestionProvider {
 
     try {
       // Primary model attempt with retry
-      const result = await this.callWithRetry(prompt.systemPrompt, prompt.userPrompt, this.config.model);
+      const result = await this.callWithRetry(
+        prompt.systemPrompt,
+        prompt.userPrompt,
+        this.config.model,
+      );
       rawJsonText = result.text;
       usage = result.usage;
     } catch (primaryError) {
@@ -74,7 +76,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
           primaryModel: this.config.model,
           fallbackModel: this.config.fallbackModel,
         },
-        'Primary Groq model failed. Attempting fallback model.'
+        "Primary Groq model failed. Attempting fallback model.",
       );
 
       // Fallback model attempt with retry
@@ -82,7 +84,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
       const result = await this.callWithRetry(
         prompt.systemPrompt,
         prompt.userPrompt,
-        this.config.fallbackModel
+        this.config.fallbackModel,
       );
       rawJsonText = result.text;
       usage = result.usage;
@@ -95,9 +97,9 @@ export class GroqQuestionProvider implements AIQuestionProvider {
     } catch (parseError) {
       logger.error(
         { err: parseError, rawJsonSnippet: rawJsonText.substring(0, 300) },
-        'Groq returned invalid JSON'
+        "Groq returned invalid JSON",
       );
-      throw new Error('AI provider returned malformed JSON output that could not be parsed.');
+      throw new Error("AI provider returned malformed JSON output that could not be parsed.");
     }
 
     // Enforce track-specific schemas (NEET: 4 options, IMAT: 5 options)
@@ -116,7 +118,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
         latencyMs,
         usage,
       },
-      'AI draft questions successfully generated and validated'
+      "AI draft questions successfully generated and validated",
     );
 
     return {
@@ -134,7 +136,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
   private async callWithRetry(
     systemPrompt: string,
     userPrompt: string,
-    model: string
+    model: string,
   ): Promise<{ text: string; usage: TokenUsage }> {
     let lastError: Error | unknown;
 
@@ -149,14 +151,14 @@ export class GroqQuestionProvider implements AIQuestionProvider {
           {
             model,
             messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
             ],
-            response_format: { type: 'json_object' },
+            response_format: { type: "json_object" },
             temperature: 0.4,
             max_completion_tokens: 4096,
           },
-          { signal: abortController.signal }
+          { signal: abortController.signal },
         );
 
         clearTimeout(timeoutHandle);
@@ -165,7 +167,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
         const content = choice?.message?.content;
 
         if (!content) {
-          throw new Error('Groq API returned an empty completion content.');
+          throw new Error("Groq API returned an empty completion content.");
         }
 
         const usage: TokenUsage = {
@@ -179,14 +181,20 @@ export class GroqQuestionProvider implements AIQuestionProvider {
         clearTimeout(timeoutHandle);
         lastError = err;
 
-        const isRateLimit = err?.status === 429 || err?.message?.includes('429');
-        const isServerUnavailable = err?.status === 503 || err?.message?.includes('503');
-        const isTimeout = err?.name === 'AbortError' || err?.message?.includes('timeout') || abortController.signal.aborted;
+        const isRateLimit = err?.status === 429 || err?.message?.includes("429");
+        const isServerUnavailable = err?.status === 503 || err?.message?.includes("503");
+        const isTimeout =
+          err?.name === "AbortError" ||
+          err?.message?.includes("timeout") ||
+          abortController.signal.aborted;
 
         const isTransient = isRateLimit || isServerUnavailable || isTimeout;
 
         if (isTransient && attempt < this.config.maxRetries) {
-          const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1) + Math.random() * 500, 10000);
+          const backoffDelay = Math.min(
+            1000 * Math.pow(2, attempt - 1) + Math.random() * 500,
+            10000,
+          );
           logger.warn(
             {
               attempt,
@@ -196,7 +204,7 @@ export class GroqQuestionProvider implements AIQuestionProvider {
               errorMessage: err?.message,
               backoffDelayMs: Math.round(backoffDelay),
             },
-            'Transient Groq API error encountered; retrying after backoff'
+            "Transient Groq API error encountered; retrying after backoff",
           );
           await new Promise((resolve) => setTimeout(resolve, backoffDelay));
         } else {
@@ -211,4 +219,3 @@ export class GroqQuestionProvider implements AIQuestionProvider {
       : new Error(`Groq API invocation failed: ${String(lastError)}`);
   }
 }
-

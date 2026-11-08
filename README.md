@@ -11,6 +11,7 @@ The platform also integrates **Groq-powered AI capabilities** to support AI-assi
 Built using modern web technologies, MedPrep aims to make medical entrance exam preparation more structured, accessible, interactive, and data-driven for aspiring medical students.
 
 **Key Features:**
+
 - Separate NEET-UG and IMAT preparation tracks.
 - Exam-specific syllabus and curriculum management.
 - Digital study materials and learning resources.

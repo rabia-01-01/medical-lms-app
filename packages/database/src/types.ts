@@ -3,13 +3,7 @@
  * Aligned with PostgreSQL 15+ & Supabase Migrations 0001 - 0014
  */
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type ExamTrackCode = 'NEET_UG' | 'IMAT';
 export type ExamVersionStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'PUBLISHED' | 'RETIRED';
@@ -21,12 +15,16 @@ export type EnrollmentStatus = 'ACTIVE' | 'TRANSFERRED' | 'WITHDRAWN' | 'COMPLET
 export type AssignmentStatus = 'ACTIVE' | 'INACTIVE';
 export type ContentScope = 'PLATFORM' | 'INSTITUTION';
 export type SyllabusNodeType = 'SUBJECT' | 'SECTION' | 'CHAPTER' | 'TOPIC' | 'SKILL';
-export type ResourceType = 'NOTE' | 'PDF' | 'BOOK_REFERENCE' | 'DPP' | 'PYQ' | 'VIDEO' | 'IMAGE' | 'LINK';
+export type ResourceType =
+  'NOTE' | 'PDF' | 'BOOK_REFERENCE' | 'DPP' | 'PYQ' | 'VIDEO' | 'IMAGE' | 'LINK';
 export type PublicationStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'ARCHIVED' | 'REJECTED';
-export type QuestionType = 'SINGLE_SELECT_MCQ' | 'MULTIPLE_SELECT' | 'NUMERICAL' | 'ASSERTION_REASON';
+export type QuestionType =
+  'SINGLE_SELECT_MCQ' | 'MULTIPLE_SELECT' | 'NUMERICAL' | 'ASSERTION_REASON';
 export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
-export type ReviewStatus = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'ARCHIVED';
-export type AdjudicationStatus = 'STANDARD' | 'MULTIPLE_CORRECT' | 'ALL_OPTIONS_CORRECT' | 'INVALID_OR_DROPPED';
+export type ReviewStatus =
+  'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'ARCHIVED';
+export type AdjudicationStatus =
+  'STANDARD' | 'MULTIPLE_CORRECT' | 'ALL_OPTIONS_CORRECT' | 'INVALID_OR_DROPPED';
 export type AttemptStatus = 'IN_PROGRESS' | 'SUBMITTED' | 'TIMED_OUT' | 'ABANDONED' | 'EVALUATED';
 export type AIJobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 export type AIValidationStatus = 'PENDING' | 'PASSED' | 'FAILED';
@@ -46,7 +44,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['exam_tracks']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['exam_tracks']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
         Update: Partial<Database['public']['Tables']['exam_tracks']['Insert']>;
       };
       exam_versions: {
@@ -61,7 +62,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['exam_versions']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['exam_versions']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
         Update: Partial<Database['public']['Tables']['exam_versions']['Insert']>;
       };
       exam_scoring_policies: {
@@ -76,7 +80,10 @@ export interface Database {
           configuration: Json;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['exam_scoring_policies']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['exam_scoring_policies']['Row'],
+          'id' | 'created_at'
+        >;
         Update: Partial<Database['public']['Tables']['exam_scoring_policies']['Insert']>;
       };
       exam_sections: {
@@ -115,7 +122,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['institutions']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['institutions']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
         Update: Partial<Database['public']['Tables']['institutions']['Insert']>;
       };
       institution_memberships: {
@@ -128,7 +138,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['institution_memberships']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['institution_memberships']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
         Update: Partial<Database['public']['Tables']['institution_memberships']['Insert']>;
       };
       learner_exam_access: {
@@ -142,7 +155,10 @@ export interface Database {
           is_active: boolean;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['learner_exam_access']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['learner_exam_access']['Row'],
+          'id' | 'created_at'
+        >;
         Update: Partial<Database['public']['Tables']['learner_exam_access']['Insert']>;
       };
       assessment_attempts: {
@@ -156,7 +172,10 @@ export interface Database {
           submitted_at: string | null;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['assessment_attempts']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['assessment_attempts']['Row'],
+          'id' | 'created_at'
+        >;
         Update: Partial<Database['public']['Tables']['assessment_attempts']['Insert']>;
       };
       attempt_answers: {
@@ -269,7 +288,10 @@ export interface Database {
           created_at: string;
           completed_at: string | null;
         };
-        Insert: Omit<Database['public']['Tables']['ai_generation_jobs']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['ai_generation_jobs']['Row'],
+          'id' | 'created_at'
+        >;
         Update: Partial<Database['public']['Tables']['ai_generation_jobs']['Insert']>;
       };
       ai_generation_reviews: {
@@ -284,10 +306,12 @@ export interface Database {
           published_question_version_id: string | null;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['ai_generation_reviews']['Row'], 'id' | 'created_at'>;
+        Insert: Omit<
+          Database['public']['Tables']['ai_generation_reviews']['Row'],
+          'id' | 'created_at'
+        >;
         Update: Partial<Database['public']['Tables']['ai_generation_reviews']['Insert']>;
       };
     };
   };
 }
-

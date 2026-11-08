@@ -1,7 +1,7 @@
-import crypto from 'crypto';
-import { GeneratedOption, GeneratedQuestion, OptionKey } from '../types';
+import crypto from "crypto";
+import { GeneratedOption, GeneratedQuestion, OptionKey } from "../types";
 
-const OPTION_KEYS: OptionKey[] = ['A', 'B', 'C', 'D', 'E'];
+const OPTION_KEYS: OptionKey[] = ["A", "B", "C", "D", "E"];
 
 /**
  * Cryptographically secure Fisher-Yates shuffle.
@@ -37,7 +37,7 @@ export function shuffleQuestionOptions(question: GeneratedQuestion): GeneratedQu
 
   const correctOption = rekeyedOptions.find((opt) => opt.isCorrect);
   if (!correctOption) {
-    throw new Error('Shuffling failed: no correct option found in question');
+    throw new Error("Shuffling failed: no correct option found in question");
   }
 
   return {
@@ -46,4 +46,3 @@ export function shuffleQuestionOptions(question: GeneratedQuestion): GeneratedQu
     correctOptionKey: correctOption.optionKey,
   };
 }
-

@@ -18,12 +18,41 @@
     "optionsCount": 5
   },
   "sections": [
-    { "code": "IMAT_READING", "name": "Reading Skills and General Knowledge", "displayOrder": 1, "questionCount": 4, "optionCount": 5 },
-    { "code": "IMAT_LOGIC", "name": "Logical Reasoning and Problem Solving", "displayOrder": 2, "questionCount": 5, "optionCount": 5 },
-    { "code": "IMAT_BIO", "name": "Biology", "displayOrder": 3, "questionCount": 23, "optionCount": 5 },
-    { "code": "IMAT_CHEM", "name": "Chemistry", "displayOrder": 4, "questionCount": 15, "optionCount": 5 },
-    { "code": "IMAT_MATH_PHYS", "name": "Physics and Mathematics", "displayOrder": 5, "questionCount": 13, "optionCount": 5 }
+    {
+      "code": "IMAT_READING",
+      "name": "Reading Skills and General Knowledge",
+      "displayOrder": 1,
+      "questionCount": 4,
+      "optionCount": 5
+    },
+    {
+      "code": "IMAT_LOGIC",
+      "name": "Logical Reasoning and Problem Solving",
+      "displayOrder": 2,
+      "questionCount": 5,
+      "optionCount": 5
+    },
+    {
+      "code": "IMAT_BIO",
+      "name": "Biology",
+      "displayOrder": 3,
+      "questionCount": 23,
+      "optionCount": 5
+    },
+    {
+      "code": "IMAT_CHEM",
+      "name": "Chemistry",
+      "displayOrder": 4,
+      "questionCount": 15,
+      "optionCount": 5
+    },
+    {
+      "code": "IMAT_MATH_PHYS",
+      "name": "Physics and Mathematics",
+      "displayOrder": 5,
+      "questionCount": 13,
+      "optionCount": 5
+    }
   ],
   "languages": ["English"]
 }
-

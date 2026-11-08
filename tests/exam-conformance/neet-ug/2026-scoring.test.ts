@@ -64,4 +64,3 @@ describe('NEET-UG 2026 Scoring & Adjudication Conformance', () => {
     expect(result.rawScore).toBe(3);
   });
 });
-

@@ -1,5 +1,5 @@
 {
-  "name": "@MedPrep/api",
+  "name": "@medprep/api",
   "version": "1.0.0",
   "private": true,
   "description": "MedPrep Modular Monolith Backend API",
@@ -10,6 +10,8 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run"
   },
   "dependencies": {
@@ -33,6 +35,10 @@
     "supertest": "^7.0.0",
     "tsx": "^4.19.1",
     "typescript": "^5.5.4",
+    "prettier": "^3.3.3",
     "vitest": "^2.1.1"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

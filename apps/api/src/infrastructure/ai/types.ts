@@ -3,13 +3,13 @@
  * Aligns with MedPrep Section 13 (AI Architecture & Quality Controls)
  */
 
-export type ExamTrackCode = 'NEET_UG' | 'IMAT';
+export type ExamTrackCode = "NEET_UG" | "IMAT";
 
-export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
+export type DifficultyLevel = "EASY" | "MEDIUM" | "HARD";
 
-export type QuestionTypeCode = 'SINGLE_SELECT_MCQ';
+export type QuestionTypeCode = "SINGLE_SELECT_MCQ";
 
-export type OptionKey = 'A' | 'B' | 'C' | 'D' | 'E';
+export type OptionKey = "A" | "B" | "C" | "D" | "E";
 
 export interface QuestionDraftRequest {
   examCode: ExamTrackCode;
@@ -66,4 +66,3 @@ export interface AIProviderConfig {
   timeoutMs: number;
   maxRetries: number;
 }
-

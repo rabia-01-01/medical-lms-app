@@ -11,4 +11,3 @@ export interface SyllabusNodeDto {
   learningObjectives?: string[];
   isCompleted?: boolean;
 }
-

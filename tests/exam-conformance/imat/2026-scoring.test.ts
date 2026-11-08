@@ -8,7 +8,16 @@ describe('IMAT 2026/27 Scoring Conformance', () => {
   it('correctly calculates maximum possible raw score (60 correct questions = 90.0 marks)', () => {
     const attempts: QuestionAttempt[] = Array.from({ length: 60 }, (_, i) => ({
       questionId: `q-${i + 1}`,
-      sectionCode: i < 4 ? 'IMAT_READING' : i < 9 ? 'IMAT_LOGIC' : i < 32 ? 'IMAT_BIO' : i < 47 ? 'IMAT_CHEM' : 'IMAT_MATH_PHYS',
+      sectionCode:
+        i < 4
+          ? 'IMAT_READING'
+          : i < 9
+            ? 'IMAT_LOGIC'
+            : i < 32
+              ? 'IMAT_BIO'
+              : i < 47
+                ? 'IMAT_CHEM'
+                : 'IMAT_MATH_PHYS',
       selectedOptionIds: ['opt-1'],
       correctOptionIds: ['opt-1'],
     }));
@@ -53,4 +62,3 @@ describe('IMAT 2026/27 Scoring Conformance', () => {
     expect(result.unansweredCount).toBe(45);
   });
 });
-

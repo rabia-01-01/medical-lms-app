@@ -19,4 +19,3 @@ const seedDir = path.resolve(__dirname, '../../supabase/seed/exam-versions');
 validateJson(path.join(seedDir, 'neet-ug/2026.json'));
 validateJson(path.join(seedDir, 'imat/2026-27.json'));
 console.log('All official exam blueprints verified successfully.');
-

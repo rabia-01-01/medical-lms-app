@@ -852,18 +852,18 @@ Keep `service-role-client.ts` isolated in backend infrastructure. The Supabase s
 
 ## 9. Test organization and mandatory regression suites
 
-| Test category | Location | Required coverage |
-|---|---|---|
-| UI component tests | `apps/web/tests/component` | Form behavior, accessible interactions, display logic |
-| Browser E2E | `apps/web/tests/e2e` | Complete learner, faculty, and admin workflows |
-| Backend unit tests | `apps/api/src/**/__tests__` | Domain services and policy logic |
-| API integration tests | `apps/api/src/tests/integration` | Routes, permissions, database behavior |
-| RLS tests | `supabase/tests/rls` | Direct database authorization boundaries |
-| Exam conformance | `tests/exam-conformance` | Official-format configuration and scoring |
-| Security | `tests/security` | Role escalation, IDOR, tenant leakage, answer-key exposure |
-| Reliability | `tests/reliability` | Autosave, retry, timeout, finalization, regrading |
-| Load | `tests/load` | Concurrent assessment start, answer save, submission |
-| Accessibility | `tests/accessibility` | Keyboard, screen reader, contrast, timer communication |
+| Test category         | Location                         | Required coverage                                          |
+| --------------------- | -------------------------------- | ---------------------------------------------------------- |
+| UI component tests    | `apps/web/tests/component`       | Form behavior, accessible interactions, display logic      |
+| Browser E2E           | `apps/web/tests/e2e`             | Complete learner, faculty, and admin workflows             |
+| Backend unit tests    | `apps/api/src/**/__tests__`      | Domain services and policy logic                           |
+| API integration tests | `apps/api/src/tests/integration` | Routes, permissions, database behavior                     |
+| RLS tests             | `supabase/tests/rls`             | Direct database authorization boundaries                   |
+| Exam conformance      | `tests/exam-conformance`         | Official-format configuration and scoring                  |
+| Security              | `tests/security`                 | Role escalation, IDOR, tenant leakage, answer-key exposure |
+| Reliability           | `tests/reliability`              | Autosave, retry, timeout, finalization, regrading          |
+| Load                  | `tests/load`                     | Concurrent assessment start, answer save, submission       |
+| Accessibility         | `tests/accessibility`            | Keyboard, screen reader, contrast, timer communication     |
 
 ### 9.1 NEET-UG 2026 reference regression cases
 
@@ -955,21 +955,21 @@ Rules:
 
 ## 11. Root workspace configuration
 
-| File | Responsibility |
-|---|---|
-| `package.json` | Root scripts and workspace commands |
-| `pnpm-workspace.yaml` | Workspace package declarations |
-| `pnpm-lock.yaml` | Reproducible dependency resolution |
-| `turbo.json` | Optional build/test task orchestration |
-| `tsconfig.base.json` | Shared TypeScript compiler settings |
-| `eslint.config.js` | Lint rules |
-| `.prettierrc.json` | Formatting rules |
-| `.nvmrc` | Pinned Node.js version |
-| `.npmrc` | Package-manager behavior |
-| `.editorconfig` | Consistent editor settings |
-| `.env.example` | Documented safe variable names |
-| `docker-compose.yml` | Optional local service orchestration |
-| `README.md` | Setup, commands, architecture links, contribution rules |
+| File                  | Responsibility                                          |
+| --------------------- | ------------------------------------------------------- |
+| `package.json`        | Root scripts and workspace commands                     |
+| `pnpm-workspace.yaml` | Workspace package declarations                          |
+| `pnpm-lock.yaml`      | Reproducible dependency resolution                      |
+| `turbo.json`          | Optional build/test task orchestration                  |
+| `tsconfig.base.json`  | Shared TypeScript compiler settings                     |
+| `eslint.config.js`    | Lint rules                                              |
+| `.prettierrc.json`    | Formatting rules                                        |
+| `.nvmrc`              | Pinned Node.js version                                  |
+| `.npmrc`              | Package-manager behavior                                |
+| `.editorconfig`       | Consistent editor settings                              |
+| `.env.example`        | Documented safe variable names                          |
+| `docker-compose.yml`  | Optional local service orchestration                    |
+| `README.md`           | Setup, commands, architecture links, contribution rules |
 
 Recommended package manager: **pnpm workspaces**. Turborepo is optional; use it if task orchestration and caching are useful. It is not required by the product architecture.
 

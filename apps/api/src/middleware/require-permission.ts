@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { UserRole } from './authenticate';
+import { Request, Response, NextFunction } from "express";
+import { UserRole } from "./authenticate";
 
 /**
  * Role-Based Access Control (RBAC) middleware.
@@ -8,14 +8,14 @@ import { UserRole } from './authenticate';
  */
 export function requireRoles(allowedRoles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const userRole = req.user?.role || (req.headers['x-user-role'] as UserRole);
+    const userRole = req.user?.role || (req.headers["x-user-role"] as UserRole);
 
     if (!userRole) {
       res.status(401).json({
         success: false,
         error: {
-          code: 'UNAUTHENTICATED',
-          message: 'User authentication required.',
+          code: "UNAUTHENTICATED",
+          message: "User authentication required.",
         },
       });
       return;
@@ -25,8 +25,8 @@ export function requireRoles(allowedRoles: UserRole[]) {
       res.status(403).json({
         success: false,
         error: {
-          code: 'FORBIDDEN_ACCESS',
-          message: `Access denied. Role '${userRole}' is not authorized to access this resource. Required roles: [${allowedRoles.join(', ')}]`,
+          code: "FORBIDDEN_ACCESS",
+          message: `Access denied. Role '${userRole}' is not authorized to access this resource. Required roles: [${allowedRoles.join(", ")}]`,
         },
       });
       return;
@@ -35,4 +35,3 @@ export function requireRoles(allowedRoles: UserRole[]) {
     next();
   };
 }
-

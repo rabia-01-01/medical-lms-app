@@ -5,7 +5,8 @@ export interface QuestionAttempt {
   sectionCode: string;
   selectedOptionIds: string[];
   correctOptionIds: string[];
-  adjudicationStatus?: 'STANDARD' | 'MULTIPLE_CORRECT' | 'ALL_OPTIONS_CORRECT' | 'INVALID_OR_DROPPED';
+  adjudicationStatus?:
+    'STANDARD' | 'MULTIPLE_CORRECT' | 'ALL_OPTIONS_CORRECT' | 'INVALID_OR_DROPPED';
 }
 
 export interface SectionScore {
@@ -35,4 +36,3 @@ export interface ExamScoreResult {
 export interface ExamScoringStrategy {
   scoreAttempt(attempts: QuestionAttempt[]): ExamScoreResult;
 }
-

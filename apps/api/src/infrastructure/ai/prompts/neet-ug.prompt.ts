@@ -1,4 +1,4 @@
-import { QuestionDraftRequest } from '../types';
+import { QuestionDraftRequest } from "../types";
 
 /**
  * NEET-UG Prompt Engineering:
@@ -28,15 +28,15 @@ CRITICAL EXAMINATION RULES FOR NEET-UG:
 
   const groundingText = request.referenceMaterial
     ? `\nREFERENCE GROUNDING MATERIAL:\n"""\n${request.referenceMaterial}\n"""\n`
-    : '';
+    : "";
 
   const userPrompt = `Generate ${count} original, high-quality NEET-UG practice question(s) according to the following specifications:
 
 - Exam Track: NEET-UG (${examYear})
 - Subject: ${request.subject}
 - Topic: ${request.topic}
-${request.subtopic ? `- Subtopic: ${request.subtopic}\n` : ''}- Difficulty Level: ${request.difficulty}
-- Language: ${request.languageCode || 'en'}
+${request.subtopic ? `- Subtopic: ${request.subtopic}\n` : ""}- Difficulty Level: ${request.difficulty}
+- Language: ${request.languageCode || "en"}
 ${groundingText}
 REQUIREMENTS:
 1. Generate exactly ${count} question(s).
@@ -54,7 +54,7 @@ OUTPUT SCHEMA (JSON root object):
       "difficulty": "${request.difficulty}",
       "subject": "${request.subject}",
       "topic": "${request.topic}",
-      ${request.subtopic ? `"subtopic": "${request.subtopic}",` : ''}
+      ${request.subtopic ? `"subtopic": "${request.subtopic}",` : ""}
       "options": [
         { "optionKey": "A", "optionText": "Option text A", "isCorrect": false },
         { "optionKey": "B", "optionText": "Option text B", "isCorrect": true },
@@ -70,4 +70,3 @@ OUTPUT SCHEMA (JSON root object):
 
   return { systemPrompt, userPrompt };
 }
-

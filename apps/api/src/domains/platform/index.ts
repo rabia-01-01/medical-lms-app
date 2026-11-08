@@ -1,3 +1,2 @@
 ﻿// Bounded Context: platform
 export {};
-

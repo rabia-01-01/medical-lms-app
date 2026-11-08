@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { AIDraftsService, AuthContext } from './ai-drafts.service';
+import { Request, Response, NextFunction } from "express";
+import { AIDraftsService, AuthContext } from "./ai-drafts.service";
 
 export class AIDraftsController {
   constructor(private readonly draftsService: AIDraftsService) {}
@@ -55,7 +55,7 @@ export class AIDraftsController {
           comments: req.body.comments,
           edits: req.body.edits,
         },
-        auth
+        auth,
       );
       res.json({
         success: true,
@@ -72,9 +72,11 @@ export class AIDraftsController {
   private extractAuth(req: Request): AuthContext {
     // In production, populated by Supabase JWT auth middleware
     // We provide a fallback for testing or read from headers
-    const userId = (req.headers['x-user-id'] as string) || (req as any).user?.id || 'demo-faculty-id';
-    const role = (req.headers['x-user-role'] as any) || (req as any).user?.role || 'FACULTY';
-    const institutionId = (req.headers['x-institution-id'] as string) || (req as any).user?.institutionId || null;
+    const userId =
+      (req.headers["x-user-id"] as string) || (req as any).user?.id || "demo-faculty-id";
+    const role = (req.headers["x-user-role"] as any) || (req as any).user?.role || "FACULTY";
+    const institutionId =
+      (req.headers["x-institution-id"] as string) || (req as any).user?.institutionId || null;
 
     return {
       userId,
@@ -83,4 +85,3 @@ export class AIDraftsController {
     };
   }
 }
-

@@ -1,19 +1,20 @@
 # MedPrep
+
 ## NEET-UG and IMAT Aspirant Learning, Practice & Assessment Platform
 
 **Updated project overview, product requirements, examination specifications, architecture, data model, security controls, testing strategy, and implementation roadmap**
 
-| Document field | Value |
-|---|---|
-| Document version | 3.0 |
-| Prepared / verified against published information | 6 November 2026 |
-| Product scope | NEET-UG and IMAT only |
-| Primary users | NEET-UG and IMAT aspirants |
-| Supporting users | Faculty, tutors, coaching-institute administrators |
-| Initial delivery approach | Aspirant-facing platform with institute / batch workspaces |
-| Initial examination baseline | NEET-UG 2026 and IMAT 2026/27 |
-| Architecture direction | React + TypeScript, Node.js/Express, Supabase/PostgreSQL |
-| Implementation status | Product and technical specification; implementation claims require separate verification |
+| Document field                                    | Value                                                                                    |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Document version                                  | 3.0                                                                                      |
+| Prepared / verified against published information | 6 November 2026                                                                          |
+| Product scope                                     | NEET-UG and IMAT only                                                                    |
+| Primary users                                     | NEET-UG and IMAT aspirants                                                               |
+| Supporting users                                  | Faculty, tutors, coaching-institute administrators                                       |
+| Initial delivery approach                         | Aspirant-facing platform with institute / batch workspaces                               |
+| Initial examination baseline                      | NEET-UG 2026 and IMAT 2026/27                                                            |
+| Architecture direction                            | React + TypeScript, Node.js/Express, Supabase/PostgreSQL                                 |
+| Implementation status                             | Product and technical specification; implementation claims require separate verification |
 
 > **Important scope decision:** This product is specifically for **NEET-UG and IMAT aspirants**. It is not a generic LMS for every competitive examination. It will maintain two distinct exam-preparation tracks with shared platform services and separate syllabi, question formats, assessment rules, content, and analytics. UCAT, MCAT, and unrelated examinations are out of scope.
 
@@ -54,7 +55,7 @@ The platform combines:
 
 The platform should answer six practical questions for an aspirant:
 
-1. What should I study for *my selected examination and examination year*?
+1. What should I study for _my selected examination and examination year_?
 2. Which resources and practice questions belong to each syllabus topic?
 3. Am I practising with the correct number of options, timing, and marking rules?
 4. Which subjects, sections, and topics require more revision?
@@ -65,13 +66,13 @@ The platform should answer six practical questions for an aspirant:
 
 The **aspirant is the primary user**. The platform may serve an aspirant directly or through a participating coaching institute.
 
-| Audience | Value provided |
-|---|---|
-| Independent aspirant | Personal study plan, resources, topic practice, mock tests, progress tracking |
-| Institute-enrolled aspirant | Assigned courses, batches, faculty resources, scheduled tests, academic feedback |
-| Faculty / tutor | Curriculum mapping, resource publishing, question authoring, assessment creation, learner progress |
-| Coaching institute | Student and batch management, content governance, assessment administration, reports |
-| Platform administrator | Product operations, institution setup, platform-level governance |
+| Audience                    | Value provided                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| Independent aspirant        | Personal study plan, resources, topic practice, mock tests, progress tracking                      |
+| Institute-enrolled aspirant | Assigned courses, batches, faculty resources, scheduled tests, academic feedback                   |
+| Faculty / tutor             | Curriculum mapping, resource publishing, question authoring, assessment creation, learner progress |
+| Coaching institute          | Student and batch management, content governance, assessment administration, reports               |
+| Platform administrator      | Product operations, institution setup, platform-level governance                                   |
 
 Recommended initial commercial approach:
 
@@ -82,15 +83,15 @@ Recommended initial commercial approach:
 
 ## 0.5 Product boundaries
 
-| The platform will provide | The platform will not claim to provide |
-|---|---|
-| NEET-UG and IMAT preparation workflows | Official NTA or MUR examination services |
-| Practice papers and mock assessments | The official examination itself |
-| Exam-year-specific scoring configurations | Guaranteed official scores, ranks, or admission |
-| Performance indicators and revision recommendations | Guaranteed rank or admission prediction |
-| AI-generated draft questions reviewed by faculty | Guaranteed correctness of unreviewed AI output |
-| Content access control and piracy deterrence | Screenshot-proof or piracy-proof DRM |
-| Exam information links and preparation resources | Official application, registration, or counselling decisions |
+| The platform will provide                           | The platform will not claim to provide                       |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| NEET-UG and IMAT preparation workflows              | Official NTA or MUR examination services                     |
+| Practice papers and mock assessments                | The official examination itself                              |
+| Exam-year-specific scoring configurations           | Guaranteed official scores, ranks, or admission              |
+| Performance indicators and revision recommendations | Guaranteed rank or admission prediction                      |
+| AI-generated draft questions reviewed by faculty    | Guaranteed correctness of unreviewed AI output               |
+| Content access control and piracy deterrence        | Screenshot-proof or piracy-proof DRM                         |
+| Exam information links and preparation resources    | Official application, registration, or counselling decisions |
 
 ---
 
@@ -186,21 +187,21 @@ The values in this section are a **verified reference baseline based on publishe
 
 The NTA's NEET-UG 2026 Information Bulletin specifies the following examination pattern:
 
-| Attribute | NEET-UG 2026 reference |
-|---|---|
-| Organizing authority | National Testing Agency (NTA), with relevant regulatory syllabus / admission rules |
-| Main academic areas | Physics, Chemistry, Biology (Botany and Zoology) |
-| Total questions | 180 compulsory questions |
-| Physics | 45 questions |
-| Chemistry | 45 questions |
-| Biology | 90 questions |
-| Question type | MCQ with four options and one correct / best answer |
-| Duration | 180 minutes (3 hours) |
-| Maximum marks | 720 |
-| Correct answer | +4 |
-| Incorrect answer | -1 |
-| Unanswered | 0 |
-| Official delivery mode for 2026 | Pen-and-paper |
+| Attribute                                | NEET-UG 2026 reference                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Organizing authority                     | National Testing Agency (NTA), with relevant regulatory syllabus / admission rules                           |
+| Main academic areas                      | Physics, Chemistry, Biology (Botany and Zoology)                                                             |
+| Total questions                          | 180 compulsory questions                                                                                     |
+| Physics                                  | 45 questions                                                                                                 |
+| Chemistry                                | 45 questions                                                                                                 |
+| Biology                                  | 90 questions                                                                                                 |
+| Question type                            | MCQ with four options and one correct / best answer                                                          |
+| Duration                                 | 180 minutes (3 hours)                                                                                        |
+| Maximum marks                            | 720                                                                                                          |
+| Correct answer                           | +4                                                                                                           |
+| Incorrect answer                         | -1                                                                                                           |
+| Unanswered                               | 0                                                                                                            |
+| Official delivery mode for 2026          | Pen-and-paper                                                                                                |
 | Question-paper languages listed for 2026 | English, Hindi, Assamese, Bengali, Gujarati, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu, Urdu |
 
 **Important NEET-UG 2026 marking exceptions in the NTA bulletin:**
@@ -270,29 +271,29 @@ The Ministry of University and Research (MUR) published Ministerial Decree No. 1
 
 The 2026 paper and decree-based materials provide the following reference structure:
 
-| Section / area | Questions |
-|---|---:|
-| Reading skills and knowledge acquired during studies | 4 |
-| Logical reasoning and problem solving | 5 |
-| Biology | 23 |
-| Chemistry | 15 |
-| Physics and Mathematics | 13 |
-| **Total** | **60** |
+| Section / area                                       | Questions |
+| ---------------------------------------------------- | --------: |
+| Reading skills and knowledge acquired during studies |         4 |
+| Logical reasoning and problem solving                |         5 |
+| Biology                                              |        23 |
+| Chemistry                                            |        15 |
+| Physics and Mathematics                              |        13 |
+| **Total**                                            |    **60** |
 
-| Attribute | IMAT 2026/27 reference |
-|---|---|
-| Authority / annual rules | MUR and the applicable official decree |
-| Question type | Multiple-choice |
-| Options per question | Five |
-| Total questions | 60 |
-| Duration | 100 minutes |
-| Correct answer | +1.5 |
-| Incorrect answer | -0.4 |
-| Unanswered | 0 |
-| Maximum raw score | 90 |
-| Main scientific areas | Biology, Chemistry, Physics and Mathematics |
-| Other areas | Reading skills / knowledge acquired during studies; logical reasoning / problem solving |
-| Assessment language | English-language examination track |
+| Attribute                | IMAT 2026/27 reference                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Authority / annual rules | MUR and the applicable official decree                                                  |
+| Question type            | Multiple-choice                                                                         |
+| Options per question     | Five                                                                                    |
+| Total questions          | 60                                                                                      |
+| Duration                 | 100 minutes                                                                             |
+| Correct answer           | +1.5                                                                                    |
+| Incorrect answer         | -0.4                                                                                    |
+| Unanswered               | 0                                                                                       |
+| Maximum raw score        | 90                                                                                      |
+| Main scientific areas    | Biology, Chemistry, Physics and Mathematics                                             |
+| Other areas              | Reading skills / knowledge acquired during studies; logical reasoning / problem solving |
+| Assessment language      | English-language examination track                                                      |
 
 The official 2026 MUR question-paper page states that the published version has option A as the correct answer for all questions. Treat that as a property of that published paper version, not as a general rule for future papers or generated questions.
 
@@ -324,19 +325,19 @@ The 2026 question distribution is important for test construction and preparatio
 
 ## 2.4 NEET-UG versus IMAT: product design comparison
 
-| Design dimension | NEET-UG | IMAT |
-|---|---|---|
-| Subject taxonomy | Physics, Chemistry, Biology (Botany/Zoology) | Reading/knowledge, reasoning, Biology, Chemistry, Physics/Mathematics |
-| 2026 question count | 180 | 60 |
-| 2026 option count | 4 | 5 |
-| 2026 duration | 180 minutes | 100 minutes |
-| 2026 correct mark | +4 | +1.5 |
-| 2026 wrong mark | -1 | -0.4 |
-| 2026 unanswered mark | 0 | 0 |
-| 2026 maximum raw score | 720 | 90 |
-| Official 2026 mode | Pen-and-paper | Follow MUR's applicable 2026 decree and instructions |
-| Language approach | 13 listed paper languages in 2026 | English-language test |
-| Special scoring cases | Multiple-correct, all-correct, dropped/invalid question rules in 2026 bulletin | Apply the applicable MUR decree's rules |
+| Design dimension       | NEET-UG                                                                        | IMAT                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Subject taxonomy       | Physics, Chemistry, Biology (Botany/Zoology)                                   | Reading/knowledge, reasoning, Biology, Chemistry, Physics/Mathematics |
+| 2026 question count    | 180                                                                            | 60                                                                    |
+| 2026 option count      | 4                                                                              | 5                                                                     |
+| 2026 duration          | 180 minutes                                                                    | 100 minutes                                                           |
+| 2026 correct mark      | +4                                                                             | +1.5                                                                  |
+| 2026 wrong mark        | -1                                                                             | -0.4                                                                  |
+| 2026 unanswered mark   | 0                                                                              | 0                                                                     |
+| 2026 maximum raw score | 720                                                                            | 90                                                                    |
+| Official 2026 mode     | Pen-and-paper                                                                  | Follow MUR's applicable 2026 decree and instructions                  |
+| Language approach      | 13 listed paper languages in 2026                                              | English-language test                                                 |
+| Special scoring cases  | Multiple-correct, all-correct, dropped/invalid question rules in 2026 bulletin | Apply the applicable MUR decree's rules                               |
 
 **Core engineering conclusion:** One assessment product can serve both examinations, but it must load an exam-specific configuration and scoring policy. It must never use a single universal `+4/-1` rule or a fixed four-option/five-option assumption.
 
@@ -631,7 +632,7 @@ Use separate policy handlers or rule configurations for NEET-UG and IMAT.
 Suggested conceptual interface:
 
 ```ts
-type ExamCode = "NEET_UG" | "IMAT";
+type ExamCode = 'NEET_UG' | 'IMAT';
 
 interface ScoringPolicy {
   examCode: ExamCode;
@@ -644,11 +645,7 @@ interface ScoringPolicy {
 }
 
 interface QuestionAdjudication {
-  status:
-    | "STANDARD"
-    | "MULTIPLE_CORRECT"
-    | "ALL_OPTIONS_CORRECT"
-    | "INVALID_OR_DROPPED";
+  status: 'STANDARD' | 'MULTIPLE_CORRECT' | 'ALL_OPTIONS_CORRECT' | 'INVALID_OR_DROPPED';
   validOptionIds: string[];
   effectivePolicy: string;
 }
@@ -1079,22 +1076,22 @@ These controls deter casual redistribution and reduce unauthorized access; they 
 
 The original stack is appropriate for an MVP and can be retained with clearer service boundaries.
 
-| Layer | Recommended technology | Responsibility |
-|---|---|---|
-| Frontend | React + TypeScript | Learner, faculty, and admin UI |
-| Build tooling | Vite | Local development and production build |
-| Styling | Tailwind CSS | Responsive design system |
-| Charts | Recharts | Exam-specific performance views |
-| Backend | Node.js + Express | Trusted API and domain services |
-| Database | PostgreSQL through Supabase | Relational data, constraints, transactions |
-| Authentication | Supabase Auth | Login and session management |
-| Authorization | PostgreSQL RLS + backend checks | Learner / institute / role access |
-| File storage | Supabase Storage | Private notes, PDFs, images, video assets |
-| AI | Provider adapter; Groq can be an initial provider if verified | Question drafting and study assistance |
-| Validation | Zod or equivalent | API and AI output schemas |
-| Unit/integration tests | Vitest/Jest + Supertest | Business logic and API tests |
-| Browser E2E tests | Playwright | Student/faculty/admin workflows |
-| Monitoring | Structured logs and error/metrics service | Operational health |
+| Layer                  | Recommended technology                                        | Responsibility                             |
+| ---------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| Frontend               | React + TypeScript                                            | Learner, faculty, and admin UI             |
+| Build tooling          | Vite                                                          | Local development and production build     |
+| Styling                | Tailwind CSS                                                  | Responsive design system                   |
+| Charts                 | Recharts                                                      | Exam-specific performance views            |
+| Backend                | Node.js + Express                                             | Trusted API and domain services            |
+| Database               | PostgreSQL through Supabase                                   | Relational data, constraints, transactions |
+| Authentication         | Supabase Auth                                                 | Login and session management               |
+| Authorization          | PostgreSQL RLS + backend checks                               | Learner / institute / role access          |
+| File storage           | Supabase Storage                                              | Private notes, PDFs, images, video assets  |
+| AI                     | Provider adapter; Groq can be an initial provider if verified | Question drafting and study assistance     |
+| Validation             | Zod or equivalent                                             | API and AI output schemas                  |
+| Unit/integration tests | Vitest/Jest + Supertest                                       | Business logic and API tests               |
+| Browser E2E tests      | Playwright                                                    | Student/faculty/admin workflows            |
+| Monitoring             | Structured logs and error/metrics service                     | Operational health                         |
 
 Pin and verify package versions at implementation time. Do not assume a model name, endpoint, or provider fallback remains available indefinitely.
 
@@ -1355,10 +1352,10 @@ This is a conceptual diagram. The final migration set must define the actual col
 
 Seed only two active product tracks:
 
-| `code` | Display name |
-|---|---|
-| `NEET_UG` | NEET-UG |
-| `IMAT` | IMAT |
+| `code`    | Display name |
+| --------- | ------------ |
+| `NEET_UG` | NEET-UG      |
+| `IMAT`    | IMAT         |
 
 No UCAT, MCAT, or generic exam track should be exposed in this product scope.
 
@@ -1828,11 +1825,11 @@ interface AIQuestionProvider {
 }
 
 interface QuestionDraftRequest {
-  examCode: "NEET_UG" | "IMAT";
+  examCode: 'NEET_UG' | 'IMAT';
   examVersionId: string;
   sectionId: string;
   syllabusNodeId: string;
-  difficulty: "EASY" | "MEDIUM" | "HARD";
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   questionType: string;
   count: number;
   languageCode: string;
@@ -2398,20 +2395,20 @@ Build only when validated:
 
 Measure the product's real learning and operational value.
 
-| Metric | What it measures |
-|---|---|
-| Learners selecting and activating an exam track | Onboarding clarity |
-| Learner weekly active usage by track | Engagement |
-| Study-topic completion | Curriculum usefulness |
-| Mock test completion rate | Assessment usability |
-| Answer-save failure rate | Assessment reliability |
-| Duplicate/inconsistent attempt rate | Attempt integrity |
-| Faculty time to prepare a test | Authoring efficiency |
-| Percentage of AI drafts accepted after review | AI usefulness, not correctness by itself |
-| Question correction/rejection rate | Academic quality |
-| Topic-level analytics usefulness | Revision support |
-| Support requests per active learner | Usability and operations |
-| Cross-track access test results | Security correctness |
+| Metric                                          | What it measures                         |
+| ----------------------------------------------- | ---------------------------------------- |
+| Learners selecting and activating an exam track | Onboarding clarity                       |
+| Learner weekly active usage by track            | Engagement                               |
+| Study-topic completion                          | Curriculum usefulness                    |
+| Mock test completion rate                       | Assessment usability                     |
+| Answer-save failure rate                        | Assessment reliability                   |
+| Duplicate/inconsistent attempt rate             | Attempt integrity                        |
+| Faculty time to prepare a test                  | Authoring efficiency                     |
+| Percentage of AI drafts accepted after review   | AI usefulness, not correctness by itself |
+| Question correction/rejection rate              | Academic quality                         |
+| Topic-level analytics usefulness                | Revision support                         |
+| Support requests per active learner             | Usability and operations                 |
+| Cross-track access test results                 | Security correctness                     |
 
 Set numerical targets only after pilot baseline measurement. Do not present invented targets as evidence of impact.
 
@@ -2419,22 +2416,22 @@ Set numerical targets only after pilot baseline measurement. Do not present inve
 
 # 21. Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| NEET pattern changes | Incorrect practice tests | Year-versioned configuration and official-source review |
-| IMAT pattern changes | Incorrect practice tests | MUR decree verification for every cycle |
-| NEET dropped/multiple-correct question handling is simplified | Incorrect mock scores | Explicit adjudication policies and test vectors |
-| IMAT content is mapped to the wrong section | Misleading analytics | Exam-specific taxonomy and faculty review |
-| User role escalation | Unauthorized access | Trusted membership records, RLS, server checks |
-| Cross-student or cross-institute data leakage | Serious privacy incident | Tenant-aware schema and security testing |
-| AI answer-key error | Academic harm | Mandatory faculty review and audit |
-| Forged browser score | Assessment fraud | Server-authoritative scoring |
-| Network loss during an assessment | Lost work / inconsistent result | Server-backed autosave and recovery |
-| Content copyright infringement | Legal exposure | Source/permission records and content governance |
-| Screenshot copying | Content leakage | Realistic access control and watermark deterrence |
-| Personal data breach | Legal and reputational impact | Data minimization and incident response |
-| Provider outage | Interrupted service | Bounded retries and graceful degradation |
-| Feature overload | Delayed delivery | NEET/IMAT MVP and phased roadmap |
+| Risk                                                          | Impact                          | Mitigation                                              |
+| ------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------- |
+| NEET pattern changes                                          | Incorrect practice tests        | Year-versioned configuration and official-source review |
+| IMAT pattern changes                                          | Incorrect practice tests        | MUR decree verification for every cycle                 |
+| NEET dropped/multiple-correct question handling is simplified | Incorrect mock scores           | Explicit adjudication policies and test vectors         |
+| IMAT content is mapped to the wrong section                   | Misleading analytics            | Exam-specific taxonomy and faculty review               |
+| User role escalation                                          | Unauthorized access             | Trusted membership records, RLS, server checks          |
+| Cross-student or cross-institute data leakage                 | Serious privacy incident        | Tenant-aware schema and security testing                |
+| AI answer-key error                                           | Academic harm                   | Mandatory faculty review and audit                      |
+| Forged browser score                                          | Assessment fraud                | Server-authoritative scoring                            |
+| Network loss during an assessment                             | Lost work / inconsistent result | Server-backed autosave and recovery                     |
+| Content copyright infringement                                | Legal exposure                  | Source/permission records and content governance        |
+| Screenshot copying                                            | Content leakage                 | Realistic access control and watermark deterrence       |
+| Personal data breach                                          | Legal and reputational impact   | Data minimization and incident response                 |
+| Provider outage                                               | Interrupted service             | Bounded retries and graceful degradation                |
+| Feature overload                                              | Delayed delivery                | NEET/IMAT MVP and phased roadmap                        |
 
 ---
 
@@ -2574,5 +2571,3 @@ Whenever this specification changes:
 - Preserve historical question, syllabus, assessment, and scoring versions.
 - Keep proposed requirements separate from implemented features.
 - Record open decisions rather than silently filling gaps.
-
-

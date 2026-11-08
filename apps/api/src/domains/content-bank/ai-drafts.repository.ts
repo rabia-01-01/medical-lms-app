@@ -1,5 +1,5 @@
-import crypto from 'crypto';
-import { Database, AIJobStatus, AIReviewStatus, SupabaseClient } from '@MedPrep/database';
+import crypto from "crypto";
+import { Database, AIJobStatus, AIReviewStatus, SupabaseClient } from "@MedPrep/database";
 
 export interface DraftQuestionSaveParams {
   jobId: string;
@@ -7,10 +7,10 @@ export interface DraftQuestionSaveParams {
   createdBy: string;
   examVersionId: string | null;
   sectionId: string | null;
-  questionType: Database['public']['Tables']['question_versions']['Row']['question_type'];
+  questionType: Database["public"]["Tables"]["question_versions"]["Row"]["question_type"];
   questionText: string;
   languageCode: string;
-  difficulty: Database['public']['Tables']['question_versions']['Row']['difficulty'];
+  difficulty: Database["public"]["Tables"]["question_versions"]["Row"]["difficulty"];
   explanation: string;
   sourceReference?: string;
   options: Array<{
@@ -31,34 +31,36 @@ export interface SavedDraftResult {
 
 export interface AIDraftsRepository {
   createJob(
-    job: Database['public']['Tables']['ai_generation_jobs']['Insert']
-  ): Promise<Database['public']['Tables']['ai_generation_jobs']['Row']>;
+    job: Database["public"]["Tables"]["ai_generation_jobs"]["Insert"],
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"]>;
 
   updateJob(
     jobId: string,
-    updates: Database['public']['Tables']['ai_generation_jobs']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_jobs"]["Update"],
   ): Promise<void>;
 
-  getJobById(jobId: string): Promise<Database['public']['Tables']['ai_generation_jobs']['Row'] | null>;
+  getJobById(
+    jobId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"] | null>;
 
   saveDraftQuestion(params: DraftQuestionSaveParams): Promise<SavedDraftResult>;
 
   getReviewById(
-    reviewId: string
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'] | null>;
+    reviewId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"] | null>;
 
   getPendingReviews(
-    institutionId?: string | null
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'][]>;
+    institutionId?: string | null,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"][]>;
 
   updateReview(
     reviewId: string,
-    updates: Database['public']['Tables']['ai_generation_reviews']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_reviews"]["Update"],
   ): Promise<void>;
 
   updateQuestionVersion(
     versionId: string,
-    updates: Database['public']['Tables']['question_versions']['Update']
+    updates: Database["public"]["Tables"]["question_versions"]["Update"],
   ): Promise<void>;
 }
 
@@ -66,27 +68,30 @@ export interface AIDraftsRepository {
  * In-memory repository implementation for unit tests and local mock execution
  */
 export class InMemoryAIDraftsRepository implements AIDraftsRepository {
-  public jobs = new Map<string, Database['public']['Tables']['ai_generation_jobs']['Row']>();
-  public questions = new Map<string, Database['public']['Tables']['questions']['Row']>();
-  public versions = new Map<string, Database['public']['Tables']['question_versions']['Row']>();
-  public options = new Map<string, Database['public']['Tables']['question_options']['Row']>();
-  public answerKeys = new Map<string, Database['public']['Tables']['question_answer_keys']['Row']>();
-  public reviews = new Map<string, Database['public']['Tables']['ai_generation_reviews']['Row']>();
+  public jobs = new Map<string, Database["public"]["Tables"]["ai_generation_jobs"]["Row"]>();
+  public questions = new Map<string, Database["public"]["Tables"]["questions"]["Row"]>();
+  public versions = new Map<string, Database["public"]["Tables"]["question_versions"]["Row"]>();
+  public options = new Map<string, Database["public"]["Tables"]["question_options"]["Row"]>();
+  public answerKeys = new Map<
+    string,
+    Database["public"]["Tables"]["question_answer_keys"]["Row"]
+  >();
+  public reviews = new Map<string, Database["public"]["Tables"]["ai_generation_reviews"]["Row"]>();
 
   async createJob(
-    job: Database['public']['Tables']['ai_generation_jobs']['Insert']
-  ): Promise<Database['public']['Tables']['ai_generation_jobs']['Row']> {
+    job: Database["public"]["Tables"]["ai_generation_jobs"]["Insert"],
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"]> {
     const id = crypto.randomUUID();
-    const created: Database['public']['Tables']['ai_generation_jobs']['Row'] = {
+    const created: Database["public"]["Tables"]["ai_generation_jobs"]["Row"] = {
       id,
       institution_id: job.institution_id ?? null,
       requested_by: job.requested_by,
       exam_version_id: job.exam_version_id ?? null,
       syllabus_node_id: job.syllabus_node_id ?? null,
-      provider: job.provider ?? 'GROQ',
+      provider: job.provider ?? "GROQ",
       model_id: job.model_id,
-      prompt_template_version: job.prompt_template_version ?? 'v1',
-      status: job.status ?? 'QUEUED',
+      prompt_template_version: job.prompt_template_version ?? "v1",
+      status: job.status ?? "QUEUED",
       input_metadata: job.input_metadata ?? {},
       error_code: job.error_code ?? null,
       created_at: new Date().toISOString(),
@@ -98,7 +103,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
 
   async updateJob(
     jobId: string,
-    updates: Database['public']['Tables']['ai_generation_jobs']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_jobs"]["Update"],
   ): Promise<void> {
     const existing = this.jobs.get(jobId);
     if (!existing) throw new Error(`Job not found: ${jobId}`);
@@ -106,8 +111,8 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
   }
 
   async getJobById(
-    jobId: string
-  ): Promise<Database['public']['Tables']['ai_generation_jobs']['Row'] | null> {
+    jobId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"] | null> {
     return this.jobs.get(jobId) || null;
   }
 
@@ -121,7 +126,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
     // 1. Create Question container
     this.questions.set(questionId, {
       id: questionId,
-      content_scope: params.institutionId ? 'INSTITUTION' : 'PLATFORM',
+      content_scope: params.institutionId ? "INSTITUTION" : "PLATFORM",
       institution_id: params.institutionId,
       current_version_id: versionId,
       created_by: params.createdBy,
@@ -144,7 +149,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
       diagram_storage_path: null,
       diagram_alt_text: null,
       source_reference: params.sourceReference || null,
-      review_status: 'DRAFT',
+      review_status: "DRAFT",
       created_by: params.createdBy,
       reviewed_by: null,
       approved_at: null,
@@ -173,7 +178,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
     this.answerKeys.set(versionId, {
       question_version_id: versionId,
       accepted_option_ids: acceptedOptionIds,
-      resolution_type: 'STANDARD',
+      resolution_type: "STANDARD",
       reviewed_by: null,
       updated_at: now,
     });
@@ -183,8 +188,8 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
       id: reviewId,
       generation_job_id: params.jobId,
       draft_payload: params.rawPayload,
-      validation_status: 'PASSED',
-      review_status: 'PENDING',
+      validation_status: "PASSED",
+      review_status: "PENDING",
       reviewed_by: null,
       reviewed_at: null,
       published_question_version_id: versionId,
@@ -195,17 +200,17 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
   }
 
   async getReviewById(
-    reviewId: string
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'] | null> {
+    reviewId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"] | null> {
     return this.reviews.get(reviewId) || null;
   }
 
   async getPendingReviews(
-    institutionId?: string | null
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'][]> {
-    const result: Database['public']['Tables']['ai_generation_reviews']['Row'][] = [];
+    institutionId?: string | null,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"][]> {
+    const result: Database["public"]["Tables"]["ai_generation_reviews"]["Row"][] = [];
     for (const review of this.reviews.values()) {
-      if (review.review_status === 'PENDING') {
+      if (review.review_status === "PENDING") {
         const job = this.jobs.get(review.generation_job_id);
         if (!institutionId || job?.institution_id === institutionId) {
           result.push(review);
@@ -217,7 +222,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
 
   async updateReview(
     reviewId: string,
-    updates: Database['public']['Tables']['ai_generation_reviews']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_reviews"]["Update"],
   ): Promise<void> {
     const existing = this.reviews.get(reviewId);
     if (!existing) throw new Error(`Review not found: ${reviewId}`);
@@ -226,7 +231,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
 
   async updateQuestionVersion(
     versionId: string,
-    updates: Database['public']['Tables']['question_versions']['Update']
+    updates: Database["public"]["Tables"]["question_versions"]["Update"],
   ): Promise<void> {
     const existing = this.versions.get(versionId);
     if (!existing) throw new Error(`Question version not found: ${versionId}`);
@@ -238,13 +243,13 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
  * Supabase-backed repository implementation for production
  */
 export class SupabaseAIDraftsRepository implements AIDraftsRepository {
-  constructor(private readonly supabase: SupabaseClient<any>) { }
+  constructor(private readonly supabase: SupabaseClient<any>) {}
 
   async createJob(
-    job: Database['public']['Tables']['ai_generation_jobs']['Insert']
-  ): Promise<Database['public']['Tables']['ai_generation_jobs']['Row']> {
+    job: Database["public"]["Tables"]["ai_generation_jobs"]["Insert"],
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"]> {
     const { data, error } = await this.supabase
-      .from('ai_generation_jobs')
+      .from("ai_generation_jobs")
       .insert(job)
       .select()
       .single();
@@ -256,24 +261,24 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
 
   async updateJob(
     jobId: string,
-    updates: Database['public']['Tables']['ai_generation_jobs']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_jobs"]["Update"],
   ): Promise<void> {
     const { error } = await this.supabase
-      .from('ai_generation_jobs')
+      .from("ai_generation_jobs")
       .update(updates)
-      .eq('id', jobId);
+      .eq("id", jobId);
     if (error) {
       throw new Error(`Failed to update AI generation job ${jobId}: ${error.message}`);
     }
   }
 
   async getJobById(
-    jobId: string
-  ): Promise<Database['public']['Tables']['ai_generation_jobs']['Row'] | null> {
+    jobId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_jobs"]["Row"] | null> {
     const { data, error } = await this.supabase
-      .from('ai_generation_jobs')
-      .select('*')
-      .eq('id', jobId)
+      .from("ai_generation_jobs")
+      .select("*")
+      .eq("id", jobId)
       .maybeSingle();
     if (error) {
       throw new Error(`Failed to fetch AI generation job ${jobId}: ${error.message}`);
@@ -284,14 +289,14 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
   async saveDraftQuestion(params: DraftQuestionSaveParams): Promise<SavedDraftResult> {
     // 1. Create Question
     const { data: qData, error: qErr } = await this.supabase
-      .from('questions')
+      .from("questions")
       .insert({
-        content_scope: params.institutionId ? 'INSTITUTION' : 'PLATFORM',
+        content_scope: params.institutionId ? "INSTITUTION" : "PLATFORM",
         institution_id: params.institutionId,
         created_by: params.createdBy,
         current_version_id: null,
       })
-      .select('id')
+      .select("id")
       .single();
     if (qErr || !qData) {
       throw new Error(`Failed to insert draft question: ${qErr?.message}`);
@@ -300,7 +305,7 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
 
     // 2. Create Question Version (strictly review_status = 'DRAFT')
     const { data: vData, error: vErr } = await this.supabase
-      .from('question_versions')
+      .from("question_versions")
       .insert({
         question_id: questionId,
         version_number: 1,
@@ -312,10 +317,10 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
         difficulty: params.difficulty,
         explanation: params.explanation,
         source_reference: params.sourceReference || null,
-        review_status: 'DRAFT',
+        review_status: "DRAFT",
         created_by: params.createdBy,
       })
-      .select('id')
+      .select("id")
       .single();
     if (vErr || !vData) {
       throw new Error(`Failed to insert question version: ${vErr?.message}`);
@@ -324,9 +329,9 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
 
     // Link current version to question
     await this.supabase
-      .from('questions')
+      .from("questions")
       .update({ current_version_id: versionId })
-      .eq('id', questionId);
+      .eq("id", questionId);
 
     // 3. Create Question Options
     const optionInserts = params.options.map((opt) => ({
@@ -338,9 +343,9 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
     }));
 
     const { data: optData, error: optErr } = await this.supabase
-      .from('question_options')
+      .from("question_options")
       .insert(optionInserts)
-      .select('id, is_correct');
+      .select("id, is_correct");
     if (optErr || !optData) {
       throw new Error(`Failed to insert question options: ${optErr?.message}`);
     }
@@ -350,28 +355,26 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
       .map((o) => o.id);
 
     // 4. Create Answer Key
-    const { error: keyErr } = await this.supabase
-      .from('question_answer_keys')
-      .insert({
-        question_version_id: versionId,
-        accepted_option_ids: correctOptionIds,
-        resolution_type: 'STANDARD',
-      });
+    const { error: keyErr } = await this.supabase.from("question_answer_keys").insert({
+      question_version_id: versionId,
+      accepted_option_ids: correctOptionIds,
+      resolution_type: "STANDARD",
+    });
     if (keyErr) {
       throw new Error(`Failed to insert question answer key: ${keyErr.message}`);
     }
 
     // 5. Create AI Generation Review
     const { data: revData, error: revErr } = await this.supabase
-      .from('ai_generation_reviews')
+      .from("ai_generation_reviews")
       .insert({
         generation_job_id: params.jobId,
         draft_payload: params.rawPayload,
-        validation_status: 'PASSED',
-        review_status: 'PENDING',
+        validation_status: "PASSED",
+        review_status: "PENDING",
         published_question_version_id: versionId,
       })
-      .select('id')
+      .select("id")
       .single();
     if (revErr || !revData) {
       throw new Error(`Failed to insert AI review record: ${revErr?.message}`);
@@ -381,12 +384,12 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
   }
 
   async getReviewById(
-    reviewId: string
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'] | null> {
+    reviewId: string,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"] | null> {
     const { data, error } = await this.supabase
-      .from('ai_generation_reviews')
-      .select('*')
-      .eq('id', reviewId)
+      .from("ai_generation_reviews")
+      .select("*")
+      .eq("id", reviewId)
       .maybeSingle();
     if (error) {
       throw new Error(`Failed to fetch AI review ${reviewId}: ${error.message}`);
@@ -395,14 +398,14 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
   }
 
   async getPendingReviews(
-    institutionId?: string | null
-  ): Promise<Database['public']['Tables']['ai_generation_reviews']['Row'][]> {
+    institutionId?: string | null,
+  ): Promise<Database["public"]["Tables"]["ai_generation_reviews"]["Row"][]> {
     if (institutionId) {
       // Secure tenant isolation: Only fetch jobs belonging to this institution
       const { data: jobs, error: jobsErr } = await this.supabase
-        .from('ai_generation_jobs')
-        .select('id')
-        .eq('institution_id', institutionId);
+        .from("ai_generation_jobs")
+        .select("id")
+        .eq("institution_id", institutionId);
 
       if (jobsErr) {
         throw new Error(`Failed to fetch AI generation jobs for institution: ${jobsErr.message}`);
@@ -414,10 +417,10 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
       }
 
       const { data, error } = await this.supabase
-        .from('ai_generation_reviews')
-        .select('*')
-        .eq('review_status', 'PENDING')
-        .in('generation_job_id', jobIds);
+        .from("ai_generation_reviews")
+        .select("*")
+        .eq("review_status", "PENDING")
+        .in("generation_job_id", jobIds);
 
       if (error) {
         throw new Error(`Failed to fetch pending AI reviews: ${error.message}`);
@@ -426,9 +429,9 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
     }
 
     const { data, error } = await this.supabase
-      .from('ai_generation_reviews')
-      .select('*')
-      .eq('review_status', 'PENDING');
+      .from("ai_generation_reviews")
+      .select("*")
+      .eq("review_status", "PENDING");
     if (error) {
       throw new Error(`Failed to fetch pending AI reviews: ${error.message}`);
     }
@@ -437,12 +440,12 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
 
   async updateReview(
     reviewId: string,
-    updates: Database['public']['Tables']['ai_generation_reviews']['Update']
+    updates: Database["public"]["Tables"]["ai_generation_reviews"]["Update"],
   ): Promise<void> {
     const { error } = await this.supabase
-      .from('ai_generation_reviews')
+      .from("ai_generation_reviews")
       .update(updates)
-      .eq('id', reviewId);
+      .eq("id", reviewId);
     if (error) {
       throw new Error(`Failed to update AI review ${reviewId}: ${error.message}`);
     }
@@ -450,12 +453,12 @@ export class SupabaseAIDraftsRepository implements AIDraftsRepository {
 
   async updateQuestionVersion(
     versionId: string,
-    updates: Database['public']['Tables']['question_versions']['Update']
+    updates: Database["public"]["Tables"]["question_versions"]["Update"],
   ): Promise<void> {
     const { error } = await this.supabase
-      .from('question_versions')
+      .from("question_versions")
       .update(updates)
-      .eq('id', versionId);
+      .eq("id", versionId);
     if (error) {
       throw new Error(`Failed to update question version ${versionId}: ${error.message}`);
     }

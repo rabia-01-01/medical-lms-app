@@ -77,4 +77,3 @@ export class Imat2026ScoringStrategy implements ExamScoringStrategy {
     };
   }
 }
-

@@ -57,7 +57,7 @@ export class NeetUg2026ScoringStrategy implements ExamScoringStrategy {
           unansweredCount++;
           sec.unansweredCount++;
         } else {
-          const matched = item.selectedOptionIds.some(id => item.correctOptionIds.includes(id));
+          const matched = item.selectedOptionIds.some((id) => item.correctOptionIds.includes(id));
           if (matched) {
             marks = this.correctMarks;
             correctCount++;
@@ -116,4 +116,3 @@ export class NeetUg2026ScoringStrategy implements ExamScoringStrategy {
     };
   }
 }
-

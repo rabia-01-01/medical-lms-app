@@ -1,36 +1,105 @@
-# Environment variables
+# ==============================================================================
+# MedPrep Monorepo — Git Ignore Rules
+# ==============================================================================
+
+# 1. Environment & Secret Credentials
 .env
 .env.*
-!.env.example
+*.local
 **/.env
 **/.env.*
+**/*.local
+!.env.example
 !**/.env.example
 
-# Dependencies
+# 2. Dependencies & Package Managers
 node_modules/
 **/node_modules/
+.pnpm-store/
+**/.pnpm-store/
 
-# Build files
+# 3. Build Outputs, Caches & Transpiled Code
 dist/
+**/dist/
 build/
-coverage/
+**/build/
+out/
+**/out/
+dist-ssr/
+**/dist-ssr/
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# 4. Turborepo, Bundler & Framework Caches
 .turbo/
+**/.turbo/
+.vite/
+**/.vite/
 
-# Logs
-*.log
-logs/
-
-# Testing
+# 5. Testing, Reports & Code Coverage
 coverage/
+**/coverage/
+.nyc_output/
+**/.nyc_output/
 playwright-report/
+**/playwright-report/
 test-results/
+**/test-results/
+.vitest/
+**/.vitest/
 
-# Operating system
+# 6. Logs & Diagnostics
+*.log
+**/*.log
+logs/
+**/logs/
+npm-debug.log*
+**/npm-debug.log*
+yarn-debug.log*
+**/yarn-debug.log*
+yarn-error.log*
+**/yarn-error.log*
+pnpm-debug.log*
+**/pnpm-debug.log*
+lerna-debug.log*
+**/lerna-debug.log*
+
+# 7. Local Database & Supabase Artifacts
+.supabase/
+**/.supabase/
+supabase/.branches/
+supabase/.temp/
+
+# 8. Operating System Artifacts
 .DS_Store
+**/.DS_Store
 Thumbs.db
+**/Thumbs.db
+ehthumbs.db
+**/ehthumbs.db
+Desktop.ini
+**/Desktop.ini
 
-# IDE
+# 9. IDE & Editor Artifacts
 .idea/
+**/.idea/
 .vscode/*
+**/.vscode/*
 !.vscode/extensions.json
+!**/.vscode/extensions.json
 !.vscode/settings.json
+!**/.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+
+# 10. Temporary Files & Crash Dumps
+*.tmp
+**/*.tmp
+*.temp
+**/*.temp
+*.bak
+**/*.bak

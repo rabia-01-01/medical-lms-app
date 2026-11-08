@@ -8,6 +8,12 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },
@@ -24,4 +30,3 @@
     }
   }
 }
-

@@ -22,6 +22,7 @@ The skills must remain aligned with:
 ## 2.1 Frontend Development
 
 **Required technologies:**
+
 - React
 - TypeScript
 - Vite
@@ -81,6 +82,7 @@ The agent must be able to:
 ## 2.2 Backend Development
 
 **Required technologies:**
+
 - Node.js
 - Express.js
 - TypeScript
@@ -153,6 +155,7 @@ apps/api/src/
 ## 2.3 Database Development
 
 **Required technologies:**
+
 - PostgreSQL
 - Supabase
 - Supabase Auth
@@ -223,18 +226,18 @@ The agent must understand the NEET-UG examination structure and its configured y
 
 ### Reference configuration: NEET-UG 2026
 
-| Attribute | Configuration |
-|---|---|
-| Total questions | 180 |
-| Physics | 45 |
-| Chemistry | 45 |
-| Biology | 90 |
-| Options | 4 |
-| Duration | 180 minutes |
-| Correct answer | +4 |
-| Incorrect answer | -1 |
-| Unanswered | 0 |
-| Maximum marks | 720 |
+| Attribute        | Configuration |
+| ---------------- | ------------- |
+| Total questions  | 180           |
+| Physics          | 45            |
+| Chemistry        | 45            |
+| Biology          | 90            |
+| Options          | 4             |
+| Duration         | 180 minutes   |
+| Correct answer   | +4            |
+| Incorrect answer | -1            |
+| Unanswered       | 0             |
+| Maximum marks    | 720           |
 
 ### Required capabilities
 
@@ -258,19 +261,19 @@ The agent must understand the IMAT examination structure independently of NEET-U
 
 ### Reference configuration: IMAT 2026/27
 
-| Attribute | Configuration |
-|---|---|
-| Total questions | 60 |
-| Reading and knowledge | 4 |
-| Logical reasoning | 5 |
-| Biology | 23 |
-| Chemistry | 15 |
-| Physics and Mathematics | 13 |
-| Options | 5 |
-| Duration | 100 minutes |
-| Correct answer | +1.5 |
-| Incorrect answer | -0.4 |
-| Unanswered | 0 |
+| Attribute               | Configuration |
+| ----------------------- | ------------- |
+| Total questions         | 60            |
+| Reading and knowledge   | 4             |
+| Logical reasoning       | 5             |
+| Biology                 | 23            |
+| Chemistry               | 15            |
+| Physics and Mathematics | 13            |
+| Options                 | 5             |
+| Duration                | 100 minutes   |
+| Correct answer          | +1.5          |
+| Incorrect answer        | -0.4          |
+| Unanswered              | 0             |
 
 ### Required capabilities
 
@@ -856,20 +859,20 @@ The examination runner must remain usable through keyboard navigation and differ
 
 Use the following mapping when deciding which skills to apply.
 
-| Development task | Required skills |
-|---|---|
-| Build student dashboard | React, TypeScript, UI/UX, API integration |
-| Implement login | React, Express, Supabase Auth, security |
-| Create syllabus module | Frontend, backend, PostgreSQL |
-| Build question bank | Backend, PostgreSQL, academic domain |
-| Generate AI questions | Groq, prompt engineering, Zod, academic validation |
-| Build mock test | React, Express, assessment engine |
-| Calculate examination results | Scoring logic, PostgreSQL, testing |
-| Create analytics dashboard | SQL, data analysis, visualization |
-| Upload study materials | Supabase Storage, backend security |
-| Manage institutes | RBAC, tenancy, PostgreSQL RLS |
-| Debug API errors | Node.js, Express, TypeScript, testing |
-| Deploy application | Git, Docker, CI/CD, environment management |
+| Development task              | Required skills                                    |
+| ----------------------------- | -------------------------------------------------- |
+| Build student dashboard       | React, TypeScript, UI/UX, API integration          |
+| Implement login               | React, Express, Supabase Auth, security            |
+| Create syllabus module        | Frontend, backend, PostgreSQL                      |
+| Build question bank           | Backend, PostgreSQL, academic domain               |
+| Generate AI questions         | Groq, prompt engineering, Zod, academic validation |
+| Build mock test               | React, Express, assessment engine                  |
+| Calculate examination results | Scoring logic, PostgreSQL, testing                 |
+| Create analytics dashboard    | SQL, data analysis, visualization                  |
+| Upload study materials        | Supabase Storage, backend security                 |
+| Manage institutes             | RBAC, tenancy, PostgreSQL RLS                      |
+| Debug API errors              | Node.js, Express, TypeScript, testing              |
+| Deploy application            | Git, Docker, CI/CD, environment management         |
 
 Apply only the skills relevant to the task. Do not introduce every module or technology into a small feature.
 

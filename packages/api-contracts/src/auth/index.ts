@@ -17,4 +17,3 @@ export interface UserProfileDto {
   activeInstitutionId: string | null;
   role: 'STUDENT' | 'FACULTY' | 'INSTITUTE_ADMIN' | 'PLATFORM_ADMIN';
 }
-

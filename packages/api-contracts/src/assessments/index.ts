@@ -41,4 +41,3 @@ export interface AssessmentAttemptDto {
   serverDeadlineAt: string;
   questions: StudentQuestionViewDto[];
 }
-

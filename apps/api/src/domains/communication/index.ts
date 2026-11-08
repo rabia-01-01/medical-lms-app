@@ -1,3 +1,2 @@
 ﻿// Bounded Context: communication
 export {};
-
