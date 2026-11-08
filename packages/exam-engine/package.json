@@ -1,5 +1,5 @@
 {
-  "name": "@medprepos/exam-engine",
+  "name": "@MedPrep/exam-engine",
   "version": "1.0.0",
   "private": true,
   "description": "Authoritative NEET-UG and IMAT scoring engines, section rules, and adjudication logic",
@@ -15,4 +15,3 @@
     "vitest": "^2.1.1"
   }
 }
-

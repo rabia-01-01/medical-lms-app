@@ -15,7 +15,7 @@ MedPrep is a dual-track examination preparation platform designed exclusively fo
 
 The platform allows aspirants to study their examination-specific syllabus, access learning resources, practise questions, take mock examinations, analyse their performance, and receive structured revision support.
 
-**Important:** The official project name is `MedPrep`. Never rename it to MedPrepOS.
+**Important:** The official project name is `MedPrep`. Never rename it to MedPrep.
 
 ### Product Scope Restrictions
 
@@ -865,7 +865,7 @@ Do not report a feature as complete if it is only partially implemented.
 
 ## 18. Important Things the Agent Must Never Do
 
-1. Never rename MedPrep to MedPrepOS.
+1. Never rename MedPrep to MedPrep.
 2. Never add unrelated examination tracks.
 3. Never mix NEET-UG and IMAT scoring.
 4. Never expose API keys or database credentials.

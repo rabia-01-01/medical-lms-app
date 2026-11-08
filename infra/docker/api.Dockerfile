@@ -5,7 +5,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.j
 COPY packages ./packages
 COPY apps/api ./apps/api
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter=@medprepos/api build
+RUN pnpm --filter=@MedPrep/api build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

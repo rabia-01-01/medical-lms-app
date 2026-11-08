@@ -13,7 +13,7 @@ The skills must remain aligned with:
 - `AGENTS.md`
 - `groq_api_design.md` (when available)
 
-**Important:** The project name is MedPrep. Do not use MedPrepOS as the application name.
+**Important:** The project name is MedPrep. Do not use MedPrep as the application name.
 
 ---
 

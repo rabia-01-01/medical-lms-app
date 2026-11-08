@@ -15,7 +15,7 @@ export function createApp(): Express {
   app.get('/health', (_req: Request, res: Response) => {
     res.json({
       status: 'ok',
-      service: 'medprepos-api',
+      service: 'MedPrep-api',
       environment: env.NODE_ENV,
       timestamp: new Date().toISOString(),
     });

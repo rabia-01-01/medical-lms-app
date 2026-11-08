@@ -1,4 +1,4 @@
-# MedPrepOS — Engineering & Product Roadmap (Phase by Phase)
+# MedPrep — Engineering & Product Roadmap (Phase by Phase)
 ## Scalable, Dual-Track NEET-UG & IMAT Learning, Practice & Assessment Platform
 
 | Document Attribute | Details |
@@ -17,13 +17,13 @@ Before detailing future phases, the following audit establishes the exact curren
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                             MedPrepOS Monorepo State                             │
+│                             MedPrep Monorepo State                             │
 └──────────────────────────────────────────────────────────────────────────────────┘
   ├── packages/
-  │    ├── @medprepos/exam-engine      ✅ COMPLETE (NEET-UG & IMAT 2026 Scoring Strategies)
-  │    ├── @medprepos/api-contracts    ⚠️ PARTIAL (Auth, Assessments, Curriculum DTOs done)
-  │    ├── @medprepos/database         ✅ COMPLETE (Client factories, Database types)
-  │    └── @medprepos/config           ✅ COMPLETE (TypeScript presets)
+  │    ├── @MedPrep/exam-engine      ✅ COMPLETE (NEET-UG & IMAT 2026 Scoring Strategies)
+  │    ├── @MedPrep/api-contracts    ⚠️ PARTIAL (Auth, Assessments, Curriculum DTOs done)
+  │    ├── @MedPrep/database         ✅ COMPLETE (Client factories, Database types)
+  │    └── @MedPrep/config           ✅ COMPLETE (TypeScript presets)
   │
   ├── database/ & supabase/
   │    ├── db.sql (51 tables, 27 enums) ✅ COMPLETE (Full DDL, RLS, Procedures, Views)
@@ -87,7 +87,7 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
   - Verified NTA NEET-UG 2026 Information Bulletin (180 questions, 4 options, `+4/-1`, dropped-question adjudication).
   - Verified Italian MUR Ministerial Decree No. 1005 (IMAT 2026/27 baseline: 60 questions, 5 options, `+1.5/-0.4`, 5 discrete sections).
   - Authored physical database schema [`database/db.sql`](file:///c:/Users/ASUS/Downloads/Medical_LMS/database/db.sql) with 51 tables, stored procedures, RLS policies, and analytical views.
-  - Implemented `@medprepos/exam-engine` package with 100% test pass on official scoring vectors.
+  - Implemented `@MedPrep/exam-engine` package with 100% test pass on official scoring vectors.
   - Formulated master [`PRD.md`](file:///c:/Users/ASUS/Downloads/Medical_LMS/PRD.md) addressing cross-document discrepancies.
 
 ---
@@ -99,9 +99,9 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
 ### 1. Work Packages & Technical Deliverables
 
 #### Track A: Shared Packages & Contracts
-- **Task 1.1:** Expand `@medprepos/api-contracts` (`auth`, `identity`, `tenancy` DTOs).
+- **Task 1.1:** Expand `@MedPrep/api-contracts` (`auth`, `identity`, `tenancy` DTOs).
   - `SelectExamTrackSchema`, `SwitchExamYearSchema`, `InstitutionMembershipDto`.
-- **Task 1.2:** Implement Supabase client session helpers in `@medprepos/database`.
+- **Task 1.2:** Implement Supabase client session helpers in `@MedPrep/database`.
 
 #### Track B: Backend API (`apps/api`)
 - **Task 1.3:** Build `domains/identity/`:
@@ -144,7 +144,7 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
   - NEET-UG: Physics, Chemistry, Biology (Botany & Zoology chapters/topics from NMC 2026).
   - IMAT: Reading Skills & Knowledge, Logical Reasoning, Biology, Chemistry, Physics & Mathematics.
 - **Task 2.2:** Verify closure table trigger `trg_maintain_syllabus_closures` across all seeded nodes.
-- **Task 2.3:** Contract definitions in `@medprepos/api-contracts`:
+- **Task 2.3:** Contract definitions in `@MedPrep/api-contracts`:
   - `SyllabusTreeDto`, `TopicProgressDto`, `ResourceMetadataDto`, `SignedUrlResponseDto`.
 
 #### Track B: Backend API (`apps/api`)
@@ -183,7 +183,7 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
 ### 1. Work Packages & Technical Deliverables
 
 #### Track A: Shared Contracts & AI Infrastructure
-- **Task 3.1:** Contracts in `@medprepos/api-contracts`:
+- **Task 3.1:** Contracts in `@MedPrep/api-contracts`:
   - `QuestionAuthoringInputSchema`, `QuestionVersionDto`, `AIDraftGenerateInputSchema`, `ReviewDecisionSchema`.
 - **Task 3.2:** Verify existing `infrastructure/ai/` modules:
   - Groq client (`llama-3.3-70b-versatile` / `llama-3.1-8b-instant`), `neet-ug.prompt.ts`, `imat.prompt.ts`, `shuffle-options.ts`, and Zod validation schemas.
@@ -220,7 +220,7 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
 #### Track A: Database & Engine Package
 - **Task 4.1:** Verify database stored procedures in `db.sql`:
   - `start_assessment_attempt()`, `autosave_attempt_answer()`, `calculate_and_finalize_score()`.
-- **Task 4.2:** Integrate `@medprepos/exam-engine` into backend attempts domain service.
+- **Task 4.2:** Integrate `@MedPrep/exam-engine` into backend attempts domain service.
 
 #### Track B: Backend API (`apps/api`)
 - **Task 4.3:** Build `domains/assessments/`:
@@ -261,7 +261,7 @@ Phase 7: Subscriptions, Scale & Post-MVP Expansion (Post-Launch)
 #### Track A: Database Views & Contracts
 - **Task 5.1:** Validate production analytical views in `db.sql`:
   - `view_student_performance_analytics`, `view_student_radar_mastery`, `view_revision_recommendations`.
-- **Task 5.2:** Contracts in `@medprepos/api-contracts`:
+- **Task 5.2:** Contracts in `@MedPrep/api-contracts`:
   - `PerformanceRadarDto`, `ScoreProgressionDto`, `RevisionRecommendationDto`.
 
 #### Track B: Backend API (`apps/api`)

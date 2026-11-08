@@ -1,8 +1,8 @@
 ﻿-- ============================================================================
--- MedPrepOS — PRODUCTION DATABASE DDL & SCHEMA SPECIFICATION
+-- MedPrep — PRODUCTION DATABASE DDL & SCHEMA SPECIFICATION
 -- ============================================================================
 -- Architecture: PostgreSQL 15+ (Supabase)
--- Specification: MedPrepOS Finalized Product Overview & Engineering Spec v3.0
+-- Specification: MedPrep Finalized Product Overview & Engineering Spec v3.0
 -- Scope: Dual-Track NEET-UG & IMAT Learning Management & Assessment Platform
 -- Multi-Tenancy: Platform + Coaching Institutions + Independent Aspirants
 -- Security: Server-Authoritative Scoring, Role-Based Access Control, Supabase RLS
@@ -18,7 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. CUSTOM ENUMS & DATA DICTIONARY DOMAIN CONSTRAINTS
 -- ----------------------------------------------------------------------------
 
--- Exam tracks supported by MedPrepOS (NEET-UG and IMAT only)
+-- Exam tracks supported by MedPrep (NEET-UG and IMAT only)
 DO $$ BEGIN
     CREATE TYPE exam_track_code AS ENUM ('NEET_UG', 'IMAT');
 EXCEPTION WHEN duplicate_object THEN null; END $$;

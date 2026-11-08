@@ -1,4 +1,4 @@
-project_id = "medprepos"
+project_id = "MedPrep"
 
 [api]
 enabled = true

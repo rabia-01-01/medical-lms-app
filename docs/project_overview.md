@@ -23,7 +23,7 @@
 
 ## 0.1 Finalized idea
 
-**MedPrepOS is a specialized NEET-UG and IMAT preparation platform that gives aspirants one place to study the correct exam-specific syllabus, access reviewed learning resources, practise questions, take exam-pattern mock tests, understand their performance, and receive structured revision support.**
+**MedPreps a specialized NEET-UG and IMAT preparation platform that gives aspirants one place to study the correct exam-specific syllabus, access reviewed learning resources, practise questions, take exam-pattern mock tests, understand their performance, and receive structured revision support.**
 
 It supports two distinct preparation tracks:
 
@@ -48,7 +48,7 @@ The platform combines:
 
 **Recommended product description:**
 
-> MedPrepOS is a dual-track medical entrance preparation platform for NEET-UG and IMAT aspirants. It combines exam-specific learning resources, syllabus-based practice, realistic mock assessments, performance analytics, and AI-assisted academic support. Its assessment engine applies the rules configured for the selected exam and year, while faculty and academic reviewers retain control over the quality and publication of learning content.
+> MedPrep is a dual-track medical entrance preparation platform for NEET-UG and IMAT aspirants. It combines exam-specific learning resources, syllabus-based practice, realistic mock assessments, performance analytics, and AI-assisted academic support. Its assessment engine applies the rules configured for the selected exam and year, while faculty and academic reviewers retain control over the quality and publication of learning content.
 
 ## 0.3 Primary product value
 
@@ -254,7 +254,7 @@ The product's interface language and the language of an examination question are
 
 ### 2.2.3 NEET-UG official paper versus online practice
 
-The official NEET-UG 2026 examination mode is pen-and-paper. MedPrepOS is a digital preparation product; its online test runner is therefore a practice simulation, not the official NTA examination interface.
+The official NEET-UG 2026 examination mode is pen-and-paper. MedPrep is a digital preparation product; its online test runner is therefore a practice simulation, not the official NTA examination interface.
 
 Possible practice modes:
 
@@ -1180,7 +1180,7 @@ apps/api/src/
   shared/                             # Domain-agnostic utilities (errors, result, pagination)
 ```
 
-Authoritative scoring algorithms (+4/-1 with NTA dropped-question adjudication for NEET-UG; +1.5/-0.4 for IMAT) are encapsulated within the isolated, deterministic workspace package `@medprepos/exam-engine`.
+Authoritative scoring algorithms (+4/-1 with NTA dropped-question adjudication for NEET-UG; +1.5/-0.4 for IMAT) are encapsulated within the isolated, deterministic workspace package `@MedPrep/exam-engine`.
 
 ## 9.4 Frontend architecture and domain feature slices
 

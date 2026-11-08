@@ -1,8 +1,8 @@
 {
-  "name": "@medprepos/api",
+  "name": "@MedPrep/api",
   "version": "1.0.0",
   "private": true,
-  "description": "MedPrepOS Modular Monolith Backend API",
+  "description": "MedPrep Modular Monolith Backend API",
   "main": "./dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -13,9 +13,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@medprepos/api-contracts": "workspace:*",
-    "@medprepos/database": "workspace:*",
-    "@medprepos/exam-engine": "workspace:*",
+    "@MedPrep/api-contracts": "workspace:*",
+    "@MedPrep/database": "workspace:*",
+    "@MedPrep/exam-engine": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
@@ -36,4 +36,3 @@
     "vitest": "^2.1.1"
   }
 }
-

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Database, AIJobStatus, AIReviewStatus, SupabaseClient } from '@medprepos/database';
+import { Database, AIJobStatus, AIReviewStatus, SupabaseClient } from '@MedPrep/database';
 
 export interface DraftQuestionSaveParams {
   jobId: string;
@@ -238,7 +238,7 @@ export class InMemoryAIDraftsRepository implements AIDraftsRepository {
  * Supabase-backed repository implementation for production
  */
 export class SupabaseAIDraftsRepository implements AIDraftsRepository {
-  constructor(private readonly supabase: SupabaseClient<any>) {}
+  constructor(private readonly supabase: SupabaseClient<any>) { }
 
   async createJob(
     job: Database['public']['Tables']['ai_generation_jobs']['Insert']

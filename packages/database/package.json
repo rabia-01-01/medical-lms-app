@@ -1,8 +1,8 @@
 {
-  "name": "@medprepos/database",
+  "name": "@MedPrep/database",
   "version": "1.0.0",
   "private": true,
-  "description": "Database types, client factories and migration utilities for MedPrepOS",
+  "description": "Database types, client factories and migration utilities for MedPrep",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
@@ -16,4 +16,3 @@
     "typescript": "^5.5.4"
   }
 }
-

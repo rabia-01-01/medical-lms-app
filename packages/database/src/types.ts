@@ -1,5 +1,5 @@
 /**
- * MedPrepOS Database Schema Definitions
+ * MedPrep Database Schema Definitions
  * Aligned with PostgreSQL 15+ & Supabase Migrations 0001 - 0014
  */
 

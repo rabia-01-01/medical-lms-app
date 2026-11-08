@@ -1,6 +1,6 @@
 /**
  * Core type definitions for AI Question Generation and Provider Abstraction
- * Aligns with MedPrepOS Section 13 (AI Architecture & Quality Controls)
+ * Aligns with MedPrep Section 13 (AI Architecture & Quality Controls)
  */
 
 export type ExamTrackCode = 'NEET_UG' | 'IMAT';

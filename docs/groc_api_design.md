@@ -2,7 +2,7 @@
 
 **Scope:** Dual-Track NEET-UG & IMAT Learning Management & Assessment Platform  
 **Architecture:** Node.js + Express Modular Monolith (`apps/api`)  
-**Shared Contracts:** `@medprepos/api-contracts`
+**Shared Contracts:** `@MedPrep/api-contracts`
 
 ---
 
